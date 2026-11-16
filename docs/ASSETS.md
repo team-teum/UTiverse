@@ -1,0 +1,128 @@
+# 유T버스 에셋 교체 가이드
+
+- 상태: v1.0 — 2026-11-16
+- 대상: 디자이너(기연), 개발자
+- 관련 문서: [prd.md](../prd.md) · [SPECIFICATION.md](../SPECIFICATION.md)
+
+MVP는 Figma 「1109 화면 목업 구성」 「종합」 페이지에 있는 **임시 에셋**으로 먼저 개발한다. 디자이너가 최종 에셋을 만들면 **같은 경로에 같은 파일명으로 덮어쓰기**만 하면 화면에 반영된다. 코드 수정은 필요 없다.
+
+## 1. 교체하는 방법
+
+1. 아래 [에셋 목록](#3-에셋-목록)에서 바꿀 에셋의 **파일 경로**를 찾는다.
+2. 새 이미지를 **같은 파일명·같은 확장자**로 저장해 `web/public/assets/…` 의 기존 파일을 덮어쓴다.
+   - 확장자를 바꿔야 하면(예: `.png` → `.webp`) 파일을 넣고 `web/src/assets/manifest.ts`의 해당 줄 경로만 고친다.
+3. 브라우저에서 확인한다. 주소 끝에 `?assets=debug`를 붙이면(개발 서버) 화면의 모든 이미지 위에 **에셋 키 이름**이 표시된다. 어떤 파일이 어디에 쓰이는지 화면에서 바로 찾을 수 있다.
+4. 아래 표의 **상태** 열을 `임시` → `최종`으로 바꾸고, 표시 크기나 비율이 달라졌으면 그 열도 고친다.
+5. 커밋 메시지 예: `assets: replace character.tini (final)`
+
+파일이 없거나 깨지면 화면에 키 이름이 적힌 점선 상자가 대신 보인다. 교체 누락을 바로 알 수 있다.
+
+## 2. 규칙
+
+| 항목 | 규칙 |
+|---|---|
+| 위치 | `web/public/assets/<분류>/<이름>.<확장자>` |
+| 파일명 | 영문 소문자, 숫자, 하이픈만. 공백·한글 금지 (`tini.png`, `preset-01.png`) |
+| 에셋 키 | `<분류>.<이름>` (코드에서 쓰는 이름, 예: `character.tini`, `ship.preset01`) |
+| 해상도 | **표시 크기(디자인 px)의 3배**로 내보내기. 예: 표시 100×100 → 파일 300×300 |
+| 형식 | 사진·그림: PNG(투명) 또는 WebP. 단색 아이콘·로고: SVG |
+| 투명 배경 | 배경(`bg.*`)을 뺀 모든 캐릭터·우주선·아이템은 투명 배경 |
+| 비율 | 표의 "비율"을 지키면 레이아웃이 안 깨진다. 비율을 바꿀 땐 개발자에게 알려 주기 |
+| 용량 | 한 파일 500KB 이하 권장 (배경은 1MB 이하) |
+
+**코드로 그리는 것 (이미지 파일 아님)**: 메뉴(☰), 집, 쌍안경, 새로고침, 닫기(X), 화살표, 위치 핀, 주사위, 북마크, 달력 아이콘은 [Phosphor Icons](https://phosphoricons.com/)를 코드로 쓴다(Figma 메모). 버튼·카드·토글·궤도선·별자리 선도 코드로 그린다. 바꾸려면 디자인 토큰(`web/src/styles/tokens.css`)이나 개발자에게 요청한다.
+
+## 3. 에셋 목록
+
+Figma 링크는 「1109 화면 목업 구성」 파일의 해당 노드다. `hash`는 Figma 이미지 해시(같은 그림이 여러 곳에 쓰였는지 확인용).
+
+### 3.1 배경 · 브랜드
+
+| 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
+|---|---|---|---|---|---|---|
+| `bg.title` | `web/public/assets/bg/title.png` | S01 타이틀, S02 튜토리얼 배경 | 「백」 [44:11637](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11637) · hash `6da85a40` | 화면 전체 cover · 원본 679×905 (≈3:4) | 임시 | 화면 비율이 달라도 가운데 기준으로 잘림. 중요한 요소는 가운데 402×600 안에 |
+| `brand.titleArt` | `web/public/assets/brand/title-art.png` | S01 가운데 원형 그림 (토끼들 + 행성) | 「그림」 [44:11638](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11638) (안의 image 40 [44:11640](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11640) · hash `b7681173`) | 약 330×330 · 1:1 | 임시 | 투명 배경 |
+| `brand.logo` | `web/public/assets/brand/logo.svg` | S01 "uTiverse" 곡선 로고 | 「Text on a Path – uTiverse」 [44:11641](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11641) | 148×48 · 약 3:1 | 임시 | SVG(흰색). 글자 색을 코드에서 바꾸지 않음 |
+| `brand.tapToStart` | `web/public/assets/brand/tap-to-start.svg` | S01 "화면을 클릭해서 시작하기" | [57:13589](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=57-13589) | 127×12 | 임시 | 디자이너가 텍스트로 바꾸길 원하면 파일 삭제 → 코드 텍스트로 대체 가능 |
+| `bg.space` | `web/public/assets/bg/space.png` | S03 우주, S05~S14 공통 배경 | 「홈화면 컴포넌트」 [44:11686](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11686) — **Figma 셰이더 채우기** | 402×874 cover | 임시 | 셰이더라 이미지 파일이 없음. 프레임을 PNG(3배)로 렌더해서 사용. 최종본은 별 반짝임 애니메이션을 고려해 **별이 적은 배경** 권장(작은 별은 코드로 반짝임) |
+| `universe.cluster` | `web/public/assets/universe/cluster.png` | S03 우주 (3D 구현 대체안일 때만) | image 52 [49:6313](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6313) · hash `cf68f060` | 269×301 | 임시 | 기술 명세 7.3 대체안에서만 쓰임 |
+
+### 3.2 캐릭터 · 안내 요정
+
+| 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
+|---|---|---|---|---|---|---|
+| `character.tini` | `web/public/assets/character/tini.png` | S02 튜토리얼, S11 MY 첫 진입 | 「요정」 [70:6846](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6846) · hash `11d199ba` | 132~215 · 1:1 | 임시 | 투명 배경. 표정·포즈가 여러 개면 `tini-hello.png`, `tini-talk.png`, `tini-happy.png`로 추가 (키 `character.tiniHello` 등 — 개발자에게 알려 주기) |
+| `ui.speechBubble` | `web/public/assets/ui/speech-bubble.png` | S02 "안녕!", S11 "위로 스와이프해봐!" 말풍선 | image 51 [70:6844](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6844) · hash `dbbbc18b` | 125×125 · 1:1 | 임시 | **글자 없는 빈 말풍선**이어야 함(글자는 코드). 꼬리 방향: 오른쪽 아래 |
+| `ui.pointer` | `web/public/assets/ui/pointer.png` | S02 "MY를 눌러봐" 지시봉 | 「지시봉」 [70:7014](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-7014) · hash `21f895d3` | 57×71 | 임시 | 손가락 끝이 이미지 **왼쪽 위**를 가리키는 방향 유지 |
+
+### 3.3 우주선 · 아바타 (사용자별)
+
+다른 사용자 우주선·아바타는 프리셋 사용자마다 한 장씩이다. 임시로는 모두 같은 우주선 그림, 기존 시안의 픽셀 아바타를 잘라 쓴다. 디자이너가 사람마다 다르게 그려 주면 된다.
+
+| 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
+|---|---|---|---|---|---|---|
+| `ship.default` | `web/public/assets/ship/default.png` | S11 내 우주선(꾸미기 전 기본) | 「Rectangle 33」 [37:12336](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-12336) · hash `e47dcc43` (픽셀 로켓) | 277×394 · 약 7:10 | 임시 | 투명 배경. 현재 이미지에는 남색 배경 사각형이 있음 → 최종본은 투명 |
+| `ship.preset01` ~ `ship.preset12` | `web/public/assets/ship/preset-01.png` ~ `preset-12.png` | S03·S05·S08 우주선 썸네일, S09 남의 우주선 | 임시: `ship.default` 복사본 | 큰 화면 277×394, 썸네일 125×120에 contain | 임시 | 시드 프로필(`supabase/seed.sql`)의 `ship_asset_key`가 이 키를 가리킨다. 사람마다 다른 우주선 |
+| `avatar.me` | `web/public/assets/avatar/me-default.png` | S11 내 아바타(꾸미기 전), S14 미리보기 | 임시: 기존 시안 픽셀 아바타 [47:6825](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-6825) · hash `7a976a83` 일부 | 아바타 높이 120 기준 · 약 3:4 | 임시 | 투명 배경, 정면, 발끝이 이미지 아래 끝에 닿게 |
+| `avatar.preset01` ~ `avatar.preset12` | `web/public/assets/avatar/preset-01.png` ~ `preset-12.png` | S09 남의 아바타, 우주 라벨 옆 작은 얼굴 | 임시: 위 픽셀 아바타 시트에서 잘라 씀 | 위와 같음 | 임시 | 피부색·머리·옷이 다양하게 (prd.md 기능 G) |
+| `planet.sheet` (임시 전용) | `web/public/assets/_temp/planet-sheet.png` | 썸네일 배경 장식 | 「Rectangle」 [47:6824](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-6824) · hash `bff298ca` | – | 임시 | 최종 에셋이 오면 삭제 |
+
+### 3.4 별자리 · UI 이미지
+
+| 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
+|---|---|---|---|---|---|---|
+| `constellation.star` | `web/public/assets/constellation/star.svg` | S09·S11 별자리의 별 | 「Star 1」 [37:12345](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-12345) (「별자리 예시」 [37:12476](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-12476)) | 34×34 · 1:1 | 임시 | 별 사이 선은 코드로 그림 |
+| `constellation.starNew` | `web/public/assets/constellation/star-new.svg` | 방금 만든 별 강조 | 임시: `constellation.star`와 같은 파일 | 34×34 | 임시 | 선택 사항 |
+| `ui.write` | `web/public/assets/ui/write.png` | S11 연필(별 만들기) 버튼 | image 54 [37:11874](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-11874) · hash `4041c7e9` (「작성 아이콘」 [37:12214](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-12214)) | 50×50 (흰 원 57×56 위) | 임시 | 흰 원은 코드로 그림 |
+
+### 3.5 꾸미기 아이템 (S13 · S14)
+
+Figma는 회색 "아이템" 칸만 있는 상태라 **아직 임시 에셋이 없다**. 파일이 없으면 화면에 아이템 이름이 적힌 회색 칸이 보인다. 디자이너가 아래 규칙으로 파일을 넣으면 바로 그림으로 바뀐다.
+
+| 대상 | 탭 (Figma) | 카테고리 예 | 파일 경로 규칙 | 키 규칙 |
+|---|---|---|---|---|
+| 우주선 | 우주선 / 가구 / 장식품 / 플래그 | 벽지, 창문, 외벽 | `web/public/assets/custom/ship/<탭>/<아이템id>.png` | `custom.ship.<탭>.<아이템id>` |
+| 캐릭터 | 몸 / 우주복 / 장신구 / 기타 | 체형, 피부색 | `web/public/assets/custom/avatar/<탭>/<아이템id>.png` | `custom.avatar.<탭>.<아이템id>` |
+
+- 탭 폴더 이름: 우주선 `hull`, 가구 `furniture`, 장식품 `decor`, 플래그 `flag` / 몸 `body`, 우주복 `suit`, 장신구 `accessory`, 기타 `etc`.
+- 아이템 id와 이름 목록은 `web/src/data/customItems.ts`에 있다. 새 아이템을 추가하려면 그 파일에 한 줄 추가 + 이미지 파일.
+- 각 아이템 파일은 두 가지가 필요하다:
+  - **썸네일** `<아이템id>.png` — 그리드 칸(약 80×80, 1:1)
+  - **미리보기용 완성 이미지** `<아이템id>-preview.png` — 이번 버전은 아이템을 고르면 우주선/캐릭터 **전체 그림을 이 이미지로 바꾸는 방식**이다(같은 크기·비율: 우주선 277×394, 캐릭터 3:4). 레이어를 겹치는 방식으로 바꾸려면 개발자와 레이어 순서·기준점을 먼저 정한다.
+
+### 3.6 캘린더 행사 이미지 (S15)
+
+| 키 규칙 | 파일 경로 규칙 | 표시 크기·비율 | 메모 |
+|---|---|---|---|
+| `event.<행사id>` | `web/public/assets/events/<행사id>.png` | 목록 썸네일 72×72(1:1), 상세 상단 402×226(16:9) — 1:1 원본을 가운데 기준으로 잘라 씀 | DB `events.image_asset_key`에 키를 넣는다(예: `event.trans-march-2026`). 파일이 없으면 달력 아이콘이 들어간 기본 이미지 |
+
+Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6666), [49:6326](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6326), [51:7019](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=51-7019))는 **다른 서비스 화면 캡처(레퍼런스)** 라 에셋으로 쓰지 않는다. 실제 행사 포스터를 쓸 때는 주최 측 사용 허락을 받는다.
+
+### 3.7 폰트
+
+| 파일 | 쓰임 | 메모 |
+|---|---|---|
+| `web/public/fonts/NotoSansKR-*.woff2` | 본문 | Regular / Medium / Bold |
+| `web/public/fonts/Inter-*.woff2` | 숫자 · 영문 | Regular / Bold |
+| `web/public/fonts/Bitcount-*.woff2` | 픽셀 포인트 문구 | SemiBold |
+
+폰트를 바꾸려면 `web/src/styles/tokens.css`의 `--font-*`와 파일을 같이 바꾼다.
+
+## 4. 내보내기 메모 (개발자용)
+
+- 임시 에셋은 개발 착수 시 Figma에서 위 노드를 **3배 PNG / SVG**로 내보내 지정 경로에 넣는다. 해시가 같은 노드는 한 번만 내보낸다.
+- `bg.space`는 셰이더라 노드 렌더(PNG 3배)를 쓴다.
+- `ship.default`의 남색 배경은 임시본 그대로 두고, "투명 배경 필요"를 디자이너 할 일로 남긴다.
+- 새 에셋 키를 추가하면 이 문서 표와 `web/src/assets/manifest.ts`를 **같은 커밋**에서 고친다.
+
+## 5. 디자이너 할 일 요약 (임시 → 최종)
+
+- [ ] `bg.title`, `brand.titleArt`, `brand.logo`, `brand.tapToStart`
+- [ ] `bg.space` (별이 적은 배경)
+- [ ] `character.tini` (+ 표정 추가 여부)
+- [ ] `ui.speechBubble`, `ui.pointer`, `ui.write`
+- [ ] `constellation.star` (+ `starNew`)
+- [ ] `ship.default` (투명 배경), `ship.preset01`~`12`
+- [ ] `avatar.me`, `avatar.preset01`~`12`
+- [ ] 꾸미기 아이템 썸네일 + 미리보기 (탭당 3개 이상)
+- [ ] 캘린더 행사 이미지

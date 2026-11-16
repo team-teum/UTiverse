@@ -1,0 +1,595 @@
+# SPECIFICATION — 유T버스 (uTiverse)
+
+- 상태: **v1.0 (MVP 최종)** — 2026-11-16 · 기준 문서: [prd.md](./prd.md)
+- 변경 요청은 [new_requests.md](./new_requests.md), 에셋은 [docs/ASSETS.md](./docs/ASSETS.md)
+- **완료 표시 규칙:** 체크박스(`- [ ]`)는 **직접 실행해서 확인한 항목만** `- [x]`로 바꾼다. 확인 방법은 각 기능 아래 「검증 기록」에 적는다.
+
+## 0. 구현 상태 요약
+
+| 영역 | 상태 | 비고 |
+|---|---|---|
+| 저장소 구조 · 개발 환경 | 미착수 | 3장 |
+| Supabase 스키마 · RLS · 함수 (migration) | 미착수 | 7장 |
+| 시드 데이터 | 미착수 | 7.6 |
+| 기능 A 회원가입·로그인 | 미착수 | |
+| 기능 B 튜토리얼 | 미착수 | |
+| 기능 C 우주·탐색 | 미착수 | |
+| 기능 D 위치 | 미착수 | |
+| 기능 E 남의 우주선·별·댓글·반응 | 미착수 | |
+| 기능 F MY·별 만들기 | 미착수 | |
+| 기능 G 꾸미기 | 미착수 | |
+| 기능 H 메뉴·캘린더·북마크·설정 | 미착수 | |
+| Cloudflare 배포 | 미착수 | 10장 |
+
+## 1. 시스템 구성
+
+```text
+브라우저 (React 앱, 세로 402×874 프레임)
+  ├─ ① 화면 파일 ── Cloudflare Workers Static Assets (workers.dev 주소)
+  └─ ② 로그인·저장·조회 ── Supabase
+                            ├─ Auth: 이메일·비밀번호, 세션(JWT)
+                            ├─ Postgres: 테이블 + RLS + DB 함수(RPC)
+                            └─ (나중) Edge Functions: AI 혐오표현 필터 등
+```
+
+- 브라우저는 **Supabase 공개 키(publishable/anon)** 와 로그인한 사용자의 토큰으로 DB에 직접 요청한다. 누가 무엇을 읽고 쓸 수 있는지는 **RLS 정책과 DB 함수**가 막는다.
+- service role / secret 키는 브라우저, 저장소, 빌드 결과물에 넣지 않는다. MVP에는 서버 함수가 없으므로 비밀 키를 쓸 일이 없다.
+- 이번 MVP에는 AI 호출이 없다. AI 혐오표현 필터는 나중에 Edge Function으로 붙인다(prd.md 7장).
+
+## 2. 기술 스택
+
+| 영역 | 선택 |
+|---|---|
+| 앱 | React 18 + TypeScript + Vite (`web/`) |
+| 라우팅 | `react-router-dom` BrowserRouter (Cloudflare SPA 설정으로 새로고침 지원) |
+| 서버 상태 | `@supabase/supabase-js` v2 + `@tanstack/react-query` |
+| 스타일 | 일반 CSS + CSS 변수(디자인 토큰) + CSS Modules |
+| 아이콘 | `@phosphor-icons/react` (Figma 메모: phosphoricons.com) |
+| 3D 우주 | 외부 3D 라이브러리 없이 구면 좌표 → 2D 투영 자체 구현 |
+| DB·인증 | Supabase (Postgres, Auth). 스키마는 `supabase/migrations/*.sql` |
+| 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
+| 도구 | Node.js 22.13 이상, npm, Supabase CLI(`npx supabase`), Wrangler(`npx wrangler`) |
+| 테스트 | Vitest(순수 로직) + 두 계정 수동 권한 점검(9장) |
+
+## 3. 저장소 구조
+
+```text
+UTiverse/
+├─ prd.md                    무엇을·왜
+├─ SPECIFICATION.md          어떻게·구현 상태 (이 문서)
+├─ new_requests.md           변경 요청·버그
+├─ AGENTS.md                 코딩 에이전트 작업 규칙
+├─ docs/ASSETS.md            에셋 교체 가이드 (디자이너용)
+├─ supabase/
+│  ├─ config.toml
+│  ├─ migrations/            2026111700xxxx_<이름>.sql (7장 순서대로)
+│  └─ seed.sql               시드 우주선·별·댓글·행사
+└─ web/
+   ├─ package.json
+   ├─ wrangler.jsonc         정적 SPA 배포 설정
+   ├─ .env.example           VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY
+   ├─ index.html
+   ├─ public/
+   │  ├─ assets/             이미지 (파일명 규칙: docs/ASSETS.md)
+   │  └─ fonts/
+   └─ src/
+      ├─ main.tsx, App.tsx
+      ├─ app/                AppFrame(세로 프레임), routes, providers
+      ├─ lib/supabase.ts     클라이언트 생성 (공개 키만)
+      ├─ api/                auth.ts, profiles.ts, stars.ts, comments.ts,
+      │                      reactions.ts, explore.ts, location.ts, events.ts, reports.ts
+      ├─ assets/manifest.ts  에셋 키 → 파일 경로 (유일한 이미지 참조 지점)
+      ├─ data/               코드에 두는 고정 데이터: tutorial.ts, customItems.ts,
+      │                      regions.ts(시·도/시·군·구), copy.ts(화면 문구)
+      ├─ hooks/              useSession, useRequireLogin, useSwipe, useDragRotate, useToast
+      ├─ components/         TopBar, MenuPanel, Modal, BottomSheet, AuthModal,
+      │                      LocationModal, WriteModal, StarDetail, ReactionBar,
+      │                      CommentList, Constellation, ShipView, AvatarView,
+      │                      Universe3D, ExploreToggle, SpeechCard, Toast, AssetImage
+      ├─ screens/            Title, Tutorial, Universe, Explore, Ship, MyShip,
+      │                      CustomizeShip, CustomizeAvatar, Calendar, EventDetail,
+      │                      Bookmarks, Settings
+      └─ styles/             tokens.css, global.css
+```
+
+`.gitignore`: `node_modules/`, `dist/`, `.env.local`, `.wrangler/`, `supabase/.temp/`.
+
+## 4. 화면 비율과 레이아웃
+
+- 기준 아트보드 **402 × 874** (Figma 「종합」 모바일 프레임).
+- 앱 프레임 높이 = 창 높이, 너비 = `min(창 너비, 창 높이 × 402 / 874)`. 남는 좌우는 `#000`. 기준보다 좁고 긴 휴대폰은 너비 100%.
+- 프레임 안의 크기는 **디자인 px**(`--px` = 프레임 너비 / 402)로 쓴다. Figma 수치를 그대로 옮기면 어느 기기에서나 같은 비율이 된다.
+
+```css
+html, body, #root { height: 100%; margin: 0; background: #000; }
+body { overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
+.app-viewport { position: fixed; inset: 0; display: flex; justify-content: center; background: #000; }
+.app-frame {
+  position: relative;
+  height: var(--app-h, 100dvh);
+  width: min(100vw, calc(var(--app-h, 100dvh) * 402 / 874));
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--color-space);
+  --px: calc(100cqw / 402);   /* 예: padding: calc(16 * var(--px)); */
+}
+```
+
+- `--app-h`는 `window.innerHeight`를 resize 때마다 넣는다(`dvh` 미지원 대비).
+- `index.html`: `viewport` = `width=device-width, initial-scale=1, viewport-fit=cover`, `<meta name="robots" content="noindex">`, `theme-color #000`.
+- 모달·시트·토스트는 `.app-frame` 안의 `#overlay-root`에 그린다(`position: fixed` 금지 — 검은 여백까지 덮지 않게).
+- 상단 바·하단 버튼에 `env(safe-area-inset-*)`을 더한다.
+
+### 디자인 토큰 (`styles/tokens.css`, Figma 값)
+
+| 토큰 | 값 | 쓰임 |
+|---|---|---|
+| `--color-space` | `#0B0714` | 앱 배경(이미지 전) |
+| `--color-accent-yellow` | `#FFF159` | 탐색하기·새로고침 원형 버튼 |
+| `--color-menu` | `#868AFF` | 메뉴 패널 |
+| `--color-lavender` | `#BE9AFA` | 토글 선택, 주요 버튼 |
+| `--color-lavender-light` | `#E9DCFF` | 보조 글자 |
+| `--color-panel` | `#120F2E` (86%) | 어두운 모달·카드 |
+| `--color-ink` | `#070811` | 진한 버튼 |
+| `--color-stroke` | `#817EC4` | 테두리 |
+| `--color-dialog` | `#E9E9EC` | 별 만들기·별 상세 밝은 카드 |
+| `--font-body` / `--font-latin` / `--font-pixel` | Noto Sans KR / Inter / Bitcount | `web/public/fonts`에 셀프 호스팅 |
+
+## 5. 화면 목록과 경로
+
+| # | 경로 | 화면 | 로그인 | Figma (「종합」 페이지) |
+|---|---|---|:---:|---|
+| S01 | `/` | 타이틀 | – | [39:5801](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=39-5801) |
+| S02 | `/tutorial` | 튜토리얼 | – | [70:6801](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6801) · [70:6850](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6850) · [70:6903](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6903) · [70:6964](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6964) |
+| S03 | `/universe` | 우주(홈) | – | [44:11686](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11686) · [50:6604](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=50-6604) |
+| S04 | (오버레이) | 메뉴 | – | [52:13601](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=52-13601) |
+| S05 | `/explore?mode=random` | 랜덤 별 찾기 | – | [47:6257](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-6257) |
+| S06 | `/explore?mode=nearby` | 주변 · 위치 없음 | ● | [47:6414](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-6414) |
+| S07 | (모달) | 위치 등록 | ● | [47:7231](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-7231) |
+| S08 | `/explore?mode=nearby` | 주변 별 찾기 | ● | [47:6541](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=47-6541) |
+| S09 | `/ship/:profileId` | 남의 우주선 | – | [54:6792](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=54-6792) |
+| S10 | `?star=:starId` (시트) | 별 상세·댓글·반응 | 읽기 – / 쓰기 ● | [54:6841](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=54-6841) |
+| S11 | `/me` | 내 우주선(MY) | ● | [70:7022](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-7022) · [33:13894](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=33-13894) |
+| S12 | (모달) | 별 만들기 | ● | [37:13523](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-13523) (주제 카드 없는 상태) |
+| S13 | `/me/customize/ship` | 우주선 꾸미기 | ● | [33:14371](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=33-14371) |
+| S14 | `/me/customize/avatar` | 캐릭터 꾸미기 | ● | [33:15522](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=33-15522) |
+| S15 | `/calendar`, `/calendar/:eventId` | 캘린더·행사 상세 | – | 레퍼런스 [49:6666](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6666) · [49:6326](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6326) · [51:7019](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=51-7019) |
+| S16 | `/settings` | 설정 | 일부 ● | – |
+| S17 | `/bookmarks` | 북마크 | ● | – |
+| S18 | (모달) | 로그인 / 회원가입 | – | – |
+
+- 존재하지 않는 경로 → `/universe`. 상단 바(☰ / MY)는 S01을 뺀 모든 화면에 공통.
+- 별 상세는 `?star=`로 열어 휴대폰 뒤로가기로 닫히게 한다. 나머지 모달은 전역 상태로 연다.
+
+## 6. 인증
+
+- Supabase Auth **이메일·비밀번호**. 대시보드 설정:
+  - Authentication → Providers → Email: 켬, **Confirm email: 끔**(테스터가 임의 이메일로 가입하므로 메일 인증 없이 바로 로그인)
+  - 비밀번호 최소 6자(기본값)
+  - URL Configuration → Site URL: 배포 주소(`https://<앱>.workers.dev`), Redirect URLs에 로컬 `http://localhost:5173` 추가
+- 가입: `supabase.auth.signUp({ email, password, options: { data: { nickname } } })` → DB 트리거가 프로필을 만든다(7.4). 가입 전에 `is_nickname_available(nickname)`으로 중복을 확인한다.
+- 로그인: `signInWithPassword`, 로그아웃: `signOut`. 세션은 supabase-js 기본 저장(localStorage)으로 유지.
+- `useRequireLogin(action)`: 세션이 있으면 바로 실행, 없으면 AuthModal을 열고 성공 직후 `action` 실행.
+- `user_metadata`는 사용자가 바꿀 수 있으므로 **권한 판단에 쓰지 않는다**. 처음 닉네임을 넣는 용도로만 쓴다.
+- 오류 문구: 이메일 형식, 비밀번호 6자 미만, 이미 가입된 이메일, 닉네임 중복, 이메일/비밀번호 불일치, 네트워크 오류를 각각 한국어로 안내한다. 실패해도 입력값을 유지한다.
+
+## 7. DB 설계
+
+### 7.1 관계
+
+```text
+auth.users 1 ─── 0..1 profiles (user_id, on delete cascade)   ← 시드 프로필은 user_id = null
+profiles   1 ─── 0..1 user_locations
+profiles   1 ─── n    stars ── 1:n comments
+                       └──── 1:n reactions (star × profile × type)
+profiles   1 ─── n    reports
+events     1 ─── n    event_bookmarks ─── n:1 profiles
+```
+
+- 모든 사용자 콘텐츠는 `profiles.id`를 소유자로 갖는다. 테스트 후 운영자가 **Auth 사용자를 지우면** 프로필 → 위치·별·댓글·반응·신고·북마크가 연쇄 삭제된다.
+- 시드 우주선은 `auth.users` 없이 `profiles.is_seed = true`, `user_id = null`로 만든다.
+
+### 7.2 테이블
+
+```sql
+-- 0001_profiles.sql
+create table public.profiles (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid unique references auth.users(id) on delete cascade,  -- 시드는 null
+  nickname        text not null unique check (char_length(nickname) between 1 and 12),
+  tagline         text not null default '' check (char_length(tagline) <= 40),
+  ship_items      jsonb not null default '{}'::jsonb,   -- { "hull": "hull-mint", "flag": "flag-trans", ... }
+  avatar_items    jsonb not null default '{}'::jsonb,   -- { "body": "body-02", "skin": "skin-04", ... }
+  ship_asset_key   text,                                -- 시드용 대표 이미지 키 (docs/ASSETS.md)
+  avatar_asset_key text,
+  tutorial_done   boolean not null default false,
+  is_seed         boolean not null default false,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+-- 0002_locations.sql : 위치는 별도 테이블, 본인만 읽음
+create table public.user_locations (
+  profile_id   uuid primary key references public.profiles(id) on delete cascade,
+  sido_code    text not null check (sido_code ~ '^[0-9]{2}$'),
+  sigungu_code text not null check (sigungu_code ~ '^[0-9]{5}$' and left(sigungu_code, 2) = sido_code),
+  visible      boolean not null default false,        -- 주변 별 찾기에 내 별 보이기 (기본 꺼짐)
+  updated_at   timestamptz not null default now()
+);
+
+-- 0003_stars.sql
+create table public.stars (
+  id          uuid primary key default gen_random_uuid(),
+  profile_id  uuid not null references public.profiles(id) on delete cascade,
+  body        text not null check (char_length(btrim(body)) between 1 and 500),
+  created_at  timestamptz not null default now()
+);
+create index on public.stars (profile_id, created_at);
+
+create table public.comments (
+  id          uuid primary key default gen_random_uuid(),
+  star_id     uuid not null references public.stars(id) on delete cascade,
+  profile_id  uuid not null references public.profiles(id) on delete cascade,
+  body        text not null check (char_length(btrim(body)) between 1 and 200),
+  created_at  timestamptz not null default now()
+);
+create index on public.comments (star_id, created_at);
+
+create table public.reactions (
+  star_id     uuid not null references public.stars(id) on delete cascade,
+  profile_id  uuid not null references public.profiles(id) on delete cascade,
+  type        text not null check (type in ('empathy', 'cheer', 'metoo')),  -- 공감·응원·나도 그래
+  created_at  timestamptz not null default now(),
+  primary key (star_id, profile_id, type)
+);
+
+-- 0004_reports.sql
+create table public.reports (
+  id          uuid primary key default gen_random_uuid(),
+  reporter_id uuid not null references public.profiles(id) on delete cascade,
+  star_id     uuid references public.stars(id) on delete cascade,
+  comment_id  uuid references public.comments(id) on delete cascade,
+  reason      text not null check (reason in ('harassment', 'privacy', 'spam', 'other')),
+  status      text not null default 'open' check (status in ('open', 'reviewed', 'closed')),
+  created_at  timestamptz not null default now(),
+  check (num_nonnulls(star_id, comment_id) = 1)
+);
+
+-- 0005_events.sql
+create table public.events (
+  id               uuid primary key default gen_random_uuid(),
+  title            text not null,
+  starts_at        timestamptz not null,
+  ends_at          timestamptz,
+  area             text not null,            -- '서울 중구' 수준
+  venue            text,
+  description      text not null default '',
+  link_url         text,
+  image_asset_key  text,
+  tags             text[] not null default '{}',
+  is_example       boolean not null default true,   -- 실제 일정 확인 전 '예시' 표시
+  created_at       timestamptz not null default now()
+);
+create table public.event_bookmarks (
+  profile_id  uuid not null references public.profiles(id) on delete cascade,
+  event_id    uuid not null references public.events(id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  primary key (profile_id, event_id)
+);
+```
+
+- 별·댓글 삭제는 **하드 삭제**(행 삭제, 댓글·반응 연쇄 삭제).
+- `updated_at`은 트리거로 갱신한다.
+- 시·도 / 시·군·구 이름 목록은 DB가 아니라 `web/src/data/regions.ts`(행정표준코드 5자리, 2026년 기준. 강원특별자치도 51, 전북특별자치도 52 포함)에 둔다. DB에는 코드만 저장한다.
+
+### 7.3 권한 (RLS · 컬럼 권한)
+
+모든 테이블에 `alter table … enable row level security;`. `my_profile_id()`는 7.4 참고.
+
+| 테이블 | 읽기 | 쓰기 |
+|---|---|---|
+| `profiles` | anon·authenticated 모두. **단 `user_id`, `tutorial_done` 컬럼은 공개 SELECT 권한에서 뺀다**(컬럼 grant) | update: `user_id = auth.uid()`, 수정 가능 컬럼은 `nickname, tagline, ship_items, avatar_items, tutorial_done`. insert는 트리거만. delete 없음(계정 삭제 시 연쇄) |
+| `user_locations` | 본인만 (`profile_id = my_profile_id()`) | 본인만 insert/update/delete |
+| `stars` | anon·authenticated 모두 | insert: `profile_id = my_profile_id()` / delete: 본인 |
+| `comments` | anon·authenticated 모두 | insert: `profile_id = my_profile_id()` / delete: 본인 |
+| `reactions` | **본인 행만** (누가 눌렀는지 비공개). 개수는 `get_reaction_counts()` | insert/delete: 본인 |
+| `reports` | 본인이 낸 것만 | insert: `reporter_id = my_profile_id()`. 상태 변경은 대시보드(운영자) |
+| `events` | anon·authenticated 모두 | 클라이언트 쓰기 없음(대시보드에서 운영자가 입력) |
+| `event_bookmarks` | 본인만 | 본인만 insert/delete |
+
+```sql
+-- 예: stars
+create policy "stars_read_all"   on public.stars for select to anon, authenticated using (true);
+create policy "stars_insert_own" on public.stars for insert to authenticated with check (profile_id = public.my_profile_id());
+create policy "stars_delete_own" on public.stars for delete to authenticated using (profile_id = public.my_profile_id());
+
+-- profiles 컬럼 권한
+revoke select, insert, update, delete on public.profiles from anon, authenticated;
+grant select (id, nickname, tagline, ship_items, avatar_items, ship_asset_key, avatar_asset_key, is_seed, created_at)
+  on public.profiles to anon, authenticated;
+grant update (nickname, tagline, ship_items, avatar_items, tutorial_done) on public.profiles to authenticated;
+```
+
+- 정책은 grant와 별개로 동작하므로 **테이블별 grant도 함께 정의**한다. 공개 역할에 불필요한 insert/update/delete를 주지 않는다.
+- 이메일은 `auth.users`에만 있고 어떤 공개 쿼리·함수도 반환하지 않는다.
+
+### 7.4 DB 함수
+
+모든 `security definer` 함수는 `set search_path = public`을 지정하고, 반환 컬럼을 최소로 한다.
+
+| 함수 | 종류 | 동작 |
+|---|---|---|
+| `my_profile_id() → uuid` | stable, security definer | `select id from profiles where user_id = auth.uid()` |
+| `handle_new_user()` | trigger (`after insert on auth.users`) | `raw_user_meta_data->>'nickname'`으로 프로필 생성. 비었거나 중복이면 `여행자-1234`처럼 뒤에 숫자를 붙인다 |
+| `is_nickname_available(p_nickname text) → boolean` | security definer | 가입 전 중복 확인 (anon 실행 가능) |
+| `get_my_profile() → profiles` | security definer | 내 프로필 전체(`tutorial_done` 포함) |
+| `explore_random(p_limit int default 4) → setof explore_card` | security invoker | 나(로그인 시)를 뺀 프로필을 `order by random()`으로 `p_limit`개. 카드: `id, nickname, tagline, ship_asset_key, ship_items, avatar_asset_key, avatar_items, latest_star_body` |
+| `explore_nearby(p_per_tier int default 2) → setof nearby_card` | security definer | 내 위치가 없으면 예외 `NO_LOCATION`. `visible = true`인 다른 사람의 위치와 비교해 tier = `sigungu`(시군구 코드 같음) / `sido`(시도 코드 같음) / `nation`. 단계마다 무작위 최대 `p_per_tier`명. **반환: 카드 + `tier`만. 상대 지역 코드·거리는 반환하지 않음** |
+| `get_reaction_counts(p_star_ids uuid[]) → table(star_id, type, count)` | security definer | 반응 개수만 |
+| `universe_ships(p_limit int default 20)` | security invoker | 우주 화면용 프로필 무작위 20개 (`id, nickname, avatar_asset_key, avatar_items`) |
+
+- `explore_nearby`의 내 위치는 내가 "주변에 내 별 보이기"를 꺼도 비교 기준으로 쓴다(나는 남을 볼 수 있음, 남은 나를 못 봄).
+- 데이터가 커지면 `order by random()`을 바꾼다(지금 규모에선 허용).
+
+### 7.5 마이그레이션 파일 순서
+
+```text
+supabase/migrations/
+  20261117000001_profiles.sql          profiles + updated_at 트리거 + handle_new_user + my_profile_id + RLS/grant
+  20261117000002_locations.sql         user_locations + RLS
+  20261117000003_stars_comments_reactions.sql   + RLS + get_reaction_counts
+  20261117000004_reports.sql           + RLS
+  20261117000005_events.sql            events, event_bookmarks + RLS
+  20261117000006_explore_functions.sql explore_random, explore_nearby, universe_ships, is_nickname_available, get_my_profile
+```
+
+적용: `npx supabase login` → `npx supabase link --project-ref <PROJECT_REF>` → `npx supabase db push`. **연결한 프로젝트가 맞는지 확인하고** 적용한다.
+
+### 7.6 시드 데이터 (`supabase/seed.sql`)
+
+- 시드 우주선 **24개 이상** (`is_seed = true`, `user_id = null`). 닉네임 예: 보라빛구름, 새벽별, 조용한파도, 금술조각, 은하배(Figma 라벨) 등.
+- 그중 4개 이상은 별 6개 이상·댓글이 달린 "완성형", 나머지는 별 1~3개.
+- 별 60개 이상, 댓글 30개 이상(시드끼리), 반응 몇 개. **팀이 직접 쓴 가상의 이야기**만(prd.md 6장). 고민·응원·정보가 고르게.
+- 시드 위치: 모두 `visible = true`. 테스터가 많이 고를 서울 25개 구·경기 주요 시에 고르게 퍼뜨리고, 다른 시·도에도 몇 개 둔다. 시드는 실제 사람이 아님을 운영자만 알면 된다(화면에 시드 표시 안 함).
+- 행사 3~5건(`is_example = true`). 기존 캘린더 시안의 "웰컴 투 마이 바디", "〈에디 엘리스: 테이크〉 상영회", "2026 트랜스 마치" 등.
+- 원격 적용: `npx supabase db push --include-seed` 또는 대시보드 SQL Editor에서 `seed.sql` 실행.
+
+### 7.7 테스트 계정 정리 (운영 절차, 기능 아님)
+
+테스트가 끝나면 운영자가 Supabase 대시보드 → Authentication → Users에서 테스트 기간에 가입한 사용자를 지운다. 연쇄 삭제로 프로필·위치·별·댓글·반응·신고·북마크가 함께 지워진다. 시드(`is_seed = true`)는 남는다. 자동화는 나중(prd.md 7장).
+
+## 8. 기능별 동작과 수용 기준
+
+### 기능 A: 회원가입 · 로그인 · 로그아웃
+
+**동작**
+- AuthModal: 탭 [로그인 | 회원가입]. 회원가입 = 닉네임(1~12자, 튜토리얼 닉네임 미리 채움) + 이메일 + 비밀번호(6자 이상). 로그인 = 이메일 + 비밀번호.
+- 회원가입 창 하단 안내: "테스트 기간에는 아무 이메일이나 써도 돼요. 테스트가 끝나면 계정과 작성한 내용은 삭제돼요."
+- 가입·로그인 성공 → 모달 닫힘 → 보류된 행동 실행 → 토스트 "어서 와요, ○○".
+- 가입 직후 비로그인 때 본 튜토리얼 여부를 `profiles.tutorial_done`에 옮긴다.
+- 로그아웃: 설정에서 확인 후 → `/universe`.
+
+**수용 기준**
+- [ ] 이메일·비밀번호·닉네임으로 가입하면 메일 인증 없이 바로 로그인 상태가 된다.
+- [ ] 가입하면 `profiles`에 행이 생기고 닉네임이 입력값과 같다.
+- [ ] 닉네임이 이미 있으면 가입 전에 "이미 쓰는 닉네임이에요"가 보이고 가입되지 않는다.
+- [ ] 비밀번호 6자 미만, 이메일 형식 오류, 이메일/비밀번호 불일치에 각각 안내가 보이고 입력값이 남아 있다.
+- [ ] 비로그인으로 반응을 누르면 AuthModal이 뜨고, 로그인 직후 그 반응이 반영된다(별 만들기·댓글·위치·북마크·MY도 같음).
+- [ ] 새로고침해도 로그인 상태가 유지된다. 로그아웃하면 MY 진입 시 다시 로그인을 요구한다.
+- [ ] 다른 사용자에게 내 이메일이 어떤 화면·응답에도 나오지 않는다(네트워크 탭 확인).
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 B: 튜토리얼
+
+**동작**
+- 대사 데이터: `web/src/data/tutorial.ts` (`{ id, text, input?: 'nickname', pointTo?: 'my-button' }[]`). 문구는 prd.md 기능 B 순서.
+- 화면: 어두운 오버레이 위 타이틀 배경, 티니(`character.tini`), 하단 대사 카드(♥로 넘김). 카드 탭으로도 넘김.
+- 닉네임 단계: 카드 안 입력 칸. 비우면 "여행자".
+- `pointTo: 'my-button'` 단계: MY 버튼 강조 + 지시봉(`ui.pointer`). MY를 눌러야 진행 → (비로그인) 회원가입 모달 → `/me`에서 티니 + 말풍선 "위로 스와이프해봐!".
+- "튜토리얼 건너뛰기>" → 완료 처리 → `/universe`.
+- 완료 여부: 비로그인은 `localStorage['utiverse.tutorialDone']`, 로그인은 `profiles.tutorial_done`. 타이틀 탭 시 둘 중 하나라도 true면 `/universe`.
+
+**수용 기준**
+- [ ] 처음 방문하면 타이틀 → 튜토리얼, 완료 후 재방문하면 타이틀 → 우주로 간다.
+- [ ] 닉네임 입력값이 이후 대사("좋아! ○○아…")와 회원가입 창에 들어간다.
+- [ ] "MY를 눌러봐" 단계에서 MY 버튼이 강조되고 지시봉이 가리킨다.
+- [ ] 건너뛰기를 누르면 어느 단계에서든 우주로 간다.
+- [ ] 설정의 "튜토리얼 다시 보기"로 처음부터 다시 볼 수 있다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 C: 우주(홈)와 탐색
+
+**동작**
+- 우주(S03): 배경 `bg.space` + CSS 반짝임. `universe_ships(20)` 결과를 **피보나치 구면 분포**(반지름 140 디자인 px)로 배치, 드래그 → yaw/pitch 회전(0.4°/px), 관성, 가만히 두면 느린 자동 회전, 원근 `scale = f/(f+z)`(f=600), 뒤쪽은 흐리게 + 클릭 불가. 이동 6 디자인 px 미만이면 탭 → `/ship/:id`. 하단 노란 원형 "탐색하기"(쌍안경) → `/explore`.
+- 시간이 부족하면 대체안: `universe.cluster` 이미지 + 고정 라벨(Figma 50:6604).
+- 탐색 상단 `ExploreToggle`(Figma 52:13002 / 52:12888 모양). `mode` 쿼리만 바꾸고 내용 영역 200ms 페이드. 기본 모드: 로그인 + 위치 있음 → nearby, 아니면 random.
+- 랜덤(S05): `explore_random(4)` → 2×2 카드(우주선 썸네일, 닉네임, 최근 별 1줄). 노란 새로고침 → 다시 호출. 결과가 4개 미만이면 있는 만큼.
+- 주변(S06/S08): 비로그인 → 로그인 요구. 위치 없음 → S06 카드. 위치 있음 → `explore_nearby(2)`. 가운데 내 우주선, 궤도 3개(안쪽부터 sigungu / sido / nation), 궤도 라벨 `같은 시·군·구 · {내 시군구명}` 등(내 지역명은 `regions.ts`에서 찾음). 각 우주선의 궤도 위 각도는 화면 진입마다 `Math.random()`(같은 궤도 안 최소 40° 간격). 빈 단계는 궤도에 "아직 공개된 별이 없어요".
+- 우주선 탭 → `/ship/:id`.
+
+**수용 기준**
+- [ ] 우주 화면을 드래그하면 라벨들이 구 표면을 따라 돈다. 앞쪽 라벨을 누르면 그 우주선으로 간다.
+- [ ] 토글을 바꾸면 주소의 `mode`만 바뀌고 상단 바·화면 이동 없이 가운데 내용만 바뀐다.
+- [ ] 랜덤: 내 우주선은 나오지 않고, 새로고침하면 다른 조합이 나온다.
+- [ ] 주변: 위치가 없으면 안내 카드가 보이고, 등록하면 바로 궤도 화면으로 바뀐다.
+- [ ] 주변: `visible = false`인 사용자는 다른 계정의 주변 별 찾기에 나오지 않는다.
+- [ ] 주변: `explore_nearby` 응답에 다른 사람의 지역 코드·거리가 없다(네트워크 탭 확인).
+- [ ] 다시 들어오면 같은 사람도 궤도 위 위치가 달라진다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 D: 내 위치 남기기
+
+**동작**
+- LocationModal(S07): 시·도 select → 시·군·구 select(시·도 선택 전 비활성), "주변 별 찾기에 내 별 보이기" 스위치(기본 꺼짐), 안내 3줄(prd.md 기능 D), [나중에] [등록하기].
+- 등록 → `user_locations` upsert → 토스트 "내 위치를 등록했어요" → 탐색이 nearby로.
+- 설정에서 변경(같은 모달) / 삭제(확인 후 행 삭제).
+- 상단 바 등에 내 위치를 표시하지 않는다(다른 사람이 화면을 볼 수 있으므로).
+
+**수용 기준**
+- [ ] 시·도를 고르기 전에는 시·군·구를 고를 수 없고, 시·도를 바꾸면 시·군·구 선택이 초기화된다.
+- [ ] 등록하면 `user_locations`에 내 행 하나만 있고 코드 형식이 맞다. 새로고침 후에도 유지된다.
+- [ ] 스위치를 켜지 않고 등록하면 `visible = false`다.
+- [ ] 다른 계정으로 `user_locations`를 직접 조회해도 내 행이 보이지 않는다.
+- [ ] 설정에서 위치를 지우면 주변 별 찾기가 다시 위치 없음 상태가 된다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 E: 남의 우주선 · 별 · 댓글 · 반응
+
+**동작**
+- 우주선 화면(S09): 상단 닉네임·한 줄 소개, `Constellation`(별을 페이지당 최대 6개, 미리 정한 패턴 좌표에 배치 + 선으로 연결, 오래된 순, 좌우 화살표·스와이프·페이지 점), 하단 `ShipView`(우주선 + 아바타).
+- 별 상세(S10, 바텀시트): 날짜(`2026.11.9`), 본문, X. 아래 `ReactionBar`(공감·응원·나도 그래, 개수 = `get_reaction_counts`, 내가 누른 것 강조, 150ms 연타 방지), `CommentList`(닉네임·상대 시간·본문, 내 댓글 "삭제"), 댓글 입력(1~200자, 남은 글자 수).
+- 더보기(⋯): 남의 별·댓글 → "신고하기"(사유 4개 중 선택 → `reports` insert → 토스트 "신고가 접수됐어요"), 내 별 → "삭제하기"(확인 후 delete).
+
+**수용 기준**
+- [ ] 비로그인으로 남의 우주선·별·댓글을 읽을 수 있다.
+- [ ] 별이 7개 이상이면 별자리가 페이지로 나뉘고 화살표·스와이프로 넘어간다.
+- [ ] 반응을 누르면 개수가 1 늘고 다시 누르면 줄어든다. 새로고침 후에도 유지된다.
+- [ ] 다른 계정으로 `reactions` 테이블을 직접 조회하면 내 반응 행이 보이지 않는다.
+- [ ] 댓글을 쓰면 목록 끝에 나타나고, 빈 댓글·201자 이상은 등록되지 않는다.
+- [ ] 내 댓글만 삭제 버튼이 보이고, 다른 계정이 API로 내 댓글을 지우려 하면 거절된다.
+- [ ] 신고하면 `reports`에 행이 생긴다. 신고당한 사람은 그 행을 볼 수 없다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 F: 내 우주선(MY)과 별 만들기
+
+**동작**
+- MY(S11): 기능 E의 우주선 화면 + 오른쪽 연필 버튼(`ui.write`) + 하단 "위로 스와이프해서 우주선꾸미기" + 위 화살표. 별이 없으면 별자리 자리에 "첫 별을 만들어 볼까요?".
+- 위로 밀기(60 디자인 px 이상) 또는 우주선 탭 → `/me/customize/ship`. 꾸미기에서 아래로 밀기 → `/me`.
+- WriteModal(S12): 제목 "별 만들기", X, 입력 칸(placeholder "무엇이든 자유롭게 써보세요.", 1~500자, 남은 글자 수), [등록하기](빈 글이면 비활성). 주제 추천 카드는 없음.
+- 등록 → `stars` insert → 모달 닫힘 → 별자리 마지막 페이지로 이동 + 새 별 반짝임 → 토스트 "새 별이 떴어요".
+- 쓰는 중 닫으면 "작성 중인 글이 사라져요" 확인. 저장 실패 시 입력값 유지 + 다시 시도 안내.
+
+**수용 기준**
+- [ ] 비로그인으로 MY를 누르면 로그인을 요구하고, 로그인 후 MY로 간다.
+- [ ] 별을 등록하면 내 별자리에 바로 나타나고, 다른 계정에서 내 우주선에 가도 보인다.
+- [ ] 공백만 있는 글, 501자 이상 글은 등록되지 않는다.
+- [ ] 내 별을 지우면 그 별의 댓글·반응도 사라진다. 다른 계정은 API로도 내 별을 지울 수 없다.
+- [ ] 저장 중 네트워크 오류가 나면 입력한 글이 남아 있다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 G: 꾸미기 (약식)
+
+**동작**
+- 아이템 목록은 코드 데이터 `web/src/data/customItems.ts` (`{ id, target: 'ship'|'avatar', tab, category, name, assetKey? }`). 탭 id: 우주선 `hull` / 가구 `furniture` / 장식품 `decor` / 플래그 `flag`, 몸 `body` / 우주복 `suit` / 장신구 `accessory` / 기타 `etc`.
+- 상단 미리보기, 하단 패널: 제목, 탭, 카테고리 칩, 3열 아이템 그리드. 카테고리당 하나 선택 → 즉시 미리보기.
+- 미리보기 방식: 아이템마다 **완성 이미지 한 장**(`<아이템id>-preview.png`)으로 우주선/캐릭터 전체 그림을 바꾼다. 여러 카테고리를 골랐을 때는 마지막으로 고른 아이템의 미리보기를 보여준다(레이어 합성은 나중).
+- [저장] → `profiles.ship_items` / `avatar_items` update → 토스트. 저장하지 않고 나가면 확인.
+- 우주선 ↔ 캐릭터 꾸미기 전환 버튼.
+
+**수용 기준**
+- [ ] 탭과 카테고리를 바꾸면 해당 아이템이 보이고, 그림이 없는 아이템은 이름이 적힌 회색 칸으로 보인다.
+- [ ] 저장하면 새로고침 후에도 선택이 유지되고 MY·탐색 카드에 반영된다.
+- [ ] 다른 계정은 API로 내 `ship_items`를 바꿀 수 없다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 기능 H: 메뉴 · 캘린더 · 북마크 · 설정
+
+**동작**
+- MenuPanel: ☰ → 왼쪽에서 슬라이드(너비 210 디자인 px, `--color-menu`), 바깥 탭으로 닫힘. 항목: 캘린더 / 설정 / 북마크.
+- 캘린더(S15): 월 그리드(월요일 시작, 토 파랑·일 빨강), 행사 있는 날 점, 이전/다음 달. 날짜 탭 → 아래 목록이 그 날짜로 스크롤. 기본은 이번 달 전체. `events`에서 해당 월 범위 조회.
+- 행사 상세: 이미지(`event.<id>` 키, 없으면 기본 이미지), 제목(+`is_example`이면 "예시" 배지), 일시, 지역·장소, 설명, 태그, [주최 측 링크](새 창, `rel="noopener"`), 북마크 토글(로그인 필요).
+- "+ 일정 등록하기", "외부 캘린더로 가져오기" → 토스트 "준비 중이에요".
+- 북마크(S17): `event_bookmarks` join `events`, 날짜순. 비어 있으면 [캘린더 보러 가기].
+- 설정(S16): 닉네임·한 줄 소개 변경(중복 확인), 내 위치(변경/삭제), "주변에 내 별 보이기" 스위치, 튜토리얼 다시 보기, 로그아웃. 비로그인이면 [로그인하기]와 튜토리얼 다시 보기만.
+
+**수용 기준**
+- [ ] 메뉴의 세 항목이 각 화면으로 이동한다.
+- [ ] 행사 있는 날짜에 점이 찍히고, 날짜를 누르면 그 날 행사로 스크롤된다.
+- [ ] 북마크한 행사가 북마크 화면에 나오고, 해제하면 사라진다. 다른 계정에서는 보이지 않는다.
+- [ ] 설정에서 닉네임을 바꾸면 내 우주선·댓글 닉네임이 바뀐 값으로 보인다.
+
+**검증 기록**
+- 확인한 동작:
+- 재현 방법:
+- 남은 문제:
+
+### 공통: 레이아웃 · 에셋 · 상태 표시
+
+**수용 기준**
+- [ ] iPhone Safari, Android Chrome 세로 화면을 꽉 채우고, 주소창이 접히고 펴져도 하단 버튼이 가려지지 않는다.
+- [ ] PC 브라우저와 가로로 돌린 휴대폰에서 앱이 세로 비율을 유지하고 좌우가 검은색이다.
+- [ ] 모달·시트·토스트가 검은 여백 위로 넘치지 않는다.
+- [ ] 모든 이미지가 `AssetImage`와 manifest 키로 표시되고, 파일이 없으면 키 이름이 적힌 점선 상자가 보인다.
+- [ ] 개발 서버에서 `?assets=debug`를 붙이면 모든 이미지 위에 에셋 키가 표시된다.
+- [ ] 목록 로딩 중 표시, 빈 상태 문구, 저장 실패 안내가 각 화면에 있다.
+
+## 9. 권한 점검 절차 (두 계정)
+
+수업 「두 계정으로 권한 확인하기」 절차를 그대로 쓴다. 로컬과 배포 주소에서 각각 한다.
+
+1. **계정 A**로 가입 → 별 2개, 댓글 1개, 반응, 위치(보이기 끔), 북마크를 만든다. 새로고침 후 유지 확인.
+2. **로그아웃** → 우주선·별·댓글은 읽히고, MY·북마크·위치는 로그인을 요구하는지 확인.
+3. **계정 B**로 가입 → 브라우저 콘솔에서 supabase-js로 A의 별 삭제, A의 댓글 삭제, A의 `user_locations` 조회, A의 `reactions` 조회, A의 `profiles.ship_items` 수정, A의 북마크 조회를 시도 → 모두 거절되거나 빈 결과인지 확인.
+4. A가 "보이기"를 켜고 B가 같은 시·군·구로 등록 → B의 주변 별 찾기에 A가 sigungu 궤도에 나오는지, 응답에 A의 지역 코드가 없는지 확인.
+
+## 10. 환경 변수 · 배포
+
+### 환경 변수 (`web/.env.local`, 커밋하지 않음)
+
+```text
+VITE_SUPABASE_URL=https://<PROJECT_REF>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<공개용 키 (publishable 또는 anon)>
+```
+
+- `VITE_`로 시작하는 값은 빌드 결과에 포함되므로 공개 키만 넣는다. 값을 바꾸면 다시 빌드·배포한다.
+- 저장소에는 값 없이 이름만 적은 `web/.env.example`을 둔다.
+
+### Cloudflare 배포 (정적 SPA)
+
+```jsonc
+// web/wrangler.jsonc
+{
+  "name": "utiverse",
+  "compatibility_date": "2026-11-16",
+  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" }
+}
+```
+
+```text
+cd web
+npx wrangler login
+npm run build
+npx wrangler deploy        # 출력된 workers.dev 주소를 Supabase Site URL에 등록
+```
+
+**배포 후 확인**
+- [ ] 배포 주소에서 화면이 보이고, `/me` 같은 내부 경로에서 새로고침해도 열린다.
+- [ ] 개발자 도구에 파일 로딩 오류가 없다.
+- [ ] 배포 주소에서 가입·로그인·로그아웃이 된다(Site URL 설정 확인).
+- [ ] 휴대폰에서 배포 주소로 9장 권한 점검을 한 번 더 한다.
+
+## 11. 접근성 · 성능
+
+- 터치 영역 최소 44×44(실제 px). 아이콘 버튼에 `aria-label`(메뉴, MY, 탐색하기, 새로고침, 닫기, 별 만들기).
+- 장식이 아닌 이미지에 `alt`. 별 버튼 라벨: "11월 9일 별: 본문 앞부분".
+- `prefers-reduced-motion`이면 우주 자동 회전·관성·반짝임을 끈다.
+- 첫 화면 에셋(`bg.title`, `brand.*`)만 preload. 큰 임시 이미지는 표시 크기의 3배 이하로 줄여 넣는다.
+- 목록 쿼리는 필요한 컬럼만 select한다.

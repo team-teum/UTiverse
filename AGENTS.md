@@ -1,0 +1,12 @@
+# AGENTS.md — 코딩 에이전트 작업 규칙
+
+이 저장소에서 일하는 코딩 에이전트(Codex, Claude 등)는 아래 순서를 따른다.
+
+1. 작업 전에 `prd.md`(무엇을·왜), `SPECIFICATION.md`(어떻게·구현 상태), `new_requests.md`(변경 요청)를 읽는다. 이미지 작업이면 `docs/ASSETS.md`도 읽는다.
+2. 사용자가 이번에 요청한 범위만 구현한다. PRD 전체를 한 번에 만들지 않는다.
+3. 앱 코드는 `web/`, DB 변경은 `supabase/migrations/`에 새 파일로 추가한다. 이미 적용된 migration 파일은 고치지 않는다.
+4. 이미지는 `web/public/assets/` + `web/src/assets/manifest.ts` 키로만 참조하고, 새 키를 만들면 `docs/ASSETS.md` 표를 같은 커밋에서 고친다.
+5. 비밀 키(service role, secret)를 브라우저 코드·저장소에 넣지 않는다. `.env.local`은 커밋하지 않는다.
+6. 권한은 화면이 아니라 RLS·DB 함수로 막는다. 사용자 콘텐츠 테이블을 추가하면 RLS와 grant를 함께 만든다.
+7. 끝나면 바뀐 파일과 실행·검증 방법을 설명하고, **직접 확인한 항목만** `SPECIFICATION.md`에 `- [x]`로 표시하고 「검증 기록」을 채운다. 0장 구현 상태 표도 갱신한다.
+8. 사용자 화면 문구는 한국어로, 짧고 다정하게 쓴다. 성별·정체성을 추정하거나 기본값으로 두지 않는다.
