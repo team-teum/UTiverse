@@ -8,7 +8,8 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 저장소 구조 · 개발 환경 | 미착수 | 3장 |
+| 저장소 구조 · 개발 환경 | 미착수 | 3장; 최신 안정판 기준으로 문서 갱신, 설치 검증 전 |
+| 로컬 테스트 샌드박스 | 미착수 | 6.1; 새로고침 초기화, 실제 DB 모드와 분리 |
 | Supabase 스키마 · RLS · 함수 (migration) | 미착수 | 7장 |
 | 시드 데이터 | 미착수 | 7.6 |
 | 기능 A 회원가입·로그인 | 미착수 | |
@@ -40,16 +41,18 @@
 
 | 영역 | 선택 |
 |---|---|
-| 앱 | React 18 + TypeScript + Vite (`web/`) |
-| 라우팅 | `react-router-dom` BrowserRouter (Cloudflare SPA 설정으로 새로고침 지원) |
-| 서버 상태 | `@supabase/supabase-js` v2 + `@tanstack/react-query` |
+| 앱 | React / React DOM 19.3.1 + TypeScript 7.0.2 + Vite 8.3.8 (`web/`) |
+| 라우팅 | `react-router-dom` 7.18.5 BrowserRouter (Cloudflare SPA 설정으로 새로고침 지원) |
+| 서버 상태 | `@supabase/supabase-js` 2.119.0 + `@tanstack/react-query` 5.107.1 |
 | 스타일 | 일반 CSS + CSS 변수(디자인 토큰) + CSS Modules |
-| 아이콘 | `@phosphor-icons/react` (Figma 메모: phosphoricons.com) |
+| 아이콘 | `@phosphor-icons/react` 2.1.10 (Figma 메모: phosphoricons.com) |
 | 3D 우주 | 외부 3D 라이브러리 없이 구면 좌표 → 2D 투영 자체 구현 |
 | DB·인증 | Supabase (Postgres, Auth). 스키마는 `supabase/migrations/*.sql` |
 | 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
-| 도구 | Node.js 22.13 이상, npm, Supabase CLI(`npx supabase`), Wrangler(`npx wrangler`) |
-| 테스트 | Vitest(순수 로직) + 두 계정 수동 권한 점검(9장) |
+| 도구 | 지원 중인 최신 Node.js LTS, npm 12.2.2, Supabase CLI 3.1.0, Wrangler 4.162.0 |
+| 테스트 | Vitest 5.1.0(순수 로직) + 두 계정 수동 권한 점검(9장) |
+
+위 npm 버전은 2026-11-16 레지스트리의 `latest` dist-tag로 확인한 안정판이며 아직 설치·호환성 검증은 하지 않았다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
 
 ## 3. 저장소 구조
 
@@ -164,14 +167,23 @@ body { overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color:
 ## 6. 인증
 
 - Supabase Auth **이메일·비밀번호**. 대시보드 설정:
-  - Authentication → Providers → Email: 켬, **Confirm email: 끔**(테스터가 임의 이메일로 가입하므로 메일 인증 없이 바로 로그인)
+  - Authentication → Providers → Email: 켬, **Confirm email: 끔**(실제 DB 테스트 전용 설정. 운영 전에는 별도 인증 정책 검토; 샌드박스는 Auth를 호출하지 않음)
   - 비밀번호 최소 6자(기본값)
   - URL Configuration → Site URL: 배포 주소(`https://<앱>.workers.dev`), Redirect URLs에 로컬 `http://localhost:5173` 추가
-- 가입: `supabase.auth.signUp({ email, password, options: { data: { nickname } } })` → DB 트리거가 프로필을 만든다(7.4). 가입 전에 `is_nickname_available(nickname)`으로 중복을 확인한다.
+- 가입: `supabase.auth.signUp({ email, password, options: { data: { nickname } } })` → DB 트리거가 프로필을 만든다(7.4). 닉네임은 1~12자 표시 이름으로 중복을 허용한다. 소유권과 프로필 URL은 `profiles.id` UUID로 구분하며 이메일은 공개 식별자로 사용하지 않는다.
 - 로그인: `signInWithPassword`, 로그아웃: `signOut`. 세션은 supabase-js 기본 저장(localStorage)으로 유지.
 - `useRequireLogin(action)`: 세션이 있으면 바로 실행, 없으면 AuthModal을 열고 성공 직후 `action` 실행.
 - `user_metadata`는 사용자가 바꿀 수 있으므로 **권한 판단에 쓰지 않는다**. 처음 닉네임을 넣는 용도로만 쓴다.
-- 오류 문구: 이메일 형식, 비밀번호 6자 미만, 이미 가입된 이메일, 닉네임 중복, 이메일/비밀번호 불일치, 네트워크 오류를 각각 한국어로 안내한다. 실패해도 입력값을 유지한다.
+- 오류 문구: 이메일 형식, 비밀번호 6자 미만, 이미 가입된 이메일, 이메일/비밀번호 불일치, 네트워크 오류를 각각 한국어로 안내한다. 실패해도 입력값을 유지한다.
+
+### 6.1 로컬 사용성 테스트 샌드박스
+
+- 실제 Supabase 모드와 명시적으로 분리된 테스트 전용 진입점을 제공한다. 이 모드에서는 실제 Auth 가입·DB 쓰기를 호출하지 않는다.
+- 공통 테스트 식별자는 `tester@utiverse.invalid`이며 실재하는 메일함이나 공유 Supabase 계정이 아니다. 예약 도메인 `.invalid`를 사용한다. 이메일·비밀번호 입력은 필요 없다.
+- 가상 프로필·별·댓글·반응·위치·프리셋·북마크 변경은 메모리에만 저장한다. localStorage·sessionStorage에 사용자 콘텐츠를 쓰지 않으며 새로고침 시 초기 예시 데이터로 복원한다. 클라이언트 라우팅은 새로고침이 아니므로 변경을 유지한다.
+- 진입 시 "테스트 모드예요. 작성한 내용은 이 화면에서만 보이고, 새로고침하면 사라져요"를 표시하고 게시 전에 다시 안내한다. 실제 신원·위치 입력을 요청하지 않는다.
+- 새로고침은 공유 DB 삭제를 절대 유발하지 않는다. 한 테스터의 리셋은 다른 테스터에게 영향을 주지 않는다.
+- 샌드박스 사용성 테스트와 실제 DB 모드의 인증·영속성·두 계정 권한 테스트를 별도 기록한다. 샌드박스 성공으로 실제 DB 수용 기준을 완료 처리하지 않는다.
 
 ## 7. DB 설계
 
@@ -196,10 +208,10 @@ events     1 ─── n    event_bookmarks ─── n:1 profiles
 create table public.profiles (
   id              uuid primary key default gen_random_uuid(),
   user_id         uuid unique references auth.users(id) on delete cascade,  -- 시드는 null
-  nickname        text not null unique check (char_length(nickname) between 1 and 12),
+  nickname        text not null check (char_length(nickname) between 1 and 12),
   tagline         text not null default '' check (char_length(tagline) <= 40),
-  ship_items      jsonb not null default '{}'::jsonb,   -- { "hull": "hull-mint", "flag": "flag-trans", ... }
-  avatar_items    jsonb not null default '{}'::jsonb,   -- { "body": "body-02", "skin": "skin-04", ... }
+  ship_preset_id  text not null default 'default',  -- 고정 프리셋 목록으로 검증
+  avatar_preset_id text not null default 'default',
   ship_asset_key   text,                                -- 시드용 대표 이미지 키 (docs/ASSETS.md)
   avatar_asset_key text,
   tutorial_done   boolean not null default false,
@@ -280,6 +292,7 @@ create table public.event_bookmarks (
 
 - 별·댓글 삭제는 **하드 삭제**(행 삭제, 댓글·반응 연쇄 삭제).
 - `updated_at`은 트리거로 갱신한다.
+- 별도 비공개 테이블 `location_change_limits(profile_id PK/FK, last_region_set_at timestamptz)`로 지역 변경 시각을 보관한다. 위치 삭제 시 이 행은 유지하고 프로필 삭제 시에만 연쇄 삭제한다. 클라이언트 직접 쓰기 권한은 없다.
 - 시·도 / 시·군·구 이름 목록은 DB가 아니라 `web/src/data/regions.ts`(행정표준코드 5자리, 2026년 기준. 강원특별자치도 51, 전북특별자치도 52 포함)에 둔다. DB에는 코드만 저장한다.
 
 ### 7.3 권한 (RLS · 컬럼 권한)
@@ -288,8 +301,9 @@ create table public.event_bookmarks (
 
 | 테이블 | 읽기 | 쓰기 |
 |---|---|---|
-| `profiles` | anon·authenticated 모두. **단 `user_id`, `tutorial_done` 컬럼은 공개 SELECT 권한에서 뺀다**(컬럼 grant) | update: `user_id = auth.uid()`, 수정 가능 컬럼은 `nickname, tagline, ship_items, avatar_items, tutorial_done`. insert는 트리거만. delete 없음(계정 삭제 시 연쇄) |
-| `user_locations` | 본인만 (`profile_id = my_profile_id()`) | 본인만 insert/update/delete |
+| `profiles` | anon·authenticated 모두. **단 `user_id`, `tutorial_done` 컬럼은 공개 SELECT 권한에서 뺀다**(컬럼 grant) | update: `user_id = auth.uid()`, 수정 가능 컬럼은 `nickname, tagline, ship_preset_id, avatar_preset_id, tutorial_done`. insert는 트리거만. delete 없음(계정 삭제 시 연쇄) |
+| `user_locations` | 본인만 (`profile_id = my_profile_id()`) | 직접 쓰기 금지. 본인 전용 RPC로 등록·변경·표시 설정·삭제 |
+| `location_change_limits` | 클라이언트 조회 불가 | 본인 전용 RPC 내부에서만 갱신 |
 | `stars` | anon·authenticated 모두 | insert: `profile_id = my_profile_id()` / delete: 본인 |
 | `comments` | anon·authenticated 모두 | insert: `profile_id = my_profile_id()` / delete: 본인 |
 | `reactions` | **본인 행만** (누가 눌렀는지 비공개). 개수는 `get_reaction_counts()` | insert/delete: 본인 |
@@ -305,9 +319,9 @@ create policy "stars_delete_own" on public.stars for delete to authenticated usi
 
 -- profiles 컬럼 권한
 revoke select, insert, update, delete on public.profiles from anon, authenticated;
-grant select (id, nickname, tagline, ship_items, avatar_items, ship_asset_key, avatar_asset_key, is_seed, created_at)
+grant select (id, nickname, tagline, ship_preset_id, avatar_preset_id, ship_asset_key, avatar_asset_key, is_seed, created_at)
   on public.profiles to anon, authenticated;
-grant update (nickname, tagline, ship_items, avatar_items, tutorial_done) on public.profiles to authenticated;
+grant update (nickname, tagline, ship_preset_id, avatar_preset_id, tutorial_done) on public.profiles to authenticated;
 ```
 
 - 정책은 grant와 별개로 동작하므로 **테이블별 grant도 함께 정의**한다. 공개 역할에 불필요한 insert/update/delete를 주지 않는다.
@@ -320,14 +334,16 @@ grant update (nickname, tagline, ship_items, avatar_items, tutorial_done) on pub
 | 함수 | 종류 | 동작 |
 |---|---|---|
 | `my_profile_id() → uuid` | stable, security definer | `select id from profiles where user_id = auth.uid()` |
-| `handle_new_user()` | trigger (`after insert on auth.users`) | `raw_user_meta_data->>'nickname'`으로 프로필 생성. 비었거나 중복이면 `여행자-1234`처럼 뒤에 숫자를 붙인다 |
-| `is_nickname_available(p_nickname text) → boolean` | security definer | 가입 전 중복 확인 (anon 실행 가능) |
+| `handle_new_user()` | trigger (`after insert on auth.users`) | `raw_user_meta_data->>'nickname'`으로 프로필 생성. 공백 제거 후 비었으면 `여행자`, 12자 초과면 거절한다. 중복은 허용한다 |
 | `get_my_profile() → profiles` | security definer | 내 프로필 전체(`tutorial_done` 포함) |
-| `explore_random(p_limit int default 4) → setof explore_card` | security invoker | 나(로그인 시)를 뺀 프로필을 `order by random()`으로 `p_limit`개. 카드: `id, nickname, tagline, ship_asset_key, ship_items, avatar_asset_key, avatar_items, latest_star_body` |
+| `explore_random(p_limit int default 4) → setof explore_card` | security invoker | 나(로그인 시)를 뺀 프로필을 `order by random()`으로 `p_limit`개. 카드: `id, nickname, tagline, ship_asset_key, ship_preset_id, avatar_asset_key, avatar_preset_id, latest_star_body` |
 | `explore_nearby(p_per_tier int default 2) → setof nearby_card` | security definer | 내 위치가 없으면 예외 `NO_LOCATION`. `visible = true`인 다른 사람의 위치와 비교해 tier = `sigungu`(시군구 코드 같음) / `sido`(시도 코드 같음) / `nation`. 단계마다 무작위 최대 `p_per_tier`명. **반환: 카드 + `tier`만. 상대 지역 코드·거리는 반환하지 않음** |
 | `get_reaction_counts(p_star_ids uuid[]) → table(star_id, type, count)` | security definer | 반응 개수만 |
-| `universe_ships(p_limit int default 20)` | security invoker | 우주 화면용 프로필 무작위 20개 (`id, nickname, avatar_asset_key, avatar_items`) |
+| `universe_ships(p_limit int default 20)` | security invoker | 우주 화면용 프로필 무작위 20개 (`id, nickname, avatar_asset_key, avatar_preset_id`) |
 
+- 위치 쓰기는 인증된 본인용 `set_my_location`, `set_location_visibility`, `delete_my_location` RPC로만 처리한다. 최초 등록 및 이후 지역 설정 시각을 비공개 테이블에 남기고, 지역 변경은 7일 후 허용한다. 같은 지역의 표시 설정 변경·숨김·삭제는 언제든 가능하다. 삭제 후 재등록은 이전 지역 설정 시각부터 7일 제한을 적용한다. 프로필 행 잠금으로 동시 호출을 직렬화해 우회를 막는다. 행정구역은 서버의 허용 코드 목록으로도 검증한다.
+- `explore_nearby`는 인증된 사용자만 실행하며 계정별 분당 최대 10회 호출하도록 DB에서 원자적으로 제한한다. 호출 기록은 비공개 테이블로 관리한다. 위치 변경 제한과 함께 다중 계정·지역 추론 위험을 줄일 뿐 익명성을 보장하지는 않는다.
+- 모든 definer RPC는 PUBLIC 실행 권한을 회수하고 필요한 역할에만 grant한다. 사용자 소유권은 `auth.uid()`로 확인한다.
 - `explore_nearby`의 내 위치는 내가 "주변에 내 별 보이기"를 꺼도 비교 기준으로 쓴다(나는 남을 볼 수 있음, 남은 나를 못 봄).
 - 데이터가 커지면 `order by random()`을 바꾼다(지금 규모에선 허용).
 
@@ -336,11 +352,11 @@ grant update (nickname, tagline, ship_items, avatar_items, tutorial_done) on pub
 ```text
 supabase/migrations/
   20261117000001_profiles.sql          profiles + updated_at 트리거 + handle_new_user + my_profile_id + RLS/grant
-  20261117000002_locations.sql         user_locations + RLS
+  20261117000002_locations.sql         user_locations + 비공개 변경/호출 제한 테이블 + 위치 RPC + RLS/grant
   20261117000003_stars_comments_reactions.sql   + RLS + get_reaction_counts
   20261117000004_reports.sql           + RLS
   20261117000005_events.sql            events, event_bookmarks + RLS
-  20261117000006_explore_functions.sql explore_random, explore_nearby, universe_ships, is_nickname_available, get_my_profile
+  20261117000006_explore_functions.sql explore_random, explore_nearby, universe_ships, get_my_profile
 ```
 
 적용: `npx supabase login` → `npx supabase link --project-ref <PROJECT_REF>` → `npx supabase db push`. **연결한 프로젝트가 맞는지 확인하고** 적용한다.
@@ -350,13 +366,13 @@ supabase/migrations/
 - 시드 우주선 **24개 이상** (`is_seed = true`, `user_id = null`). 닉네임 예: 보라빛구름, 새벽별, 조용한파도, 금술조각, 은하배(Figma 라벨) 등.
 - 그중 4개 이상은 별 6개 이상·댓글이 달린 "완성형", 나머지는 별 1~3개.
 - 별 60개 이상, 댓글 30개 이상(시드끼리), 반응 몇 개. **팀이 직접 쓴 가상의 이야기**만(prd.md 6장). 고민·응원·정보가 고르게.
-- 시드 위치: 모두 `visible = true`. 테스터가 많이 고를 서울 25개 구·경기 주요 시에 고르게 퍼뜨리고, 다른 시·도에도 몇 개 둔다. 시드는 실제 사람이 아님을 운영자만 알면 된다(화면에 시드 표시 안 함).
+- 시드 위치: 모두 `visible = true`. 테스터가 많이 고를 서울 25개 구·경기 주요 시에 고르게 퍼뜨리고, 다른 시·도에도 몇 개 둔다. 시드 프로필에는 작은 `예시` 배지를 붙인다. 탐색에 "일부 우주선과 이야기는 테스트를 위해 만든 예시예요", 주변 탐색에 "예시 우주선의 위치는 가상으로 설정되어 있어요"를 표시한다.
 - 행사 3~5건(`is_example = true`). 기존 캘린더 시안의 "웰컴 투 마이 바디", "〈에디 엘리스: 테이크〉 상영회", "2026 트랜스 마치" 등.
 - 원격 적용: `npx supabase db push --include-seed` 또는 대시보드 SQL Editor에서 `seed.sql` 실행.
 
 ### 7.7 테스트 계정 정리 (운영 절차, 기능 아님)
 
-테스트가 끝나면 운영자가 Supabase 대시보드 → Authentication → Users에서 테스트 기간에 가입한 사용자를 지운다. 연쇄 삭제로 프로필·위치·별·댓글·반응·신고·북마크가 함께 지워진다. 시드(`is_seed = true`)는 남는다. 자동화는 나중(prd.md 7장).
+이 절차는 실제 DB 테스트 계정에만 적용한다. 로컬 샌드박스는 새로고침으로 메모리만 초기화하며 공유 DB를 지우지 않는다. 실제 DB 테스트가 끝나면 운영자가 Supabase 대시보드 → Authentication → Users에서 테스트용으로 기록해 둔 사용자 ID에 한해서 지운다. 연쇄 삭제로 프로필·위치·별·댓글·반응·신고·북마크가 함께 지워진다. 시드(`is_seed = true`)는 남는다. 자동화는 나중(prd.md 7장).
 
 ## 8. 기능별 동작과 수용 기준
 
@@ -364,7 +380,7 @@ supabase/migrations/
 
 **동작**
 - AuthModal: 탭 [로그인 | 회원가입]. 회원가입 = 닉네임(1~12자, 튜토리얼 닉네임 미리 채움) + 이메일 + 비밀번호(6자 이상). 로그인 = 이메일 + 비밀번호.
-- 회원가입 창 하단 안내: "테스트 기간에는 아무 이메일이나 써도 돼요. 테스트가 끝나면 계정과 작성한 내용은 삭제돼요."
+- 실제 DB 테스트 계정은 운영자가 `.invalid` 예약 도메인의 개별 주소로 준비하고 Supabase의 주소 수용 여부를 확인한다. 타인 소유일 수 있는 임의 주소를 쓰지 않는다. 간단한 사용성 테스트는 6.1의 공통 샌드박스를 사용한다. 샌드박스에는 이메일 입력 창을 띄우지 않는다.
 - 가입·로그인 성공 → 모달 닫힘 → 보류된 행동 실행 → 토스트 "어서 와요, ○○".
 - 가입 직후 비로그인 때 본 튜토리얼 여부를 `profiles.tutorial_done`에 옮긴다.
 - 로그아웃: 설정에서 확인 후 → `/universe`.
@@ -372,7 +388,7 @@ supabase/migrations/
 **수용 기준**
 - [ ] 이메일·비밀번호·닉네임으로 가입하면 메일 인증 없이 바로 로그인 상태가 된다.
 - [ ] 가입하면 `profiles`에 행이 생기고 닉네임이 입력값과 같다.
-- [ ] 닉네임이 이미 있으면 가입 전에 "이미 쓰는 닉네임이에요"가 보이고 가입되지 않는다.
+- [ ] 서로 다른 계정이 같은 닉네임을 사용할 수 있고, UUID가 달라 소유권·링크가 혼동되지 않는다.
 - [ ] 비밀번호 6자 미만, 이메일 형식 오류, 이메일/비밀번호 불일치에 각각 안내가 보이고 입력값이 남아 있다.
 - [ ] 비로그인으로 반응을 누르면 AuthModal이 뜨고, 로그인 직후 그 반응이 반영된다(별 만들기·댓글·위치·북마크·MY도 같음).
 - [ ] 새로고침해도 로그인 상태가 유지된다. 로그아웃하면 MY 진입 시 다시 로그인을 요구한다.
@@ -433,8 +449,8 @@ supabase/migrations/
 
 **동작**
 - LocationModal(S07): 시·도 select → 시·군·구 select(시·도 선택 전 비활성), "주변 별 찾기에 내 별 보이기" 스위치(기본 꺼짐), 안내 3줄(prd.md 기능 D), [나중에] [등록하기].
-- 등록 → `user_locations` upsert → 토스트 "내 위치를 등록했어요" → 탐색이 nearby로.
-- 설정에서 변경(같은 모달) / 삭제(확인 후 행 삭제).
+- 등록 → `set_my_location` RPC → 토스트 "내 위치를 등록했어요" → 탐색이 nearby로.
+- 설정에서 변경(같은 모달) / 삭제(확인 후 `delete_my_location`). 표시 스위치는 `set_location_visibility`를 사용한다. 변경 제한 중이면 다음 변경 가능 시각을 안내한다.
 - 상단 바 등에 내 위치를 표시하지 않는다(다른 사람이 화면을 볼 수 있으므로).
 
 **수용 기준**
@@ -443,6 +459,8 @@ supabase/migrations/
 - [ ] 스위치를 켜지 않고 등록하면 `visible = false`다.
 - [ ] 다른 계정으로 `user_locations`를 직접 조회해도 내 행이 보이지 않는다.
 - [ ] 설정에서 위치를 지우면 주변 별 찾기가 다시 위치 없음 상태가 된다.
+- [ ] 최초 등록 후 7일 이내 지역 변경·삭제 후 재등록·동시 변경이 DB에서 거절된다. 숨기기·삭제는 언제든 가능하다.
+- [ ] 주변 탐색 분당 10회 초과 호출이 서버에서 거절되고 다른 계정의 제한 기록은 읽거나 바꿀 수 없다.
 
 **검증 기록**
 - 확인한 동작:
@@ -494,16 +512,15 @@ supabase/migrations/
 ### 기능 G: 꾸미기 (약식)
 
 **동작**
-- 아이템 목록은 코드 데이터 `web/src/data/customItems.ts` (`{ id, target: 'ship'|'avatar', tab, category, name, assetKey? }`). 탭 id: 우주선 `hull` / 가구 `furniture` / 장식품 `decor` / 플래그 `flag`, 몸 `body` / 우주복 `suit` / 장신구 `accessory` / 기타 `etc`.
-- 상단 미리보기, 하단 패널: 제목, 탭, 카테고리 칩, 3열 아이템 그리드. 카테고리당 하나 선택 → 즉시 미리보기.
-- 미리보기 방식: 아이템마다 **완성 이미지 한 장**(`<아이템id>-preview.png`)으로 우주선/캐릭터 전체 그림을 바꾼다. 여러 카테고리를 골랐을 때는 마지막으로 고른 아이템의 미리보기를 보여준다(레이어 합성은 나중).
-- [저장] → `profiles.ship_items` / `avatar_items` update → 토스트. 저장하지 않고 나가면 확인.
-- 우주선 ↔ 캐릭터 꾸미기 전환 버튼.
+- 프리셋 목록은 `web/src/data/customItems.ts` (`{ id, target: 'ship'|'avatar', name, assetKey }`). 우주선·아바타 각각 기본값 포함 3종 이상이며 카테고리별 조합은 하지 않는다.
+- 상단 미리보기, 하단 3열 완성형 프리셋 목록. 선택하면 전체 이미지 한 장으로 즉시 미리보기한다. 우주선 ↔ 캐릭터 전환 버튼을 둔다.
+- [저장] → `profiles.ship_preset_id` / `avatar_preset_id` update → 토스트. 저장하지 않고 나가면 확인한다. 허용된 프리셋 ID는 DB에서도 제약으로 검증한다.
+- 모든 화면은 저장한 프리셋 ID를 동일한 manifest 키로 해석한다. 시드 전용 이미지 키는 시드 프로필에서만 우선 사용한다. 선택 순서나 마지막 클릭에 의존하지 않는다.
 
 **수용 기준**
-- [ ] 탭과 카테고리를 바꾸면 해당 아이템이 보이고, 그림이 없는 아이템은 이름이 적힌 회색 칸으로 보인다.
-- [ ] 저장하면 새로고침 후에도 선택이 유지되고 MY·탐색 카드에 반영된다.
-- [ ] 다른 계정은 API로 내 `ship_items`를 바꿀 수 없다.
+- [ ] 각 대상의 프리셋이 3개 이상 보이고 그림이 없으면 이름이 적힌 회색 칸으로 보인다.
+- [ ] 실제 DB 모드에서는 저장 후 새로고침해도 MY·탐색·우주에 같은 선택이 반영된다. 샌드박스는 새로고침 시 초기화된다.
+- [ ] 다른 계정은 API로 내 `ship_preset_id`·`avatar_preset_id`를 바꿀 수 없다.
 
 **검증 기록**
 - 확인한 동작:
@@ -518,7 +535,7 @@ supabase/migrations/
 - 행사 상세: 이미지(`event.<id>` 키, 없으면 기본 이미지), 제목(+`is_example`이면 "예시" 배지), 일시, 지역·장소, 설명, 태그, [주최 측 링크](새 창, `rel="noopener"`), 북마크 토글(로그인 필요).
 - "+ 일정 등록하기", "외부 캘린더로 가져오기" → 토스트 "준비 중이에요".
 - 북마크(S17): `event_bookmarks` join `events`, 날짜순. 비어 있으면 [캘린더 보러 가기].
-- 설정(S16): 닉네임·한 줄 소개 변경(중복 확인), 내 위치(변경/삭제), "주변에 내 별 보이기" 스위치, 튜토리얼 다시 보기, 로그아웃. 비로그인이면 [로그인하기]와 튜토리얼 다시 보기만.
+- 설정(S16): 닉네임·한 줄 소개 변경(중복 허용), 내 위치(변경/삭제), "주변에 내 별 보이기" 스위치, 튜토리얼 다시 보기, 로그아웃. 비로그인이면 [로그인하기]와 튜토리얼 다시 보기만.
 
 **수용 기준**
 - [ ] 메뉴의 세 항목이 각 화면으로 이동한다.
@@ -547,7 +564,7 @@ supabase/migrations/
 
 1. **계정 A**로 가입 → 별 2개, 댓글 1개, 반응, 위치(보이기 끔), 북마크를 만든다. 새로고침 후 유지 확인.
 2. **로그아웃** → 우주선·별·댓글은 읽히고, MY·북마크·위치는 로그인을 요구하는지 확인.
-3. **계정 B**로 가입 → 브라우저 콘솔에서 supabase-js로 A의 별 삭제, A의 댓글 삭제, A의 `user_locations` 조회, A의 `reactions` 조회, A의 `profiles.ship_items` 수정, A의 북마크 조회를 시도 → 모두 거절되거나 빈 결과인지 확인.
+3. **계정 B**로 가입 → 브라우저 콘솔에서 supabase-js로 A의 별 삭제, A의 댓글 삭제, A의 `user_locations` 조회, A의 `reactions` 조회, A의 `profiles.ship_preset_id` 수정, A의 북마크 조회를 시도 → 모두 거절되거나 빈 결과인지 확인.
 4. A가 "보이기"를 켜고 B가 같은 시·군·구로 등록 → B의 주변 별 찾기에 A가 sigungu 궤도에 나오는지, 응답에 A의 지역 코드가 없는지 확인.
 
 ## 10. 환경 변수 · 배포
@@ -581,6 +598,7 @@ npx wrangler deploy        # 출력된 workers.dev 주소를 Supabase Site URL�
 ```
 
 **배포 후 확인**
+- [ ] 샌드박스에서 작성한 내용은 클라이언트 이동 중 유지되지만 새로고침하면 사라진다. 실제 DB 쓰기 요청은 없고 다른 테스터에게 영향을 주지 않는다.
 - [ ] 배포 주소에서 화면이 보이고, `/me` 같은 내부 경로에서 새로고침해도 열린다.
 - [ ] 개발자 도구에 파일 로딩 오류가 없다.
 - [ ] 배포 주소에서 가입·로그인·로그아웃이 된다(Site URL 설정 확인).

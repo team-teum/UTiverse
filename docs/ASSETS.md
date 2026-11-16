@@ -75,20 +75,19 @@ Figma 링크는 「1109 화면 목업 구성」 파일의 해당 노드다. `has
 | `constellation.starNew` | `web/public/assets/constellation/star-new.svg` | 방금 만든 별 강조 | 임시: `constellation.star`와 같은 파일 | 34×34 | 임시 | 선택 사항 |
 | `ui.write` | `web/public/assets/ui/write.png` | S11 연필(별 만들기) 버튼 | image 54 [37:11874](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-11874) · hash `4041c7e9` (「작성 아이콘」 [37:12214](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=37-12214)) | 50×50 (흰 원 57×56 위) | 임시 | 흰 원은 코드로 그림 |
 
-### 3.5 꾸미기 아이템 (S13 · S14)
+### 3.5 꾸미기 프리셋 (S13 · S14)
 
-Figma는 회색 "아이템" 칸만 있는 상태라 **아직 임시 에셋이 없다**. 파일이 없으면 화면에 아이템 이름이 적힌 회색 칸이 보인다. 디자이너가 아래 규칙으로 파일을 넣으면 바로 그림으로 바뀐다.
+MVP는 카테고리별 아이템 조합 대신 **완성형 우주선·캐릭터 프리셋**을 각각 3개 이상 제공한다. Figma의 카테고리 탭은 이번 버전에서 사용하지 않는다. 아직 임시 에셋은 없으며 파일이 없으면 이름이 적힌 회색 칸을 표시한다.
 
-| 대상 | 탭 (Figma) | 카테고리 예 | 파일 경로 규칙 | 키 규칙 |
-|---|---|---|---|---|
-| 우주선 | 우주선 / 가구 / 장식품 / 플래그 | 벽지, 창문, 외벽 | `web/public/assets/custom/ship/<탭>/<아이템id>.png` | `custom.ship.<탭>.<아이템id>` |
-| 캐릭터 | 몸 / 우주복 / 장신구 / 기타 | 체형, 피부색 | `web/public/assets/custom/avatar/<탭>/<아이템id>.png` | `custom.avatar.<탭>.<아이템id>` |
+| 대상 | 파일 경로 규칙 | 키 규칙 | 표시 비율 |
+|---|---|---|---|
+| 우주선 | `web/public/assets/custom/ship/<프리셋id>.png` | `custom.ship.<프리셋id>` | 277×394 |
+| 캐릭터 | `web/public/assets/custom/avatar/<프리셋id>.png` | `custom.avatar.<프리셋id>` | 3:4 |
 
-- 탭 폴더 이름: 우주선 `hull`, 가구 `furniture`, 장식품 `decor`, 플래그 `flag` / 몸 `body`, 우주복 `suit`, 장신구 `accessory`, 기타 `etc`.
-- 아이템 id와 이름 목록은 `web/src/data/customItems.ts`에 있다. 새 아이템을 추가하려면 그 파일에 한 줄 추가 + 이미지 파일.
-- 각 아이템 파일은 두 가지가 필요하다:
-  - **썸네일** `<아이템id>.png` — 그리드 칸(약 80×80, 1:1)
-  - **미리보기용 완성 이미지** `<아이템id>-preview.png` — 이번 버전은 아이템을 고르면 우주선/캐릭터 **전체 그림을 이 이미지로 바꾸는 방식**이다(같은 크기·비율: 우주선 277×394, 캐릭터 3:4). 레이어를 겹치는 방식으로 바꾸려면 개발자와 레이어 순서·기준점을 먼저 정한다.
+- 각 프리셋은 투명 배경의 완성 이미지 한 장이다. 목록 썸네일에도 같은 이미지를 contain으로 표시한다.
+- 구현 시 `web/src/data/customItems.ts`에 ID·이름·manifest 키를 정의한다. `default`는 `ship.default` / `avatar.me`로 연결한다.
+- 선택한 프리셋 ID를 DB에 저장하고 모든 화면에서 같은 이미지를 사용한다. 마지막 선택 순서나 레이어 합성에 의존하지 않는다.
+- 새 프리셋은 데이터 목록·manifest·이 문서와 DB 허용 ID 제약을 함께 갱신한다.
 
 ### 3.6 캘린더 행사 이미지 (S15)
 
@@ -124,5 +123,5 @@ Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnO
 - [ ] `constellation.star` (+ `starNew`)
 - [ ] `ship.default` (투명 배경), `ship.preset01`~`12`
 - [ ] `avatar.me`, `avatar.preset01`~`12`
-- [ ] 꾸미기 아이템 썸네일 + 미리보기 (탭당 3개 이상)
+- [ ] 완성형 우주선·아바타 프리셋 (각각 기본값 포함 3개 이상)
 - [ ] 캘린더 행사 이미지
