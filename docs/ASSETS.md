@@ -45,7 +45,7 @@ Figma 링크는 「1109 화면 목업 구성」 파일의 해당 노드다. `has
 | `brand.logo` | `web/public/assets/brand/logo.svg` | S01 "uTiverse" 곡선 로고 | 「Text on a Path – uTiverse」 [44:11641](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11641) | 148×48 · 약 3:1 | 임시 | SVG(흰색). 글자 색을 코드에서 바꾸지 않음 |
 | `brand.tapToStart` | `web/public/assets/brand/tap-to-start.svg` | S01 "화면을 클릭해서 시작하기" | [57:13589](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=57-13589) | 127×12 | 임시 | 디자이너가 텍스트로 바꾸길 원하면 파일 삭제 → 코드 텍스트로 대체 가능 |
 | `bg.space` | `web/public/assets/bg/space.png` | S03 우주, S05~S14 공통 배경 | 「홈화면 컴포넌트」 [44:11686](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11686) — **Figma 셰이더 채우기** | 402×874 cover | 임시 | 셰이더라 이미지 파일이 없음. 프레임을 PNG(3배)로 렌더해서 사용. 최종본은 별 반짝임 애니메이션을 고려해 **별이 적은 배경** 권장(작은 별은 코드로 반짝임) |
-| `universe.cluster` | `web/public/assets/universe/cluster.png` | S03 우주 (3D 구현 대체안일 때만) | image 52 [49:6313](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6313) · hash `cf68f060` | 269×301 | 임시 | 기술 명세 7.3 대체안에서만 쓰임 |
+| `universe.cluster` (사용 안 함) | `web/public/assets/universe/cluster.png` | 과거 정적 대체안 참고 | image 52 [49:6313](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=49-6313) · hash `cf68f060` | 269×301 | 제외 | 기본 회전 우주는 필수이므로 정적 대체 이미지로 쓰지 않음 |
 
 ### 3.2 캐릭터 · 안내 요정
 
@@ -115,6 +115,8 @@ Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnO
 - 새 에셋 키를 추가하면 이 문서 표와 `web/src/assets/manifest.ts`를 **같은 커밋**에서 고친다.
 
 ## 5. 디자이너 할 일 요약 (임시 → 최종)
+
+11/19는 팀이 준비·승인한 임시 에셋으로 진행한다. 기본 배경·읽기/글쓰기 UI·기본 우주선·아바타와 서로 구분 가능한 완성형 우주선/아바타 각 3종 이상을 우선 준비한다. 동일 그림 복사본이나 회색 상자는 다양성 테스트용 프리셋으로 세지 않는다. 튜토리얼·꾸미기 선택 UI·행사 이미지는 선택 기능에 맞춰 후순위로 둔다. 팀은 예시 글·댓글도 직접 준비·승인한다.
 
 - [ ] `bg.title`, `brand.titleArt`, `brand.logo`, `brand.tapToStart`
 - [ ] `bg.space` (별이 적은 배경)
