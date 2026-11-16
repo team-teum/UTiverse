@@ -1,0 +1,45 @@
+.viewport {
+	position: fixed;
+	inset: 0;
+	display: grid;
+	justify-items: center;
+	background: #000;
+}
+
+.frame {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	inline-size: min(100%, calc(100vh * 402 / 874));
+	block-size: 100vh;
+	overflow: hidden;
+	container-type: inline-size;
+	isolation: isolate;
+	background: var(--color-space);
+}
+
+@supports (height: 100dvh) {
+	.frame {
+		inline-size: min(100%, calc(100dvh * 402 / 874));
+		block-size: 100dvh;
+	}
+}
+
+.content {
+	flex: 1;
+	min-block-size: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+
+.overlays {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 10;
+}
+
+.overlays > :where(*) {
+	pointer-events: auto;
+}

@@ -1,0 +1,16 @@
+:root {
+	color-scheme: dark;
+	--color-space: #0b0714;
+	--color-accent-yellow: #fff159;
+	--color-menu: #868aff;
+	--color-lavender: #be9afa;
+	--color-lavender-light: #e9dcff;
+	--color-panel: #120f2e;
+	--color-ink: #070811;
+	--color-stroke: #817ec4;
+	--color-dialog: #e9e9ec;
+	/* Use system fonts until licensed self-hosted font files are supplied. */
+	--font-body: "Noto Sans KR", system-ui, sans-serif;
+	--font-latin: "Inter", system-ui, sans-serif;
+	--font-pixel: "Bitcount", monospace;
+}

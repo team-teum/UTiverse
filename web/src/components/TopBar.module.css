@@ -1,0 +1,27 @@
+.header {
+	padding-block-start: env(safe-area-inset-top, 0px);
+	padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+		max(1rem, env(safe-area-inset-right, 0px));
+	border-block-end: 1px solid var(--color-stroke);
+}
+
+.nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-block-size: 3.5rem;
+}
+
+.link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-inline-size: 44px;
+	min-block-size: 44px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.link[aria-current="page"] {
+	color: var(--color-accent-yellow);
+}

@@ -3,7 +3,7 @@
 이 저장소에서 일하는 코딩 에이전트(Codex, Claude 등)는 아래 순서를 따른다.
 
 1. 작업 전에 `prd.md`(무엇을·왜), `SPECIFICATION.md`(어떻게·구현 상태), `new_requests.md`(변경 요청)를 읽는다. 이미지 작업이면 `docs/ASSETS.md`도 읽는다.
-2. 사용자가 이번에 요청한 범위만 구현한다. PRD 전체를 한 번에 만들지 않는다.
+2. 사용자가 이번에 요청한 범위만 구현한다. PRD 전체를 한 번에 만들지 않는다. Scaffold는 필수 기반만 작고 단순하게 유지하고, 미사용 추상화·데이터 계층·대규모 테스트 환경은 미리 추가하지 않는다. 필요해지는 기능과 함께 최소한으로 추가한다.
 3. 앱 코드는 `web/`, DB 변경은 `supabase/migrations/`에 새 파일로 추가한다. 이미 적용된 migration 파일은 고치지 않는다.
 4. 이미지는 `web/public/assets/` + `web/src/assets/manifest.ts` 키로만 참조하고, 새 키를 만들면 `docs/ASSETS.md` 표를 같은 커밋에서 고친다.
 5. 비밀 키(service role, secret)를 브라우저 코드·저장소에 넣지 않는다. `.env.local`은 커밋하지 않는다.

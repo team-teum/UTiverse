@@ -8,7 +8,7 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 저장소 구조 · 개발 환경 | 미착수 | 3장; 최신 안정판 기준으로 문서 갱신, 설치 검증 전 |
+| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1 검증 기록; 최소 Vite/React 기반과 lint·format·타입 CI. 도메인 기능은 미착수 |
 | 로컬 테스트 샌드박스 | 미착수 | 6.1; 새로고침 초기화, 실제 DB 모드와 분리 |
 | Supabase 스키마 · RLS · 함수 (migration) | 미착수 | 7장 |
 | 시드 데이터 | 미착수 | 7.6 |
@@ -20,7 +20,7 @@
 | 기능 F MY·별 만들기 | 미착수 | |
 | 기능 G 꾸미기 | 미착수 | |
 | 기능 H 메뉴·캘린더·북마크·설정 | 미착수 | |
-| Cloudflare 배포 | 미착수 | 10장 |
+| Cloudflare 배포 | 설정·로컬 검증 완료 / 실배포 미착수 | Wrangler dry-run 및 로컬 SPA fallback 확인. 계정 로그인·실배포 안 함 |
 
 ### 0.1 11/19 납품 범위와 구현 순서
 
@@ -56,12 +56,15 @@
 | 3D 우주 | 외부 3D 라이브러리 없이 구면 좌표 → 2D 투영 자체 구현 |
 | DB·인증 | Supabase (Postgres, Auth). 스키마는 `supabase/migrations/*.sql` |
 | 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
-| 도구 | 지원 중인 최신 Node.js LTS, npm 12.2.2, Supabase CLI 3.1.0, Wrangler 4.162.0 |
-| 테스트 | Vitest 5.1.0(순수 로직) + 두 계정 수동 권한 점검(9장) |
+| 도구 | Node.js 24 LTS (`.nvmrc`: 24.22.2), npm 11.19.1로 검증, Wrangler 4.162.0(로컬 devDependency). Supabase CLI는 실제 DB 착수 시 추가 |
+| 코드 검사 | Biome 2.6.8 (`biome init` 기본 formatter·권장 lint·import 정렬) + TypeScript strict. main push마다 GitHub Actions에서 검사만 실행 |
+| 테스트 | Scaffold에는 테스트 프레임워크를 두지 않음. 필요한 기능과 함께 작은 테스트부터 추가. 실제 DB 두 계정 점검은 9장 |
 
-위 npm 버전은 2026-11-16 레지스트리의 `latest` dist-tag로 확인한 안정판이며 아직 설치·호환성 검증은 하지 않았다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
+위 버전은 2026-11-16 기준이다. React·라우터·Vite·TypeScript·Biome·Wrangler만 현재 설치했다(3.1). 미사용 Query provider와 Vitest/Playwright 테스트 환경은 lean scaffold 결정에 따라 제거했다. Supabase JS·Query·Phosphor·Supabase CLI는 필요할 때 추가하는 후속 선택이다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
 
 ## 3. 저장소 구조
+
+아래는 전체 목표 구조다. 현재 생성된 파일과 실행 방법은 루트 `README.md`와 3.1에 적는다. 실제 DB·미구현 기능을 위한 빈 모듈이나 Supabase 설정을 미리 만들지 않는다.
 
 ```text
 UTiverse/
@@ -102,30 +105,57 @@ UTiverse/
       └─ styles/             tokens.css, global.css
 ```
 
-`.gitignore`: `node_modules/`, `dist/`, `.env.local`, `.wrangler/`, `supabase/.temp/`.
+`.gitignore`: `node_modules/`, `dist/`, `.env*`(`.env.example` 제외), `.wrangler/`, `.dev.vars*`, `supabase/.temp/` 등.
+
+### 3.1 현재 scaffold와 검증 기록
+
+**현재 범위**
+- React·TypeScript strict·Vite, BrowserRouter, 작은 AppFrame·내비게이션과 `/`·`/universe`·`/me` 플레이스홀더만 둔다. 도메인 기능·데이터 계층·최종 Figma 화면은 미구현이다.
+- 미사용 Query provider, Vitest·Testing Library·jsdom·Playwright 환경을 제거했다. 테스트·추상화는 필요한 기능과 함께 추가한다. CLI는 로컬 의존성이다.
+- `.github/workflows/ci.yml`: main에 push할 때마다 Node `.nvmrc` + `npm ci` → `npm run check` (Biome lint·format·import 정렬 검사·TypeScript). 파일 자동 수정·커밋·배포는 하지 않는다. 직접 push 후 실행되는 검사이며 push 자체를 막지는 않는다.
+- 루트 `biome.json`은 `biome init` 기본 설정이다. 로컬 포맷 수정은 `cd web && npm run format`, import 정렬·안전한 lint 수정은 `npx biome check --write .`. 웹 코드·설정 중 Biome 지원 파일만 검사하며 YAML 워크플로·문서 전체 포맷은 하지 않는다. 기존 Oxlint·Prettier 패키지와 설정은 제거했다.
+
+**직접 확인한 항목**
+- [x] `npm ci`로 축소된 의존성·lockfile 재현.
+- [x] `npm run check`: Biome 기본 lint·format·import 정렬 검사와 strict 타입 검사 통과.
+- [x] `npm run build`: production build 통과.
+- [ ] GitHub-hosted CI 실행 결과 (push 후 확인).
+- [ ] 실제 기기·Cloudflare 실배포 확인.
+
+**검증 기록 (2026-11-16)**
+- 환경: Node 24.22.2 / npm 11.19.1, 로컬 macOS.
+- 재현: `cd web && npm ci && npm run check && npm run build`.
+- 이전 scaffold에서 Chromium 내비게이션/프레임 스모크 및 Wrangler 로컬 fallback/dry-run을 확인했으나 테스트 환경은 이번 경량화에서 제거했다. 현재 CI에 브라우저 테스트는 없다.
+- 도메인 기능·실제 DB는 여전히 미착수다. 기본 검사 통과를 MVP 기능 완료로 해석하지 않는다.
 
 ## 4. 화면 비율과 레이아웃
 
 - 기준 아트보드 **402 × 874** (Figma 「종합」 모바일 프레임).
 - 앱 프레임 높이 = 창 높이, 너비 = `min(창 너비, 창 높이 × 402 / 874)`. 남는 좌우는 `#000`. 기준보다 좁고 긴 휴대폰은 너비 100%.
-- 프레임 안의 크기는 **디자인 px**(`--px` = 프레임 너비 / 402)로 쓴다. Figma 수치를 그대로 옮기면 어느 기기에서나 같은 비율이 된다.
+- 향후 Figma 장면 좌표·에셋 배치는 프레임 너비 기준 디자인 px를 사용한다. 현재 scaffold의 문구·간격은 rem, 터치 영역은 최소 실제 44px로 두어 단순 비례 축소로 가독성을 잃지 않게 한다. 최종 장면 배치는 후속 작업이다.
 
 ```css
-html, body, #root { height: 100%; margin: 0; background: #000; }
-body { overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
-.app-viewport { position: fixed; inset: 0; display: flex; justify-content: center; background: #000; }
+/* 실제 구현: src/app/AppFrame.module.css */
+.app-viewport { position: fixed; inset: 0; display: grid; justify-items: center; background: #000; }
 .app-frame {
   position: relative;
-  height: var(--app-h, 100dvh);
-  width: min(100vw, calc(var(--app-h, 100dvh) * 402 / 874));
+  display: flex;
+  flex-direction: column;
+  block-size: 100vh;
+  inline-size: min(100%, calc(100vh * 402 / 874));
   overflow: hidden;
   container-type: inline-size;
   background: var(--color-space);
-  --px: calc(100cqw / 402);   /* 예: padding: calc(16 * var(--px)); */
+}
+@supports (height: 100dvh) {
+  .app-frame {
+    block-size: 100dvh;
+    inline-size: min(100%, calc(100dvh * 402 / 874));
+  }
 }
 ```
 
-- `--app-h`는 `window.innerHeight`를 resize 때마다 넣는다(`dvh` 미지원 대비).
+- 브라우저 UI 높이 변화는 CSS `dvh`로 처리하고 미지원 브라우저에는 `vh` fallback을 둔다. scaffold에 resize JS를 추가하지 않는다. 프레임 내부 main은 독립 스크롤 영역이다. 실제 휴대폰 주소창·키보드는 별도 검증이 남아 있다.
 - `index.html`: `viewport` = `width=device-width, initial-scale=1, viewport-fit=cover`, `<meta name="robots" content="noindex">`, `theme-color #000`.
 - 모달·시트·토스트는 `.app-frame` 안의 `#overlay-root`에 그린다(`position: fixed` 금지 — 검은 여백까지 덮지 않게).
 - 상단 바·하단 버튼에 `env(safe-area-inset-*)`을 더한다.

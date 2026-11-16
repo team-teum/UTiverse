@@ -1,0 +1,35 @@
+.start {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	inline-size: 100%;
+	min-block-size: 100%;
+	padding: max(2rem, env(safe-area-inset-top, 0px))
+		max(1.5rem, env(safe-area-inset-right, 0px)) 2rem
+		max(1.5rem, env(safe-area-inset-left, 0px));
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--color-lavender-light);
+	text-align: center;
+	cursor: pointer;
+}
+
+.brand {
+	color: var(--color-lavender);
+	font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
+	font-weight: 800;
+}
+
+.hint {
+	margin-block-start: 2rem;
+	color: var(--color-accent-yellow);
+}
+
+.notice {
+	max-inline-size: 28ch;
+	margin-block-start: 2rem;
+	font-size: 0.875rem;
+}
