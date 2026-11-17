@@ -1,15 +1,37 @@
 .layer {
-	position: absolute;
+	position: fixed;
 	inset: 0;
+	box-sizing: border-box;
+	inline-size: min(100vw, calc(100vh * 402 / 874));
+	block-size: 100vh;
+	max-inline-size: none;
+	max-block-size: none;
+	margin: 0 auto;
+	padding: calc(16 * var(--dp)) calc(16 * var(--dp))
+		calc(16 * var(--dp) + env(safe-area-inset-bottom, 0px));
+	border: 0;
+	background: transparent;
+	overscroll-behavior: contain;
+}
+
+@supports (height: 100dvh) {
+	.layer {
+		inline-size: min(100vw, calc(100dvh * 402 / 874));
+		block-size: 100dvh;
+	}
+}
+
+/* 닫힌 dialog의 기본 display:none을 덮어쓰지 않는다. */
+.layer[open] {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: calc(16 * var(--dp)) calc(16 * var(--dp))
-		calc(16 * var(--dp) + env(safe-area-inset-bottom, 0px));
 }
 
-.confirm {
-	z-index: 2;
+.layer::backdrop {
+	background: transparent;
+	overflow: hidden;
+	overscroll-behavior: contain;
 }
 
 .backdrop {
@@ -24,8 +46,8 @@
 	flex-direction: column;
 	max-block-size: 100%;
 	color: #000;
-	outline: none;
-	overflow: hidden;
+	overflow: auto;
+	overscroll-behavior: contain;
 }
 
 /* 별 상세: Figma Rectangle 55 (54:6879) 341×552, #EDEDED, 둥글기 12 */

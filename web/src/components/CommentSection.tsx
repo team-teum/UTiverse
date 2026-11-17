@@ -1,6 +1,6 @@
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useId, useRef, useState } from "react";
 import { COMMENT_MAX_CHARS, type Comment, repo, useRepoData } from "../api";
-import { countChars, formatRelative } from "../lib/text";
+import { countChars, formatRelative, lengthError } from "../lib/text";
 import styles from "./CommentSection.module.css";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -20,6 +20,9 @@ export function CommentSection({
 }: CommentSectionProps) {
 	const headingId = useId();
 	const counterId = useId();
+	const validationId = useId();
+	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const [validationError, setValidationError] = useState<string | null>(null);
 	const { data: comments, error } = useRepoData(`comments:${starId}`, () =>
 		repo.listComments(starId),
 	);
@@ -29,11 +32,21 @@ export function CommentSection({
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 
 	const length = countChars(draft);
-	const canSubmit = length >= 1 && length <= COMMENT_MAX_CHARS && !submitting;
+
+	function validate() {
+		const message = lengthError(draft, COMMENT_MAX_CHARS);
+		setValidationError(message);
+		inputRef.current?.setCustomValidity(message ?? "");
+		return message === null;
+	}
 
 	async function handleSubmit(event: FormEvent) {
 		event.preventDefault();
-		if (!canSubmit) return;
+		if (submitting) return;
+		if (!validate()) {
+			inputRef.current?.focus();
+			return;
+		}
 		setSubmitting(true);
 		setSubmitError(null);
 		try {
@@ -103,14 +116,34 @@ export function CommentSection({
 				</p>
 			)}
 
-			<form className={styles.form} onSubmit={handleSubmit}>
+			<form
+				className={styles.form}
+				onSubmit={handleSubmit}
+				aria-labelledby={headingId}
+				noValidate
+			>
 				<textarea
+					ref={inputRef}
+					name="body"
+					required
 					className={styles.input}
 					value={draft}
-					onChange={(event) => onDraftChange(event.target.value)}
+					onChange={(event) => {
+						const value = event.target.value;
+						onDraftChange(value);
+						setSubmitError(null);
+						if (!lengthError(value, COMMENT_MAX_CHARS)) {
+							setValidationError(null);
+							event.target.setCustomValidity("");
+						}
+					}}
+					onBlur={() => {
+						if (draft !== "") validate();
+					}}
 					placeholder="댓글 달기"
 					aria-label="댓글 달기"
-					aria-describedby={counterId}
+					aria-invalid={validationError ? true : undefined}
+					aria-describedby={`${counterId}${validationError ? ` ${validationId}` : ""}`}
 					rows={2}
 				/>
 				<div className={styles.formRow}>
@@ -120,10 +153,15 @@ export function CommentSection({
 					>
 						{length}/{COMMENT_MAX_CHARS}
 					</span>
-					<button type="submit" className="button-plain" disabled={!canSubmit}>
+					<button type="submit" className="button-plain" disabled={submitting}>
 						{submitting ? "등록 중…" : "등록"}
 					</button>
 				</div>
+				{validationError && (
+					<p id={validationId} className="error-text" role="alert">
+						{validationError}
+					</p>
+				)}
 				{submitError && (
 					<p className="error-text" role="alert">
 						{submitError}

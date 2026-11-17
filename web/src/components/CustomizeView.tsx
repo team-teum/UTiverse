@@ -78,7 +78,8 @@ export function CustomizeView({
 			</div>
 
 			<div className={styles.panel}>
-				<div className={styles.title} role="tablist" aria-label="꾸밀 대상">
+				<fieldset className={styles.title}>
+					<legend className="sr-only">꾸밀 대상</legend>
 					{(
 						[
 							["ship", "우주선 꾸미기"],
@@ -88,8 +89,7 @@ export function CustomizeView({
 						<button
 							key={id}
 							type="button"
-							role="tab"
-							aria-selected={mode === id}
+							aria-pressed={mode === id}
 							className={styles.titleButton}
 							onClick={() => {
 								onModeChange(id);
@@ -99,15 +99,15 @@ export function CustomizeView({
 							{label}
 						</button>
 					))}
-				</div>
+				</fieldset>
 
-				<div className={styles.tabs} role="tablist" aria-label="종류">
+				<fieldset className={styles.tabs}>
+					<legend className="sr-only">종류</legend>
 					{tabs.map((item) => (
 						<button
 							key={item.id}
 							type="button"
-							role="tab"
-							aria-selected={item.id === tab.id}
+							aria-pressed={item.id === tab.id}
 							className={styles.tab}
 							onClick={() => {
 								setTabId((prev) => ({ ...prev, [mode]: item.id }));
@@ -117,7 +117,7 @@ export function CustomizeView({
 							{item.label}
 						</button>
 					))}
-				</div>
+				</fieldset>
 
 				<div className={styles.box}>
 					<div className={styles.categories}>

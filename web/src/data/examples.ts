@@ -24,6 +24,8 @@ export interface ExampleStar {
 }
 
 export interface ExampleProfile {
+	/** 고정 UUID: 새로고침·새 탭에서도 예시 링크가 같은 프로필을 가리킨다. */
+	id: string;
 	key: string;
 	nickname: string;
 	tagline: string;
@@ -34,6 +36,7 @@ export interface ExampleProfile {
 
 export const exampleProfiles: ExampleProfile[] = [
 	{
+		id: "00000000-0000-4000-8000-000000010000",
 		key: "lumi",
 		nickname: "루미",
 		tagline: "천천히 가는 중",
@@ -102,6 +105,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000020000",
 		key: "haru",
 		nickname: "하루",
 		tagline: "",
@@ -158,6 +162,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000030000",
 		key: "saebyeok",
 		nickname: "새벽",
 		tagline: "밤에만 솔직해짐",
@@ -209,6 +214,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000040000",
 		key: "dotori",
 		nickname: "도토리",
 		tagline: "고3 탈출까지 D-??",
@@ -250,6 +256,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000050000",
 		key: "yuwol",
 		nickname: "유월",
 		tagline: "6월에 이름을 바꿨어요",
@@ -296,6 +303,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000060000",
 		key: "mu",
 		nickname: "무",
 		tagline: "남자도 여자도 아닌 그냥 무",
@@ -343,6 +351,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000070000",
 		key: "kei",
 		nickname: "kei",
 		tagline: "",
@@ -385,6 +394,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000080000",
 		key: "jun",
 		nickname: "준",
 		tagline: "고양이 두 마리랑 삽니다",
@@ -438,6 +448,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000090000",
 		key: "godeungeo",
 		nickname: "고등어",
 		tagline: "직장인. 조용히 사는 중",
@@ -482,6 +493,7 @@ export const exampleProfiles: ExampleProfile[] = [
 		],
 	},
 	{
+		id: "00000000-0000-4000-8000-000000100000",
 		key: "musim",
 		nickname: "무심한물고기",
 		tagline: "아직 아무한테도 말 안 함",

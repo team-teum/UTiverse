@@ -2,7 +2,7 @@
 // 파일이 없으면 AssetImage가 키 이름이 적힌 점선 상자(또는 지정한 대체 그림)를 보여 준다.
 export const assets = {
 	"bg.title": "/assets/bg/title.webp",
-	"brand.titleArt": "/assets/brand/title-art.png",
+	"brand.titleArt": "/assets/brand/title-art.webp",
 	"brand.logo": "/assets/brand/logo.svg",
 	"brand.tapToStart": "/assets/brand/tap-to-start.svg",
 	"character.tini": "/assets/character/tini.png",

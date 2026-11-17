@@ -8,6 +8,7 @@ interface AssetImageProps {
 	alt: string;
 	className?: string;
 	style?: CSSProperties;
+	fetchPriority?: "high" | "low";
 	/** 파일이 없을 때 점선 상자 대신 그릴 것 (작은 아이콘처럼 상자가 읽히지 않을 때) */
 	fallback?: ReactNode;
 }
@@ -17,6 +18,7 @@ export function AssetImage({
 	alt,
 	className,
 	style,
+	fetchPriority,
 	fallback,
 }: AssetImageProps) {
 	const [failed, setFailed] = useState(false);
@@ -64,6 +66,7 @@ export function AssetImage({
 				className={styles.image}
 				src={assets[assetKey]}
 				alt={alt}
+				fetchPriority={fetchPriority}
 				draggable={false}
 				onError={() => setFailed(true)}
 			/>

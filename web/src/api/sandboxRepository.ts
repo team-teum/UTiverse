@@ -69,7 +69,7 @@ function loadExamples() {
 	const idByKey = new Map<string, string>();
 	for (const example of exampleProfiles) {
 		const profile: Profile = {
-			id: newId(),
+			id: example.id,
 			nickname: example.nickname,
 			tagline: example.tagline,
 			isExample: true,
@@ -83,7 +83,8 @@ function loadExamples() {
 		const profileId = idByKey.get(example.key) ?? "";
 		example.stars.forEach((exampleStar, starIndex) => {
 			const star: Star = {
-				id: newId(),
+				// 예시 프로필 UUID의 끝 네 자리를 고정 별 번호로 쓴다(0000은 프로필).
+				id: `${profileId.slice(0, -4)}${String(starIndex + 1).padStart(4, "0")}`,
 				profileId,
 				body: exampleStar.body,
 				createdAt: daysAgo(exampleStar.daysAgo, starIndex),

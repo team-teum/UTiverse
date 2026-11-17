@@ -1,7 +1,7 @@
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useId, useRef, useState } from "react";
 import { repo, STAR_MAX_CHARS, type Star } from "../api";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
-import { countChars } from "../lib/text";
+import { countChars, lengthError } from "../lib/text";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { FigmaCloseIcon } from "./icons";
 import { Overlay } from "./Overlay";
@@ -16,6 +16,9 @@ interface WriteModalProps {
 export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 	const titleId = useId();
 	const counterId = useId();
+	const validationId = useId();
+	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const [validationError, setValidationError] = useState<string | null>(null);
 	const [body, setBody] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,6 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 
 	const length = countChars(body);
 	const dirty = body.trim().length > 0;
-	const canSubmit = length >= 1 && length <= STAR_MAX_CHARS && !submitting;
 	const { blocker } = useDiscardGuard(dirty);
 
 	function requestClose() {
@@ -31,9 +33,20 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 		else onClose();
 	}
 
+	function validate() {
+		const message = lengthError(body, STAR_MAX_CHARS);
+		setValidationError(message);
+		inputRef.current?.setCustomValidity(message ?? "");
+		return message === null;
+	}
+
 	async function handleSubmit(event: FormEvent) {
 		event.preventDefault();
-		if (!canSubmit) return;
+		if (submitting) return;
+		if (!validate()) {
+			inputRef.current?.focus();
+			return;
+		}
 		setSubmitting(true);
 		setError(null);
 		try {
@@ -50,7 +63,12 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 	return (
 		<>
 			<Overlay variant="modal" labelledBy={titleId} onDismiss={requestClose}>
-				<form className={styles.form} onSubmit={handleSubmit}>
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					aria-labelledby={titleId}
+					noValidate
+				>
 					<header className={styles.header}>
 						<h2 id={titleId} className={styles.title}>
 							별 만들기
@@ -65,12 +83,27 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 						</button>
 					</header>
 					<textarea
+						ref={inputRef}
+						name="body"
+						required
 						className={styles.input}
 						value={body}
-						onChange={(event) => setBody(event.target.value)}
+						onChange={(event) => {
+							const value = event.target.value;
+							setBody(value);
+							setError(null);
+							if (!lengthError(value, STAR_MAX_CHARS)) {
+								setValidationError(null);
+								event.target.setCustomValidity("");
+							}
+						}}
+						onBlur={() => {
+							if (body !== "") validate();
+						}}
 						placeholder="무엇이든 자유롭게 써보세요."
 						aria-label="별에 남길 이야기"
-						aria-describedby={counterId}
+						aria-invalid={validationError ? true : undefined}
+						aria-describedby={`${counterId}${validationError ? ` ${validationId}` : ""}`}
 						rows={12}
 						data-autofocus
 					/>
@@ -80,6 +113,11 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 					>
 						{length}/{STAR_MAX_CHARS}
 					</p>
+					{validationError && (
+						<p id={validationId} className={styles.error} role="alert">
+							{validationError}
+						</p>
+					)}
 					{error && (
 						<p className={styles.error} role="alert">
 							{error}
@@ -88,7 +126,7 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 					<button
 						type="submit"
 						className={`button-plain ${styles.submit}`}
-						disabled={!canSubmit}
+						disabled={submitting}
 					>
 						{submitting ? "등록하는 중…" : "등록하기"}
 					</button>

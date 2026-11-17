@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import styles from "./Overlay.module.css";
 
@@ -17,60 +17,36 @@ export function Overlay({
 	onDismiss,
 	children,
 }: OverlayProps) {
-	const panelRef = useRef<HTMLDivElement>(null);
-	const dismissRef = useRef(onDismiss);
-	dismissRef.current = onDismiss;
+	const dialogRef = useRef<HTMLDialogElement>(null);
 
-	useEffect(() => {
-		const previous =
-			document.activeElement instanceof HTMLElement
-				? document.activeElement
-				: null;
-		const panel = panelRef.current;
-		if (panel && !panel.contains(document.activeElement)) {
-			const target =
-				panel.querySelector<HTMLElement>("[data-autofocus]") ?? panel;
-			target.focus();
-		}
-		// Esc는 포커스가 들어 있는 가장 위 창만 닫는다.
-		function onKeyDown(event: KeyboardEvent) {
-			if (
-				event.key === "Escape" &&
-				dismissRef.current &&
-				panel?.contains(document.activeElement)
-			) {
-				event.preventDefault();
-				dismissRef.current();
-			}
-		}
-		document.addEventListener("keydown", onKeyDown);
-		return () => {
-			document.removeEventListener("keydown", onKeyDown);
-			previous?.focus();
-		};
+	useLayoutEffect(() => {
+		const dialog = dialogRef.current;
+		if (!dialog) return;
+		// showModal이 초기 포커스·배경 inert·닫힌 뒤 포커스 복귀를 맡는다.
+		dialog.querySelector("[data-autofocus]")?.setAttribute("autofocus", "");
+		dialog.showModal();
+		return () => dialog.close();
 	}, []);
 
 	const root = document.getElementById("overlay-root");
 	if (!root) return null;
 
 	return createPortal(
-		<div className={`${styles.layer} ${styles[variant]}`}>
-			<div
-				className={styles.backdrop}
-				aria-hidden="true"
-				onClick={() => dismissRef.current?.()}
-			/>
-			<div
-				ref={panelRef}
-				className={styles.panel}
-				role="dialog"
-				aria-modal="true"
-				aria-labelledby={labelledBy}
-				tabIndex={-1}
-			>
-				{children}
-			</div>
-		</div>,
+		<dialog
+			ref={dialogRef}
+			className={`${styles.layer} ${styles[variant]}`}
+			aria-labelledby={labelledBy}
+			onCancel={(event) => {
+				// React portal의 cancel이 아래 dialog로 전파되지 않게 한다.
+				event.stopPropagation();
+				// Safari에서도 Esc가 미저장 글·댓글 확인을 거치게 한다.
+				event.preventDefault();
+				onDismiss?.();
+			}}
+		>
+			<div className={styles.backdrop} aria-hidden="true" onClick={onDismiss} />
+			<div className={styles.panel}>{children}</div>
+		</dialog>,
 		root,
 	);
 }

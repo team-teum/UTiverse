@@ -12,7 +12,12 @@ export function TitleScene({ dimmed = false }: { dimmed?: boolean }) {
 			aria-hidden="true"
 		>
 			<AssetImage assetKey="bg.title" alt="" className={styles.bg} />
-			<AssetImage assetKey="brand.titleArt" alt="" className={styles.art} />
+			<AssetImage
+				assetKey="brand.titleArt"
+				alt=""
+				className={styles.art}
+				fetchPriority={dimmed ? undefined : "high"}
+			/>
 			<AssetImage assetKey="brand.logo" alt="" className={styles.logo} />
 			<AssetImage assetKey="brand.tapToStart" alt="" className={styles.tap} />
 		</div>
