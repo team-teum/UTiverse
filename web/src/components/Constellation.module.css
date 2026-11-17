@@ -1,14 +1,27 @@
+/* Figma 「종합」 MY(33:13894)·남의 우주선(54:6792)의 별자리 영역 */
 .root {
 	display: flex;
 	flex-direction: column;
-	gap: 0.25rem;
+	align-items: center;
+	gap: calc(37 * var(--dp));
+}
+
+.row {
+	position: relative;
+	inline-size: 100%;
 }
 
 .sky {
 	position: relative;
-	block-size: calc(240 * 100cqw / 402);
-	margin-inline: calc(20 * 100cqw / 402);
+	inline-size: calc(281.5 * var(--dp));
+	block-size: calc(136 * var(--dp));
+	margin-inline: auto;
 	touch-action: pan-y;
+}
+
+/* MY는 연필 버튼까지 합친 320.5 묶음이 가운데에 온다 (Figma Group 22) */
+.withWrite .sky {
+	transform: translateX(calc(-19.5 * var(--dp)));
 }
 
 .lines {
@@ -19,10 +32,9 @@
 	overflow: visible;
 }
 
-.lines polyline {
-	fill: none;
-	stroke: rgb(233 220 255 / 55%);
-	stroke-width: 1.5;
+.lines line {
+	stroke: var(--color-star-line);
+	stroke-width: 3;
 }
 
 .list {
@@ -39,8 +51,8 @@
 .star {
 	display: grid;
 	place-items: center;
-	inline-size: 44px;
-	block-size: 44px;
+	inline-size: max(44px, calc(34 * var(--dp)));
+	block-size: max(44px, calc(34 * var(--dp)));
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
@@ -49,9 +61,8 @@
 }
 
 .starImage {
-	inline-size: calc(34 * 100cqw / 402);
-	block-size: calc(34 * 100cqw / 402);
-	filter: drop-shadow(0 0 6px rgb(255 241 89 / 70%));
+	inline-size: calc(25 * var(--dp));
+	block-size: calc(24 * var(--dp));
 }
 
 .starImage svg {
@@ -65,8 +76,8 @@
 
 @keyframes twinkle {
 	50% {
-		transform: scale(1.5);
-		filter: drop-shadow(0 0 14px rgb(255 241 89 / 100%));
+		transform: scale(1.6);
+		filter: drop-shadow(0 0 8px var(--color-star));
 	}
 }
 
@@ -76,17 +87,60 @@
 	}
 }
 
-.pager {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5rem;
-	color: var(--color-lavender-light);
+.write {
+	position: absolute;
+	inset-block-start: calc(63 * var(--dp));
+	inset-inline-start: calc(263.5 * var(--dp));
+}
+
+/* 화살표: Figma 왼쪽 x=25, 오른쪽 x=383 (16×29), 별자리 위에서 39 아래. 누르는 칸은 44px */
+.arrow {
+	position: absolute;
+	inset-block-start: calc(53.5 * var(--dp) - 22px);
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.arrow:first-child {
+	inset-inline-start: calc(33 * var(--dp) - 22px);
+}
+
+.arrow:last-child {
+	inset-inline-end: calc(11 * var(--dp) - 22px);
+}
+
+.arrow[hidden] {
+	display: grid;
+	visibility: hidden;
+}
+
+.arrow:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+
+.arrow svg {
+	inline-size: calc(16 * var(--dp));
+	block-size: calc(29 * var(--dp));
+	overflow: visible;
+}
+
+.arrow path {
+	fill: none;
+	stroke: var(--color-star-line);
+	stroke-width: 3;
 }
 
 .dots {
 	display: flex;
-	gap: 0.5rem;
+	gap: calc(11 * var(--dp));
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -94,12 +148,12 @@
 
 .dot,
 .dotActive {
-	inline-size: 0.5rem;
-	block-size: 0.5rem;
+	inline-size: calc(12 * var(--dp));
+	block-size: calc(12 * var(--dp));
 	border-radius: 50%;
-	background: rgb(233 220 255 / 35%);
+	background: var(--color-star);
 }
 
-.dotActive {
-	background: var(--color-accent-yellow);
+.dot {
+	opacity: 0.35;
 }

@@ -3,7 +3,7 @@ import { repo, STAR_MAX_CHARS, type Star } from "../api";
 import { useDiscardGuard } from "../hooks/useDiscardGuard";
 import { countChars } from "../lib/text";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { CloseIcon } from "./icons";
+import { FigmaCloseIcon } from "./icons";
 import { Overlay } from "./Overlay";
 import styles from "./WriteModal.module.css";
 
@@ -57,11 +57,11 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 						</h2>
 						<button
 							type="button"
-							className="icon-button"
+							className={`icon-button ${styles.close}`}
 							aria-label="닫기"
 							onClick={requestClose}
 						>
-							<CloseIcon />
+							<FigmaCloseIcon />
 						</button>
 					</header>
 					<textarea
@@ -71,7 +71,7 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 						placeholder="무엇이든 자유롭게 써보세요."
 						aria-label="별에 남길 이야기"
 						aria-describedby={counterId}
-						rows={9}
+						rows={12}
 						data-autofocus
 					/>
 					<p
@@ -87,7 +87,7 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 					)}
 					<button
 						type="submit"
-						className="button-primary"
+						className={`button-plain ${styles.submit}`}
 						disabled={!canSubmit}
 					>
 						{submitting ? "등록하는 중…" : "등록하기"}

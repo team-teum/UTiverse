@@ -120,11 +120,7 @@ export function CommentSection({
 					>
 						{length}/{COMMENT_MAX_CHARS}
 					</span>
-					<button
-						type="submit"
-						className="button-primary button-small"
-						disabled={!canSubmit}
-					>
+					<button type="submit" className="button-plain" disabled={!canSubmit}>
 						{submitting ? "등록 중…" : "등록"}
 					</button>
 				</div>

@@ -1,14 +1,17 @@
+/* Figma 54:6841: 날짜(20, 19)·X(307, 19)·본문(30, 72) — 카드 기준 디자인 px */
 .header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0.75rem 0.75rem 0.25rem 1.25rem;
+	padding: calc(19 * var(--dp) - 8px) calc(20 * var(--dp) - 12px) 0
+		calc(20 * var(--dp));
 }
 
 .date {
 	margin: 0;
 	font-family: var(--font-latin);
-	font-size: 1rem;
+	font-size: calc(20 * var(--dp));
+	font-weight: 400;
 }
 
 .headerActions {
@@ -47,16 +50,18 @@
 .scroll {
 	display: flex;
 	flex-direction: column;
-	gap: 1.25rem;
-	padding: 0.5rem 1.25rem 1.25rem;
+	gap: calc(24 * var(--dp));
+	padding: calc(16 * var(--dp)) calc(26 * var(--dp)) calc(24 * var(--dp))
+		calc(30 * var(--dp));
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
 
 .body {
 	margin: 0;
+	font-size: calc(20 * var(--dp));
+	line-height: 1.45;
 	white-space: pre-wrap;
-	line-height: 1.7;
 }
 
 .muted {

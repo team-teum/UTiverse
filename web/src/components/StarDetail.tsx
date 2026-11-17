@@ -4,7 +4,7 @@ import { useDiscardGuard } from "../hooks/useDiscardGuard";
 import { formatStarDate } from "../lib/text";
 import { CommentSection } from "./CommentSection";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { CloseIcon, MoreIcon } from "./icons";
+import { FigmaCloseIcon, MoreIcon } from "./icons";
 import { Overlay } from "./Overlay";
 import { ReactionBar } from "./ReactionBar";
 import styles from "./StarDetail.module.css";
@@ -12,12 +12,12 @@ import styles from "./StarDetail.module.css";
 interface StarDetailProps {
 	starId: string;
 	myProfileId: string;
-	/** 시트를 닫는 이동(뒤로가기 또는 ?star 제거) */
+	/** 창을 닫는 이동(뒤로가기 또는 ?star 제거) */
 	onClose: () => void;
 	onDeleted: () => void;
 }
 
-/** S10 별 상세: 날짜·본문·반응·댓글. `?star=:starId`로 열린다. */
+/** S10 별 상세 (Figma 「(남의) 별 눌렀을 때」 54:6841): 날짜·본문·반응·댓글. `?star=:starId`로 열린다. */
 export function StarDetail({
 	starId,
 	myProfileId,
@@ -50,7 +50,7 @@ export function StarDetail({
 
 	return (
 		<>
-			<Overlay variant="sheet" labelledBy={titleId} onDismiss={onClose}>
+			<Overlay variant="card" labelledBy={titleId} onDismiss={onClose}>
 				<header className={styles.header}>
 					<h2 id={titleId} className={styles.date}>
 						{star ? (
@@ -96,7 +96,7 @@ export function StarDetail({
 							onClick={onClose}
 							data-autofocus
 						>
-							<CloseIcon />
+							<FigmaCloseIcon />
 						</button>
 					</div>
 				</header>

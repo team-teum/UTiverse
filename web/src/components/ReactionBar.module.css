@@ -13,7 +13,7 @@
 	gap: 0.3rem;
 	min-block-size: 44px;
 	padding: 0 0.875rem;
-	border: 1px solid #c9c7d6;
+	border: 1px solid #d4d4d4;
 	border-radius: 999px;
 	background: #fff;
 	color: var(--color-ink);
@@ -22,8 +22,8 @@
 }
 
 .pressed {
-	border-color: var(--color-lavender);
-	background: #efe4ff;
+	border-color: var(--color-star-line);
+	background: var(--color-star);
 	font-weight: 700;
 }
 

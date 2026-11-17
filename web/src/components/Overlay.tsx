@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import styles from "./Overlay.module.css";
 
 interface OverlayProps {
-	/** 시트는 아래에 붙고, 모달은 가운데에 뜬다 */
-	variant: "sheet" | "modal" | "confirm";
+	/** card: 별 상세(Figma 341 카드), modal: 별 만들기(313 카드), confirm: 확인 창 */
+	variant: "card" | "modal" | "confirm";
 	labelledBy: string;
 	onDismiss?: () => void;
 	children: ReactNode;

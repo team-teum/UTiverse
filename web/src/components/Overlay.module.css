@@ -2,17 +2,10 @@
 	position: absolute;
 	inset: 0;
 	display: flex;
-	justify-content: center;
-}
-
-.sheet {
-	align-items: flex-end;
-}
-
-.modal,
-.confirm {
 	align-items: center;
-	padding: 1rem;
+	justify-content: center;
+	padding: calc(16 * var(--dp)) calc(16 * var(--dp))
+		calc(16 * var(--dp) + env(safe-area-inset-bottom, 0px));
 }
 
 .confirm {
@@ -22,33 +15,39 @@
 .backdrop {
 	position: absolute;
 	inset: 0;
-	background: rgb(0 0 0 / 55%);
+	background: rgb(0 0 0 / 45%);
 }
 
 .panel {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	inline-size: 100%;
 	max-block-size: 100%;
-	color: var(--color-ink);
-	background: var(--color-dialog);
+	color: #000;
 	outline: none;
+	overflow: hidden;
 }
 
-.sheet .panel {
-	max-block-size: 88%;
-	border-radius: 1.25rem 1.25rem 0 0;
-	padding-block-end: env(safe-area-inset-bottom, 0px);
+/* 별 상세: Figma Rectangle 55 (54:6879) 341×552, #EDEDED, 둥글기 12 */
+.card .panel {
+	inline-size: calc(341 * var(--dp));
+	min-block-size: min(100%, calc(552 * var(--dp)));
+	border-radius: 12px;
+	background: var(--color-card);
 }
 
+/* 별 만들기: Figma Rectangle 50 (37:13541) 313×514, #FFFCFC, 둥글기 10 */
 .modal .panel {
-	border-radius: 1.25rem;
+	inline-size: calc(313 * var(--dp));
+	border-radius: 10px;
+	background: var(--color-sheet);
 }
 
 .confirm .panel {
+	inline-size: 100%;
 	max-inline-size: 20rem;
-	border-radius: 1rem;
-	padding: 1.25rem;
 	gap: 1rem;
+	padding: 1.25rem;
+	border-radius: 12px;
+	background: var(--color-sheet);
 }

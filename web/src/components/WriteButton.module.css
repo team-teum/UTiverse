@@ -1,0 +1,24 @@
+.button {
+	display: grid;
+	place-items: center;
+	inline-size: max(44px, calc(57 * var(--dp)));
+	block-size: max(44px, calc(56 * var(--dp)));
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--color-star);
+	color: #0f0512;
+	cursor: pointer;
+}
+
+/* 연필 50×50이 원 왼쪽 위(3, 2)에서 시작 */
+.icon {
+	inline-size: calc(50 * var(--dp));
+	block-size: calc(50 * var(--dp));
+	transform: translate(calc(-1.5 * var(--dp)), calc(-1 * var(--dp)));
+}
+
+.icon svg {
+	inline-size: 100%;
+	block-size: 100%;
+}

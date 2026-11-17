@@ -57,3 +57,21 @@ export function StarShape() {
 		</svg>
 	);
 }
+
+/** Figma Vector 135·136: 20×20 X, 선 3 */
+export function FigmaCloseIcon() {
+	return (
+		<svg
+			viewBox="0 0 20 20"
+			width="20"
+			height="20"
+			aria-hidden="true"
+			focusable="false"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={3}
+		>
+			<path d="M0 0l20 20M20 0L0 20" />
+		</svg>
+	);
+}
