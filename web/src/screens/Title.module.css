@@ -1,35 +1,26 @@
 .start {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 1rem;
+	position: absolute;
+	inset: 0;
 	inline-size: 100%;
-	min-block-size: 100%;
-	padding: max(2rem, env(safe-area-inset-top, 0px))
-		max(1.5rem, env(safe-area-inset-right, 0px)) 2rem
-		max(1.5rem, env(safe-area-inset-left, 0px));
+	block-size: 100%;
+	padding: 0;
 	border: 0;
 	border-radius: 0;
-	background: transparent;
-	color: var(--color-lavender-light);
-	text-align: center;
+	background: #1f131f;
 	cursor: pointer;
 }
 
-.brand {
-	color: var(--color-lavender);
-	font-size: clamp(2rem, 1.5rem + 2vw, 3rem);
-	font-weight: 800;
-}
-
-.hint {
-	margin-block-start: 2rem;
-	color: var(--color-accent-yellow);
-}
-
+/* SPECIFICATION 6.1의 진입 안내 (Figma에는 없음, 장면을 가리지 않게 맨 아래에 작게) */
 .notice {
-	max-inline-size: 28ch;
-	margin-block-start: 2rem;
-	font-size: 0.875rem;
+	position: absolute;
+	inset-inline: calc(24 * var(--dp));
+	inset-block-end: calc(16 * var(--dp) + env(safe-area-inset-bottom, 0px));
+	margin: 0;
+	padding: 0.375rem 0.75rem;
+	border-radius: 999px;
+	background: rgb(0 0 0 / 55%);
+	color: #fff;
+	font-size: 0.75rem;
+	text-align: center;
+	pointer-events: none;
 }

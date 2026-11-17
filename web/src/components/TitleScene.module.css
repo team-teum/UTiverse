@@ -1,0 +1,56 @@
+/* 모든 좌표는 402×874 프레임 기준 디자인 px (Figma 39:5801) */
+.scene {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: radial-gradient(ellipse at center, #1f131f 0%, #211521 100%);
+	pointer-events: none;
+}
+
+.dimmed {
+	opacity: 0.4;
+}
+
+.scene > * {
+	position: absolute;
+}
+
+.scene img {
+	object-fit: fill;
+}
+
+/* 「백」 679×905, 180° 돌린 그림(파일에 이미 반영) */
+.bg {
+	inset-inline-start: calc(-136 * var(--dp));
+	inset-block-start: calc(-9 * var(--dp));
+	inline-size: calc(679 * var(--dp));
+	block-size: calc(905 * var(--dp));
+}
+
+.bg img {
+	object-fit: cover;
+}
+
+/* 「그림」 원형 그림 480×478.5 (가장자리 흐림 포함) */
+.art {
+	inset-inline-start: calc(-37.7 * var(--dp));
+	inset-block-start: calc(210.07 * var(--dp));
+	inline-size: calc(480.007 * var(--dp));
+	block-size: calc(478.476 * var(--dp));
+}
+
+/* 「Text on a Path – uTiverse」: 글자 147.5×47.7 + 빛 효과 여백까지 포함한 SVG */
+.logo {
+	inset-inline-start: calc(-119.98 * var(--dp));
+	inset-block-start: calc(156.37 * var(--dp));
+	inline-size: calc(645.132 * var(--dp));
+	block-size: calc(544.921 * var(--dp));
+}
+
+/* 「화면을 클릭해서 시작하기」: 글자 127.3×11.5 + 효과 여백 */
+.tap {
+	inset-inline-start: calc(-110.5 * var(--dp));
+	inset-block-start: calc(220.85 * var(--dp));
+	inline-size: calc(627.296 * var(--dp));
+	block-size: calc(511.535 * var(--dp));
+}

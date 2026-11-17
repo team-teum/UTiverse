@@ -7,6 +7,7 @@ import {
 import { MyShip } from "../screens/MyShip";
 import { OtherShip } from "../screens/OtherShip";
 import { Title } from "../screens/Title";
+import { Tutorial } from "../screens/Tutorial";
 import { Universe } from "../screens/Universe";
 import { AppFrame } from "./AppFrame";
 
@@ -15,6 +16,7 @@ export const router = createBrowserRouter(
 	createRoutesFromElements(
 		<Route element={<AppFrame />}>
 			<Route index element={<Title />} />
+			<Route path="tutorial" element={<Tutorial />} />
 			<Route path="universe" element={<Universe />} />
 			<Route path="me" element={<MyShip />} />
 			<Route path="ship/:profileId" element={<OtherShip />} />

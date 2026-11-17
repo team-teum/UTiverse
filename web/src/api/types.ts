@@ -55,6 +55,9 @@ export interface Repository {
 	deleteComment(commentId: string): Promise<void>;
 	getReactions(starId: string): Promise<ReactionSummary>;
 	toggleReaction(starId: string, type: ReactionType): Promise<void>;
+	/** 튜토리얼을 끝까지 봤거나 건너뛰었는지 (샌드박스: 메모리, 새로고침하면 초기화) */
+	isTutorialDone(): Promise<boolean>;
+	completeTutorial(): Promise<void>;
 	/** 데이터가 바뀌면 listener를 부른다. 반환값은 구독 해제 함수 */
 	subscribe(listener: () => void): () => void;
 }

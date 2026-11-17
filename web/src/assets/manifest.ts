@@ -1,6 +1,14 @@
 // 에셋 키 → 파일 경로. 이미지는 이 표를 통해서만 참조한다(docs/ASSETS.md).
 // 파일이 없으면 AssetImage가 키 이름이 적힌 점선 상자(또는 지정한 대체 그림)를 보여 준다.
 export const assets = {
+	"bg.title": "/assets/bg/title.webp",
+	"brand.titleArt": "/assets/brand/title-art.png",
+	"brand.logo": "/assets/brand/logo.svg",
+	"brand.tapToStart": "/assets/brand/tap-to-start.svg",
+	"character.tini": "/assets/character/tini.png",
+	"character.tiniTalk": "/assets/character/tini-talk.png",
+	"ui.speechBubble": "/assets/ui/speech-bubble.png",
+	"ui.pointer": "/assets/ui/pointer.png",
 	"ship.default": "/assets/ship/default.png",
 	"ship.preset01": "/assets/ship/preset-01.png",
 	"ship.preset02": "/assets/ship/preset-02.png",

@@ -54,6 +54,8 @@ const profiles = new Map<string, Profile>([[me.id, me]]);
 let stars: Star[] = [];
 let comments: StoredComment[] = [];
 let reactions: StoredReaction[] = [];
+/** 새 테스터가 새로고침하면 다시 false가 되어 튜토리얼을 처음부터 본다 */
+let tutorialDone = false;
 
 function daysAgo(days: number, order: number): string {
 	// 같은 날 여러 개면 순서대로 몇 분씩 띄운다.
@@ -244,6 +246,14 @@ export const sandboxRepository: Repository = {
 			? reactions.filter((item) => !isMine(item))
 			: [...reactions, { starId, profileId: me.id, type }];
 		notify();
+	},
+
+	async isTutorialDone() {
+		return tutorialDone;
+	},
+
+	async completeTutorial() {
+		tutorialDone = true;
 	},
 
 	subscribe(listener) {

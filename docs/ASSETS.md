@@ -40,7 +40,7 @@ Figma 링크는 「1109 화면 목업 구성」 파일의 해당 노드다. `has
 
 | 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
 |---|---|---|---|---|---|---|
-| `bg.title` | `web/public/assets/bg/title.png` | S01 타이틀, S02 튜토리얼 배경 | 「백」 [44:11637](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11637) · hash `6da85a40` | 화면 전체 cover · 원본 679×905 (≈3:4) | 임시 | 화면 비율이 달라도 가운데 기준으로 잘림. 중요한 요소는 가운데 402×600 안에 |
+| `bg.title` | `web/public/assets/bg/title.webp` | S01 타이틀, S02 튜토리얼 배경 | 「백」 [44:11637](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11637) · hash `6da85a40` | 화면 전체 cover · 원본 679×905 (≈3:4) | 임시 | 화면 비율이 달라도 가운데 기준으로 잘림. 중요한 요소는 가운데 402×600 안에 |
 | `brand.titleArt` | `web/public/assets/brand/title-art.png` | S01 가운데 원형 그림 (토끼들 + 행성) | 「그림」 [44:11638](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11638) (안의 image 40 [44:11640](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11640) · hash `b7681173`) | 약 330×330 · 1:1 | 임시 | 투명 배경 |
 | `brand.logo` | `web/public/assets/brand/logo.svg` | S01 "uTiverse" 곡선 로고 | 「Text on a Path – uTiverse」 [44:11641](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=44-11641) | 148×48 · 약 3:1 | 임시 | SVG(흰색). 글자 색을 코드에서 바꾸지 않음 |
 | `brand.tapToStart` | `web/public/assets/brand/tap-to-start.svg` | S01 "화면을 클릭해서 시작하기" | [57:13589](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=57-13589) | 127×12 | 임시 | 디자이너가 텍스트로 바꾸길 원하면 파일 삭제 → 코드 텍스트로 대체 가능 |
@@ -115,6 +115,7 @@ Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnO
   - 예시 우주선 10개는 `ship.preset01`~`03`을 돌려 쓴다(파일이 모두 같은 그림이라 용량만 늘지 않게). 디자이너가 사람마다 다른 우주선을 주면 키를 늘리고 examples.ts의 `ship`을 바꾼다.
   - `constellation.star` ← 37:12345 SVG(25×24, #FFE9E9). 내보낸 파일에 붙어 온 회색 배경 사각형만 뺐다.
   - `ui.write` ← image 54(37:11874) 원본(150×150로 축소). 분홍 원(#FFE9E9 57×56)은 코드로 그린다.
+  - 타이틀·튜토리얼 (2026-11-17): `bg.title` ← 「백」 원본을 180° 돌려 WebP로(PNG 1.4MB → 214KB, 그래서 확장자를 webp로 바꿈). `brand.titleArt` ← image 41에 Ellipse 21 흐림 마스크를 입혀 투명 PNG(480×478의 3배)로 만듦. `brand.logo`·`brand.tapToStart` ← Figma SVG 그대로(빛 효과 여백이 포함되어 645×545, 627×512 — 위치는 코드가 맞춤, 교체 시 같은 여백으로 내보내기). `character.tini`(/<)·`character.tiniTalk`(//) ← 요정 시트 d0601에서 Figma가 쓰는 두 칸. `ui.speechBubble` ← image 51(테두리)+흰 채움 두 도형을 합친 3배 PNG(글자 없음). `ui.pointer` ← 지시봉 손 부분만(막대는 코드로 그림).
   - `bg.space`는 아직 없다. 셰이더 채우기 노드(44:11686)에 상단 아이콘이 함께 들어 있어 배경만 따로 내보낼 수 없다. 디자이너가 아이콘 없는 배경 프레임을 만들어 주면 넣는다.
   - `public/assets/`는 Biome 검사에서 제외했다(디자이너 파일을 고치지 않기 위해).
 
