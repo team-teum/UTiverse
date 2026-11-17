@@ -9,6 +9,13 @@ export const assets = {
 	"avatar.preset01": "/assets/avatar/preset-01.png",
 	"avatar.preset02": "/assets/avatar/preset-02.png",
 	"avatar.preset03": "/assets/avatar/preset-03.png",
+	"avatar.preset04": "/assets/avatar/preset-04.png",
+	"avatar.preset05": "/assets/avatar/preset-05.png",
+	"avatar.preset06": "/assets/avatar/preset-06.png",
+	"avatar.preset07": "/assets/avatar/preset-07.png",
+	"avatar.preset08": "/assets/avatar/preset-08.png",
+	"avatar.preset09": "/assets/avatar/preset-09.png",
+	"avatar.preset10": "/assets/avatar/preset-10.png",
 	"constellation.star": "/assets/constellation/star.svg",
 	"ui.write": "/assets/ui/write.png",
 } as const;

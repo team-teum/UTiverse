@@ -76,8 +76,6 @@ function loadExamples() {
 		profiles.set(profile.id, profile);
 		idByKey.set(example.key, profile.id);
 	}
-	// 반응 수를 채울 때 쓸 예시 프로필 (같은 사람이 같은 종류를 두 번 누를 수 없음)
-	const reactors = [...idByKey.values()];
 
 	for (const example of exampleProfiles) {
 		const profileId = idByKey.get(example.key) ?? "";
@@ -98,6 +96,8 @@ function loadExamples() {
 					createdAt: daysAgo(comment.daysAgo, commentIndex),
 				});
 			});
+			// 반응은 글쓴이를 뺀 다른 예시 프로필이 누른 것으로 친다(같은 사람이 같은 종류를 두 번 누를 수 없음).
+			const reactors = [...idByKey.values()].filter((id) => id !== profileId);
 			for (const type of REACTION_TYPES) {
 				const count = Math.min(
 					exampleStar.reactions?.[type] ?? 0,
