@@ -109,6 +109,8 @@ Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnO
 
 ## 4. 내보내기 메모 (개발자용)
 
+- **현재 상태 (2026-11-17):** `web/src/assets/manifest.ts`에 `ship.default`, `avatar.me`, `constellation.star`, `ui.write` 키가 있다. 이미지 파일은 아직 내보내지 않았다. 파일이 없으면 우주선·아바타는 키 이름이 적힌 점선 상자, 별자리 별과 연필 버튼은 코드로 그린 대체 그림(`fallback`)을 보여 준다. 위 표의 경로에 파일을 넣으면 코드 수정 없이 바뀐다.
+
 - 임시 에셋은 개발 착수 시 Figma에서 위 노드를 **3배 PNG / SVG**로 내보내 지정 경로에 넣는다. 해시가 같은 노드는 한 번만 내보낸다.
 - `bg.space`는 셰이더라 노드 렌더(PNG 3배)를 쓴다.
 - `ship.default`의 남색 배경은 임시본 그대로 두고, "투명 배경 필요"를 디자이너 할 일로 남긴다.

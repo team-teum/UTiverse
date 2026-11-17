@@ -1,0 +1,54 @@
+.layer {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	justify-content: center;
+}
+
+.sheet {
+	align-items: flex-end;
+}
+
+.modal,
+.confirm {
+	align-items: center;
+	padding: 1rem;
+}
+
+.confirm {
+	z-index: 2;
+}
+
+.backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 55%);
+}
+
+.panel {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	inline-size: 100%;
+	max-block-size: 100%;
+	color: var(--color-ink);
+	background: var(--color-dialog);
+	outline: none;
+}
+
+.sheet .panel {
+	max-block-size: 88%;
+	border-radius: 1.25rem 1.25rem 0 0;
+	padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+
+.modal .panel {
+	border-radius: 1.25rem;
+}
+
+.confirm .panel {
+	max-inline-size: 20rem;
+	border-radius: 1rem;
+	padding: 1.25rem;
+	gap: 1rem;
+}

@@ -65,3 +65,63 @@ body {
 .skip-link:focus {
 	transform: translateY(0);
 }
+
+.button-primary,
+.button-secondary,
+.button-danger {
+	min-block-size: 44px;
+	padding: 0 1.25rem;
+	border: 0;
+	border-radius: 999px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.button-primary {
+	background: var(--color-lavender);
+	color: var(--color-ink);
+}
+
+.button-secondary {
+	background: #d6d4e0;
+	color: var(--color-ink);
+}
+
+.button-danger {
+	background: #c4253f;
+	color: #fff;
+}
+
+.button-small {
+	min-block-size: 36px;
+	padding: 0 1rem;
+}
+
+:where(.button-primary, .button-secondary, .button-danger):disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.icon-button {
+	display: inline-grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.icon-button:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+
+.error-text {
+	margin: 0;
+	font-size: 0.875rem;
+	color: #c4253f;
+}

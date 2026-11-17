@@ -1,0 +1,48 @@
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1.25rem;
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.title {
+	margin: 0;
+	font-size: 1.125rem;
+}
+
+.input {
+	inline-size: 100%;
+	min-block-size: 12rem;
+	padding: 0.875rem;
+	border: 1px solid #c9c7d6;
+	border-radius: 0.75rem;
+	background: #fff;
+	color: var(--color-ink);
+	resize: none;
+	line-height: 1.6;
+}
+
+.counter {
+	margin: 0;
+	align-self: flex-end;
+	font-family: var(--font-latin);
+	font-size: 0.8125rem;
+	color: #5c5970;
+}
+
+.over {
+	color: #c4253f;
+	font-weight: 700;
+}
+
+.error {
+	margin: 0;
+	font-size: 0.875rem;
+	color: #c4253f;
+}

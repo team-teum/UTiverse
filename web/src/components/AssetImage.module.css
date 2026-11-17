@@ -1,0 +1,37 @@
+.wrap {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+}
+
+.image {
+	inline-size: 100%;
+	block-size: 100%;
+	object-fit: contain;
+}
+
+.missing {
+	display: grid;
+	place-items: center;
+	inline-size: 100%;
+	block-size: 100%;
+	border: 2px dashed var(--color-stroke);
+	border-radius: 0.5rem;
+	color: var(--color-lavender-light);
+	font-family: var(--font-latin);
+	font-size: 0.75rem;
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+
+.debug {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 0;
+	padding: 0 0.25rem;
+	background: rgb(0 0 0 / 70%);
+	color: var(--color-accent-yellow);
+	font-family: var(--font-latin);
+	font-size: 0.625rem;
+	pointer-events: none;
+}
