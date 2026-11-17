@@ -18,7 +18,9 @@ npm run dev
 | `npm run format` | 코드 포맷팅 |
 | `npm run check` | 린팅 + 포맷팅 + 타입 검사 |
 | `npm run build` | 프로덕션 빌드 → `dist/` |
-| `npm run deploy` | Cloudflare 배포 (최초 실행 전 `npx wrangler login`) |
+| `npm run deploy` | 수동 배포 (최초 실행 전 `npx wrangler login`) |
+
+`main`에 push하면 코드 검사·빌드 후 Cloudflare에 자동 배포합니다. 저장소 Actions secrets에 `CLOUDFLARE_API_TOKEN`과 `CLOUDFLARE_ACCOUNT_ID`가 필요합니다.
 
 ## 파일 구조
 
@@ -32,5 +34,5 @@ web/
   vite.config.ts   개발·빌드 설정
   wrangler.jsonc   Cloudflare 정적 SPA 배포 설정
 biome.json         린팅·포맷팅 설정
-.github/workflows/ci.yml  main push 코드 검사
+.github/workflows/ci.yml  main push 코드 검사·배포
 ```

@@ -20,7 +20,7 @@
 | 기능 F MY·별 만들기 | 미착수 | |
 | 기능 G 꾸미기 | 미착수 | |
 | 기능 H 메뉴·캘린더·북마크·설정 | 미착수 | |
-| Cloudflare 배포 | 설정·로컬 검증 완료 / 실배포 미착수 | Wrangler dry-run 및 로컬 SPA fallback 확인. 계정 로그인·실배포 안 함 |
+| Cloudflare 배포 | scaffold 수동 배포 완료 / 자동 배포 설정·토큰 대기 | 공개 URL 및 Chromium 직접 진입·새로고침 검증. GitHub Actions 배포는 API token 설정·push 후 확인 |
 
 ### 0.1 11/19 납품 범위와 구현 순서
 
@@ -57,7 +57,7 @@
 | DB·인증 | Supabase (Postgres, Auth). 스키마는 `supabase/migrations/*.sql` |
 | 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
 | 도구 | Node.js 24 LTS (`.nvmrc`: 24.22.2), npm 11.19.1로 검증, Wrangler 4.162.0(로컬 devDependency). Supabase CLI는 실제 DB 착수 시 추가 |
-| 코드 검사 | Biome 2.6.8 (`biome init` 기본 formatter·권장 lint·import 정렬) + TypeScript strict. main push마다 GitHub Actions에서 검사만 실행 |
+| 코드 검사 | Biome 2.6.8 (`biome init` 기본 formatter·권장 lint·import 정렬) + TypeScript strict. main push마다 GitHub Actions에서 검사 통과 후 빌드·배포 |
 | 테스트 | Scaffold에는 테스트 프레임워크를 두지 않음. 필요한 기능과 함께 작은 테스트부터 추가. 실제 DB 두 계정 점검은 9장 |
 
 위 버전은 2026-11-16 기준이다. React·라우터·Vite·TypeScript·Biome·Wrangler만 현재 설치했다(3.1). 미사용 Query provider와 Vitest/Playwright 테스트 환경은 lean scaffold 결정에 따라 제거했다. Supabase JS·Query·Phosphor·Supabase CLI는 필요할 때 추가하는 후속 선택이다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
@@ -112,7 +112,7 @@ UTiverse/
 **현재 범위**
 - React·TypeScript strict·Vite, BrowserRouter, 작은 AppFrame·내비게이션과 `/`·`/universe`·`/me` 플레이스홀더만 둔다. 도메인 기능·데이터 계층·최종 Figma 화면은 미구현이다.
 - 미사용 Query provider, Vitest·Testing Library·jsdom·Playwright 환경을 제거했다. 테스트·추상화는 필요한 기능과 함께 추가한다. CLI는 로컬 의존성이다.
-- `.github/workflows/ci.yml`: main에 push할 때마다 Node `.nvmrc` + `npm ci` → `npm run check` (Biome lint·format·import 정렬 검사·TypeScript). 파일 자동 수정·커밋·배포는 하지 않는다. 직접 push 후 실행되는 검사이며 push 자체를 막지는 않는다.
+- `.github/workflows/ci.yml`: main push마다 Node `.nvmrc` + `npm ci` → `npm run check` → `npm run deploy` (빌드 포함). 검사 실패 시 배포하지 않고 파일 자동 수정·커밋은 하지 않는다. concurrency로 병렬 배포를 제한한다. 직접 push를 막는 보호 규칙은 아니다. 계정 ID·배포 토큰은 저장소 Actions secrets로 전달하며 로컬 OAuth 자격 증명은 업로드하지 않는다.
 - 루트 `biome.json`은 `biome init` 기본 설정이다. 로컬 포맷 수정은 `cd web && npm run format`, import 정렬·안전한 lint 수정은 `npx biome check --write .`. 웹 코드·설정 중 Biome 지원 파일만 검사하며 YAML 워크플로·문서 전체 포맷은 하지 않는다. 기존 Oxlint·Prettier 패키지와 설정은 제거했다.
 
 **직접 확인한 항목**
@@ -120,13 +120,20 @@ UTiverse/
 - [x] `npm run check`: Biome 기본 lint·format·import 정렬 검사와 strict 타입 검사 통과.
 - [x] `npm run build`: production build 통과.
 - [ ] GitHub-hosted CI 실행 결과 (push 후 확인).
-- [ ] 실제 기기·Cloudflare 실배포 확인.
+- [x] Cloudflare scaffold 수동 배포 및 공개 URL Chromium 시작·`/me` 직접 진입/새로고침·미지 경로 복귀 확인.
+- [ ] 실제 휴대폰 기기 확인.
 
 **검증 기록 (2026-11-16)**
 - 환경: Node 24.22.2 / npm 11.19.1, 로컬 macOS.
 - 재현: `cd web && npm ci && npm run check && npm run build`.
 - 이전 scaffold에서 Chromium 내비게이션/프레임 스모크 및 Wrangler 로컬 fallback/dry-run을 확인했으나 테스트 환경은 이번 경량화에서 제거했다. 현재 CI에 브라우저 테스트는 없다.
 - 도메인 기능·실제 DB는 여전히 미착수다. 기본 검사 통과를 MVP 기능 완료로 해석하지 않는다.
+
+**배포 검증 기록 (2026-11-17)**
+- `npm run check && npm run deploy` 성공. 공개 scaffold: https://utiverse.11-5e0.workers.dev
+- `/`, `/me`, `/universe`, 미지 경로의 HTTP 200 SPA fallback 및 JS/CSS HTTP 200 확인. 일회성 Chromium 검사에서 시작·`/me` 새로고침·미지 경로 복귀와 런타임/로딩 오류 없음을 확인했다. 저장소에 테스트 환경을 추가하지 않았다.
+- GitHub 저장소에 `CLOUDFLARE_ACCOUNT_ID` secret을 설정했다. `CLOUDFLARE_API_TOKEN`은 계정 소유자가 발급·등록해야 하며 자동 배포는 아직 실행 검증 전이다.
+- 현재 Cloudflare 계정 소유권은 개인 계정에 남는 타협안을 수용했다. GitHub push 권한으로 배포를 공유하되 장기 계정 소유권 이전은 별도 과제다.
 
 ## 4. 화면 비율과 레이아웃
 
@@ -661,8 +668,8 @@ npx wrangler deploy        # 출력된 workers.dev 주소를 Supabase Site URL�
 - [ ] 링크만으로 샌드박스가 열리고 Supabase 설정 없이 글·댓글·반응, 타인 글·별자리·아바타, 랜덤·주변 탐색이 동작한다.
 - [ ] 샌드박스 변경·튜토리얼 상태는 클라이언트 이동 중 유지되고 새로고침하면 초기화된다. 실제 Auth·DB 요청은 없고 다음 테스터는 같은 초기 콘텐츠로 시작한다.
 - [ ] 타이틀 아무 곳 시작 후 강제 튜토리얼·가입 없이 탐색·참여할 수 있다. 기본 회전·서로 다른 아바타/우주선 각 3종 이상이 보인다.
-- [ ] 배포 주소에서 화면이 보이고, `/me` 같은 내부 경로에서 새로고침해도 열린다.
-- [ ] 개발자 도구에 파일 로딩 오류가 없다.
+- [x] 배포 주소에서 화면이 보이고, `/me` 같은 내부 경로에서 새로고침해도 열린다 (2026-11-17 scaffold Chromium 확인).
+- [x] 개발자 도구에 파일 로딩 오류가 없다 (동일 흐름의 브라우저 요청 실패·HTTP 오류·JS 예외 검사).
 - [ ] 실제 DB 모드 제공 시: 배포 주소에서 로그인·로그아웃이 된다. 회원가입을 구현했으면 함께 검증하고 사전 계정만 제공한 경우 가입은 미검증으로 남긴다.
 - [ ] 실제 DB 모드 제공 시: 휴대폰에서 9장 권한 점검, 정지된 기존 세션 차단, 신고 운영·계정 삭제 요청 경로를 확인한다.
 
