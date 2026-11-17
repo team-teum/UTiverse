@@ -9,6 +9,7 @@ export const assets = {
 	"character.tiniTalk": "/assets/character/tini-talk.png",
 	"ui.speechBubble": "/assets/ui/speech-bubble.png",
 	"ui.pointer": "/assets/ui/pointer.png",
+	"avatar.sheet": "/assets/avatar/sheet.png",
 	"constellation.star": "/assets/constellation/star.svg",
 	"ui.write": "/assets/ui/write.png",
 } as const;

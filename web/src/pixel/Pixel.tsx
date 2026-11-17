@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { loadAvatarSheet } from "./character";
 import {
 	CHARACTER_SIZE,
 	drawCharacter,
@@ -7,6 +8,10 @@ import {
 	ROOM_SIZE,
 	SHIP_SIZE,
 } from "./draw";
+
+/** 캔버스 내부 해상도 배율: 도트(fillRect)는 그대로 또렷하고, 아바타 그림은 덜 뭉개진다 */
+const RES = 4;
+
 import type { Look } from "./look";
 import styles from "./Pixel.module.css";
 
@@ -33,21 +38,31 @@ export function Pixel({ kind, look, label, className }: PixelProps) {
 	const key = JSON.stringify(look);
 
 	useEffect(() => {
-		const canvas = ref.current;
-		const ctx = canvas?.getContext("2d");
-		if (!canvas || !ctx) return;
-		const current = JSON.parse(key) as Look;
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		if (kind === "character" || kind === "face") drawCharacter(ctx, current);
-		else if (kind === "ship") drawShip(ctx, current);
-		else drawRoom(ctx, current);
-	}, [kind, key]);
+		let active = true;
+		const draw = () => {
+			const canvas = ref.current;
+			const ctx = canvas?.getContext("2d");
+			if (!active || !canvas || !ctx) return;
+			const current = JSON.parse(key) as Look;
+			ctx.setTransform(RES, 0, 0, RES, 0, 0);
+			ctx.clearRect(0, 0, width, height);
+			if (kind === "character" || kind === "face") drawCharacter(ctx, current);
+			else if (kind === "ship") drawShip(ctx, current);
+			else drawRoom(ctx, current);
+		};
+		draw();
+		// 아바타 시트를 처음 불러오면 다시 그린다
+		loadAvatarSheet().then(draw, () => {});
+		return () => {
+			active = false;
+		};
+	}, [kind, key, width, height]);
 
 	return (
 		<canvas
 			ref={ref}
-			width={width}
-			height={height}
+			width={width * RES}
+			height={height * RES}
 			className={`${styles.pixel} ${className ?? ""}`}
 			role={label ? "img" : undefined}
 			aria-label={label || undefined}

@@ -245,7 +245,7 @@ export function drawShip(ctx: Ctx, look: Look) {
 	ctx.arc(CX + 0.5, wy + 0.5, 8.6, 0, Math.PI * 2);
 	ctx.clip();
 	// 머리만 창 아래쪽에서 쏙 올라온 모습 (얼굴 위쪽이 창 가운데에 오게)
-	drawCharacter(ctx, look, CX - 12, wy - 12);
+	drawCharacter(ctx, look, CX - 12, wy - 18);
 	ctx.restore();
 	paint(
 		ctx,

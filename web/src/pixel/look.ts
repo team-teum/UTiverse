@@ -1,15 +1,11 @@
 // 캐릭터·우주선 꾸미기 상태와 고를 수 있는 아이템 목록.
 // 그림은 이미지 파일이 아니라 코드로 그린 픽셀 아트다(pixel/draw*.ts). 새 아이템은 여기 목록과 그리는 코드를 함께 늘린다.
 
+import { AVATAR_IDS, DEFAULT_AVATAR } from "./character";
+
 export interface Look {
-	// 캐릭터
-	skin: string;
-	hairStyle: string;
-	hairColor: string;
-	outfit: string;
-	headwear: string;
-	glasses: string;
-	expression: string;
+	// 캐릭터: 원래 시안 아바타 시트에서 고른 인물 id (pixel/character.ts)
+	avatar: string;
 	// 우주선
 	hull: string;
 	wallpaper: string;
@@ -23,15 +19,9 @@ export interface Look {
 	flag: string;
 }
 
-/** 처음 시작하는 밍숭맹숭한 기본 모습: 옷·머리 없음, 빈 방 */
+/** 처음 모습: Figma 기본 아바타(「Star / Lumi」 칸)와 빈 방 */
 export const DEFAULT_LOOK: Look = {
-	skin: "base",
-	hairStyle: "none",
-	hairColor: "brown",
-	outfit: "none",
-	headwear: "none",
-	glasses: "none",
-	expression: "plain",
+	avatar: DEFAULT_AVATAR,
 	hull: "sky",
 	wallpaper: "plain",
 	floor: "wood",
@@ -63,108 +53,22 @@ export interface Tab {
 
 const none = { id: "none", label: "없음" };
 
-/** Figma 「내 캐릭터 꾸미기」(33:15522) 탭: 몸 / 우주복 / 장신구 / 기타 */
+/**
+ * 「내 캐릭터 꾸미기」: 원래 시안 아바타 시트의 인물 중 하나를 고른다.
+ * 옷·머리를 따로 입히려면 디자이너가 부위별로 나눈 그림이 필요하다(new_requests.md 003).
+ */
 export const AVATAR_TABS: Tab[] = [
 	{
-		id: "body",
-		label: "몸",
+		id: "character",
+		label: "캐릭터",
 		categories: [
 			{
-				key: "skin",
-				label: "피부색",
-				options: [
-					{ id: "base", label: "기본" },
-					{ id: "tone1", label: "피부 1" },
-					{ id: "tone2", label: "피부 2" },
-					{ id: "tone3", label: "피부 3" },
-					{ id: "tone4", label: "피부 4" },
-					{ id: "tone5", label: "피부 5" },
-					{ id: "mint", label: "민트" },
-				],
-			},
-			{
-				key: "hairStyle",
-				label: "머리 모양",
-				options: [
-					none,
-					{ id: "short", label: "짧은 머리" },
-					{ id: "bob", label: "단발" },
-					{ id: "long", label: "긴 머리" },
-					{ id: "bun", label: "똥머리" },
-					{ id: "curly", label: "곱슬" },
-				],
-			},
-			{
-				key: "hairColor",
-				label: "머리 색",
-				options: [
-					{ id: "brown", label: "갈색" },
-					{ id: "black", label: "검정" },
-					{ id: "blond", label: "금발" },
-					{ id: "pink", label: "분홍" },
-					{ id: "blue", label: "하늘" },
-					{ id: "silver", label: "은발" },
-				],
-			},
-		],
-	},
-	{
-		id: "suit",
-		label: "우주복",
-		categories: [
-			{
-				key: "outfit",
-				label: "옷",
-				options: [
-					none,
-					{ id: "tee", label: "티셔츠" },
-					{ id: "hoodie", label: "후드티" },
-					{ id: "overalls", label: "멜빵바지" },
-					{ id: "dress", label: "원피스" },
-					{ id: "spacesuit", label: "우주복" },
-				],
-			},
-		],
-	},
-	{
-		id: "accessory",
-		label: "장신구",
-		categories: [
-			{
-				key: "headwear",
-				label: "머리 장식",
-				options: [
-					none,
-					{ id: "beanie", label: "비니" },
-					{ id: "headphones", label: "헤드폰" },
-					{ id: "starpin", label: "별 핀" },
-					{ id: "cap", label: "모자" },
-				],
-			},
-			{
-				key: "glasses",
-				label: "안경",
-				options: [
-					none,
-					{ id: "round", label: "동그란 안경" },
-					{ id: "square", label: "네모 안경" },
-				],
-			},
-		],
-	},
-	{
-		id: "etc",
-		label: "기타",
-		categories: [
-			{
-				key: "expression",
-				label: "표정",
-				options: [
-					{ id: "plain", label: "기본" },
-					{ id: "smile", label: "웃음" },
-					{ id: "blush", label: "발그레" },
-					{ id: "sleepy", label: "졸림" },
-				],
+				key: "avatar",
+				label: "캐릭터",
+				options: AVATAR_IDS.map((id, index) => ({
+					id,
+					label: `${index + 1}`,
+				})),
 			},
 		],
 	},
