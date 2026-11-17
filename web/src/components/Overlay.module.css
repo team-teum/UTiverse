@@ -21,6 +21,13 @@
 	}
 }
 
+/* 휴대폰에서는 주소창 높이가 바뀌어도 가로 폭을 줄이지 않는다. */
+@media (width < 48rem) {
+	.layer {
+		inline-size: 100%;
+	}
+}
+
 /* 닫힌 dialog의 기본 display:none을 덮어쓰지 않는다. */
 .layer[open] {
 	display: flex;
