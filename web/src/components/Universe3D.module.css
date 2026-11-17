@@ -1,0 +1,138 @@
+.view {
+	display: grid;
+	justify-items: center;
+	inline-size: 100%;
+}
+
+.help {
+	margin: 0 0 0.5rem;
+	font-size: 0.875rem;
+	text-align: center;
+	color: var(--color-lavender-light);
+}
+
+.globe {
+	position: relative;
+	inline-size: 100%;
+	aspect-ratio: 1;
+	-webkit-user-select: none;
+	user-select: none;
+	/* 회전 영역에서만 브라우저의 스크롤 제스처를 막는다. */
+	touch-action: none;
+	cursor: grab;
+}
+
+.globe::before {
+	content: "";
+	position: absolute;
+	inset: 12%;
+	border: 1px solid rgb(190 154 250 / 12%);
+	border-radius: 50%;
+	background:
+		radial-gradient(ellipse at 30% 35%, rgb(90 177 224 / 16%), transparent 65%),
+		radial-gradient(ellipse at 70% 65%, rgb(190 154 250 / 13%), transparent 65%);
+	box-shadow: 0 0 60px rgb(190 154 250 / 5%);
+	pointer-events: none;
+}
+
+.handle {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	padding: 0;
+	border: 0;
+	border-radius: 1rem;
+	background: transparent;
+	cursor: inherit;
+}
+
+.stars {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	pointer-events: none;
+}
+
+.star {
+	position: absolute;
+	inset-inline-start: 50%;
+	inset-block-start: 50%;
+	inline-size: 44px;
+	block-size: 44px;
+}
+
+.link {
+	position: relative;
+	display: grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	border-radius: 50%;
+	color: #fff;
+	text-decoration: none;
+}
+
+.front .link {
+	pointer-events: auto;
+}
+
+.dragging,
+.dragging .link {
+	cursor: grabbing;
+}
+
+.dot {
+	inline-size: 8px;
+	block-size: 8px;
+	border-radius: 50%;
+	background: var(--color-star);
+	box-shadow:
+		0 0 8px #ffd6d6,
+		0 0 20px rgb(190 154 250 / 60%);
+	transform: scale(var(--star-scale));
+}
+
+.name {
+	position: absolute;
+	inset-block-start: 36px;
+	inset-inline-start: 50%;
+	box-sizing: border-box;
+	inline-size: max-content;
+	max-inline-size: calc(110 * var(--dp));
+	padding: 0.2rem 0.4rem;
+	border: 1px solid rgb(190 154 250 / 35%);
+	border-radius: 1rem;
+	background: rgb(7 8 17 / 90%);
+	font-size: 0.8125rem;
+	line-height: 1.4;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transform: translateX(-50%);
+}
+
+.badge {
+	margin-inline-start: 0.3rem;
+	font-size: 0.625rem;
+	color: var(--color-lavender-light);
+}
+
+.back .dot {
+	opacity: 0.3;
+	filter: blur(1px);
+}
+
+.back .name {
+	visibility: hidden;
+}
+
+.link:hover .dot,
+.link:focus-visible .dot {
+	background: var(--color-accent-yellow);
+}
+
+.link:hover .name,
+.link:focus-visible .name {
+	border-color: var(--color-accent-yellow);
+}

@@ -42,7 +42,7 @@ export interface ReactionSummary {
 export interface Repository {
 	getMyProfile(): Promise<Profile>;
 	getProfile(profileId: string): Promise<Profile | null>;
-	/** 나를 뺀 우주선 목록 (탐색 기능 전 임시 진입용) */
+	/** 나를 뺀 우주선 목록. 우주의 점 하나가 프로필 하나에 대응한다. */
 	listOtherProfiles(): Promise<Profile[]>;
 	/** 오래된 순 */
 	listStars(profileId: string): Promise<Star[]>;

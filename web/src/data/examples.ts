@@ -8,14 +8,14 @@ import type { Look } from "../pixel/look";
 //   새로고침하면 처음 상태로 돌아온다. 실제 DB 모드에서는 supabase/seed.sql로 옮긴다.
 // 날짜는 '오늘로부터 며칠 전'으로 적는다(열 때마다 오늘 기준으로 계산).
 
-export interface ExampleComment {
+interface ExampleComment {
 	/** 댓글을 쓴 예시 프로필의 key */
 	by: string;
 	body: string;
 	daysAgo: number;
 }
 
-export interface ExampleStar {
+interface ExampleStar {
 	body: string;
 	daysAgo: number;
 	comments?: ExampleComment[];

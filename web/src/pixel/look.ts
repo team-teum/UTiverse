@@ -44,12 +44,12 @@ export const DEFAULT_LOOK: Look = {
 	flag: "none",
 };
 
-export interface Option {
+interface Option {
 	id: string;
 	label: string;
 }
 
-export interface Category {
+interface Category {
 	key: keyof Look;
 	label: string;
 	options: Option[];

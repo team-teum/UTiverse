@@ -10,11 +10,10 @@ import {
 import type { Look } from "./look";
 import styles from "./Pixel.module.css";
 
-type Kind = "character" | "face" | "ship" | "room";
+type Kind = "character" | "ship" | "room";
 
 const SIZES: Record<Kind, { width: number; height: number }> = {
 	character: CHARACTER_SIZE,
-	face: { width: 24, height: 22 },
 	ship: SHIP_SIZE,
 	room: ROOM_SIZE,
 };
@@ -38,7 +37,7 @@ export function Pixel({ kind, look, label, className }: PixelProps) {
 		if (!canvas || !ctx) return;
 		const current = JSON.parse(key) as Look;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		if (kind === "character" || kind === "face") drawCharacter(ctx, current);
+		if (kind === "character") drawCharacter(ctx, current);
 		else if (kind === "ship") drawShip(ctx, current);
 		else drawRoom(ctx, current);
 	}, [kind, key]);

@@ -5,7 +5,7 @@ export type Ctx = CanvasRenderingContext2D;
 /** [y, x시작, x끝(포함)] */
 export type Span = readonly [number, number, number];
 
-export function spansToCells(spans: readonly Span[], ox: number, oy: number) {
+function spansToCells(spans: readonly Span[], ox: number, oy: number) {
 	const cells = new Set<string>();
 	for (const [y, x0, x1] of spans) {
 		for (let x = x0; x <= x1; x += 1) cells.add(`${ox + x},${oy + y}`);
@@ -78,23 +78,6 @@ export function px(
 export function box(x: number, y: number, w: number, h: number): Span[] {
 	const out: Span[] = [];
 	for (let r = 0; r < h; r += 1) out.push([y + r, x, x + w - 1]);
-	return out;
-}
-
-/** 모서리 깎은 사각형 */
-export function rounded(
-	x: number,
-	y: number,
-	w: number,
-	h: number,
-	r = 1,
-): Span[] {
-	const out: Span[] = [];
-	for (let i = 0; i < h; i += 1) {
-		const fromEdge = Math.min(i, h - 1 - i);
-		const inset = fromEdge < r ? r - fromEdge : 0;
-		out.push([y + i, x + inset, x + w - 1 - inset]);
-	}
 	return out;
 }
 

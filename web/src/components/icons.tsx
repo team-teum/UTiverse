@@ -12,22 +12,6 @@ const common = {
 	focusable: false,
 } as const;
 
-export function CloseIcon() {
-	return (
-		<svg {...common} aria-hidden="true">
-			<path d="M6 6l12 12M18 6L6 18" />
-		</svg>
-	);
-}
-
-export function CaretIcon({ direction }: { direction: "left" | "right" }) {
-	return (
-		<svg {...common} aria-hidden="true">
-			<path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
-		</svg>
-	);
-}
-
 export function MoreIcon() {
 	return (
 		<svg {...common} aria-hidden="true" fill="currentColor" stroke="none">
