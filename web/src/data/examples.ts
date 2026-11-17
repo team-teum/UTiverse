@@ -1,4 +1,4 @@
-import type { AssetKey } from "../assets/manifest";
+import type { Look } from "../pixel/look";
 
 // 샌드박스 예시 우주선 (SPECIFICATION 6.1, prd.md 6장 '시드 콘텐츠')
 // - 전부 지어낸 인물·이야기다. 실제 사람·지역을 특정할 수 있는 내용은 넣지 않는다.
@@ -27,8 +27,8 @@ export interface ExampleProfile {
 	key: string;
 	nickname: string;
 	tagline: string;
-	ship: AssetKey;
-	avatar: AssetKey;
+	/** 꾸민 모습 (없는 항목은 기본값) */
+	look: Partial<Look>;
 	stars: ExampleStar[];
 }
 
@@ -37,8 +37,20 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "lumi",
 		nickname: "루미",
 		tagline: "천천히 가는 중",
-		ship: "ship.preset01",
-		avatar: "avatar.preset01",
+		look: {
+			skin: "tone1",
+			hairStyle: "long",
+			hairColor: "pink",
+			outfit: "dress",
+			headwear: "starpin",
+			expression: "blush",
+			hull: "lilac",
+			wallpaper: "stars",
+			bed: "quilt",
+			plant: "pot",
+			light: "string",
+			flag: "trans",
+		},
 		stars: [
 			{
 				body: "가입은 했는데 뭘 써야 할지 몰라서 그냥 오늘 있었던 일.\n편의점 알바생이 나보고 '손님 이거 봉투 필요하세요?' 했는데 그게 뭐라고 기분이 좋았음. 아무것도 안 붙이고 그냥 손님이라고 불러줘서.",
@@ -93,8 +105,18 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "haru",
 		nickname: "하루",
 		tagline: "",
-		ship: "ship.preset02",
-		avatar: "avatar.preset02",
+		look: {
+			skin: "tone3",
+			hairStyle: "short",
+			hairColor: "black",
+			outfit: "hoodie",
+			expression: "plain",
+			hull: "night",
+			floor: "rug",
+			desk: "laptop",
+			light: "lamp",
+			wallDecor: "poster",
+		},
 		stars: [
 			{
 				body: "나 진짜 트랜스젠더인 걸까. 아니면 그냥 남들 따라 하는 건 아닐까. 이 생각만 몇 년째 하고 있다.\n확신이 없으면 아닌 건가 싶다가도, 아니라고 생각하면 또 숨이 막힌다.",
@@ -139,8 +161,20 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "saebyeok",
 		nickname: "새벽",
 		tagline: "밤에만 솔직해짐",
-		ship: "ship.preset03",
-		avatar: "avatar.preset03",
+		look: {
+			skin: "tone2",
+			hairStyle: "bob",
+			hairColor: "blue",
+			outfit: "tee",
+			headwear: "headphones",
+			expression: "sleepy",
+			hull: "night",
+			wallpaper: "plain",
+			bed: "single",
+			seat: "beanbag",
+			light: "lamp",
+			flag: "genderqueer",
+		},
 		stars: [
 			{
 				body: "다들 목소리 연습 어떻게 해요? 녹음해서 들어보면 너무 어색해서 바로 지워버림 ㅋㅋ",
@@ -178,8 +212,17 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "dotori",
 		nickname: "도토리",
 		tagline: "고3 탈출까지 D-??",
-		ship: "ship.preset01",
-		avatar: "avatar.preset04",
+		look: {
+			skin: "tone2",
+			hairStyle: "bun",
+			hairColor: "brown",
+			outfit: "overalls",
+			expression: "smile",
+			hull: "peach",
+			wallpaper: "check",
+			desk: "books",
+			plant: "hanging",
+		},
 		stars: [
 			{
 				body: "출석 부를 때마다 예전 이름 불리는 거 진짜 싫다. 대답은 해야 되니까 하는데 하루에 몇 번씩 그 이름으로 불리면 기운이 쭉 빠짐",
@@ -210,8 +253,19 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "yuwol",
 		nickname: "유월",
 		tagline: "6월에 이름을 바꿨어요",
-		ship: "ship.preset02",
-		avatar: "avatar.preset05",
+		look: {
+			skin: "tone1",
+			hairStyle: "curly",
+			hairColor: "blond",
+			outfit: "tee",
+			glasses: "round",
+			expression: "smile",
+			hull: "mint",
+			wallpaper: "stripe",
+			bed: "quilt",
+			wallDecor: "frames",
+			flag: "trans",
+		},
 		stars: [
 			{
 				body: "새 이름 쓴 지 다섯 달째. 이제 예전 이름으로 불리면 남 부르는 것 같다. 처음엔 새 이름이 어색해서 불려도 못 알아들었는데 신기함",
@@ -245,8 +299,17 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "mu",
 		nickname: "무",
 		tagline: "남자도 여자도 아닌 그냥 무",
-		ship: "ship.preset03",
-		avatar: "avatar.preset06",
+		look: {
+			skin: "mint",
+			hairStyle: "short",
+			hairColor: "silver",
+			outfit: "spacesuit",
+			hull: "lilac",
+			floor: "tile",
+			seat: "cushion",
+			light: "string",
+			flag: "nonbinary",
+		},
 		stars: [
 			{
 				body: "논바이너리라고 하면 '그럼 둘 중에 뭐에 더 가까운데?'라는 질문을 꼭 받는다. 그 질문에 대답하려고 할수록 내가 점점 흐려지는 느낌",
@@ -283,8 +346,17 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "kei",
 		nickname: "kei",
 		tagline: "",
-		ship: "ship.preset01",
-		avatar: "avatar.preset07",
+		look: {
+			skin: "tone4",
+			hairStyle: "short",
+			hairColor: "black",
+			outfit: "hoodie",
+			headwear: "cap",
+			hull: "sky",
+			bed: "single",
+			desk: "laptop",
+			wallDecor: "clock",
+		},
 		stars: [
 			{
 				body: "바인더 처음 도착했다. 입었는데 거울 보고 한참 서 있었음. 숨은 좀 답답한데 그래도 좋다",
@@ -316,8 +388,18 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "jun",
 		nickname: "준",
 		tagline: "고양이 두 마리랑 삽니다",
-		ship: "ship.preset02",
-		avatar: "avatar.preset08",
+		look: {
+			skin: "tone2",
+			hairStyle: "bob",
+			hairColor: "brown",
+			outfit: "overalls",
+			glasses: "square",
+			hull: "peach",
+			floor: "rug",
+			seat: "beanbag",
+			plant: "pot",
+			wallDecor: "poster",
+		},
 		stars: [
 			{
 				body: "고양이는 내가 어떤 이름이든 밥만 주면 좋아함. 세상이 다 고양이 같았으면",
@@ -359,8 +441,16 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "godeungeo",
 		nickname: "고등어",
 		tagline: "직장인. 조용히 사는 중",
-		ship: "ship.preset03",
-		avatar: "avatar.preset09",
+		look: {
+			skin: "tone5",
+			hairStyle: "short",
+			hairColor: "black",
+			outfit: "tee",
+			glasses: "square",
+			hull: "sky",
+			desk: "books",
+			light: "lamp",
+		},
 		stars: [
 			{
 				body: "회사에서 아직 아무도 모른다. 회식 때 '여자친구 있어?' 질문 나오면 매번 머리가 복잡해짐. 대답할 말을 미리 몇 개 준비해 둔다",
@@ -395,8 +485,18 @@ export const exampleProfiles: ExampleProfile[] = [
 		key: "musim",
 		nickname: "무심한물고기",
 		tagline: "아직 아무한테도 말 안 함",
-		ship: "ship.preset01",
-		avatar: "avatar.preset10",
+		look: {
+			skin: "base",
+			hairStyle: "long",
+			hairColor: "black",
+			outfit: "hoodie",
+			headwear: "beanie",
+			expression: "sleepy",
+			hull: "night",
+			wallpaper: "stars",
+			bed: "single",
+			light: "string",
+		},
 		stars: [
 			{
 				body: "검색창에 '트랜스젠더 자가진단' 쳐봤다가 기록 지웠다. 몇 번째인지 모르겠음",

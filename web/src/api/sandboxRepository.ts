@@ -1,5 +1,6 @@
 import { exampleProfiles } from "../data/examples";
 import { isValidLength } from "../lib/text";
+import { DEFAULT_LOOK, withLook } from "../pixel/look";
 import {
 	COMMENT_MAX_CHARS,
 	type Comment,
@@ -46,8 +47,7 @@ const me: Profile = {
 	nickname: "테스터",
 	tagline: "",
 	isExample: false,
-	shipAssetKey: "ship.default",
-	avatarAssetKey: "avatar.me",
+	look: { ...DEFAULT_LOOK },
 };
 
 const profiles = new Map<string, Profile>([[me.id, me]]);
@@ -56,6 +56,7 @@ let comments: StoredComment[] = [];
 let reactions: StoredReaction[] = [];
 /** 새 테스터가 새로고침하면 다시 false가 되어 튜토리얼을 처음부터 본다 */
 let tutorialDone = false;
+let swipeHintPending = false;
 
 function daysAgo(days: number, order: number): string {
 	// 같은 날 여러 개면 순서대로 몇 분씩 띄운다.
@@ -72,8 +73,7 @@ function loadExamples() {
 			nickname: example.nickname,
 			tagline: example.tagline,
 			isExample: true,
-			shipAssetKey: example.ship,
-			avatarAssetKey: example.avatar,
+			look: withLook(example.look),
 		};
 		profiles.set(profile.id, profile);
 		idByKey.set(example.key, profile.id);
@@ -128,7 +128,14 @@ function findStar(starId: string): Star {
 
 export const sandboxRepository: Repository = {
 	async getMyProfile() {
-		return { ...me };
+		return { ...me, look: { ...me.look } };
+	},
+
+	async updateMyLook(patch) {
+		me.look = { ...me.look, ...patch };
+		profiles.set(me.id, me);
+		notify();
+		return { ...me, look: { ...me.look } };
 	},
 
 	async getProfile(profileId) {
@@ -254,6 +261,16 @@ export const sandboxRepository: Repository = {
 
 	async completeTutorial() {
 		tutorialDone = true;
+	},
+
+	async requestSwipeHint() {
+		swipeHintPending = true;
+	},
+
+	async takeSwipeHint() {
+		const pending = swipeHintPending;
+		swipeHintPending = false;
+		return pending;
 	},
 
 	subscribe(listener) {

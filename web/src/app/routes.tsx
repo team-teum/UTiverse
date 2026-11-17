@@ -18,7 +18,7 @@ export const router = createBrowserRouter(
 			<Route index element={<Title />} />
 			<Route path="tutorial" element={<Tutorial />} />
 			<Route path="universe" element={<Universe />} />
-			<Route path="me" element={<MyShip />} />
+			<Route path="me/*" element={<MyShip />} />
 			<Route path="ship/:profileId" element={<OtherShip />} />
 			<Route path="*" element={<Navigate to="/universe" replace />} />
 		</Route>,

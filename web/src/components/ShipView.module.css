@@ -1,25 +1,5 @@
+/* 69×98 픽셀을 4배로 (Figma Rectangle 33: 277×394) */
 .ship {
-	position: relative;
-	inline-size: calc(277 * var(--dp));
-	block-size: calc(394 * var(--dp));
-}
-
-.shipImage {
-	inline-size: 100%;
-	block-size: 100%;
-}
-
-/* 아바타: 높이 120 기준(docs/ASSETS.md), 우주선 오른쪽 아래에 서 있게 둔다 */
-.avatarImage {
-	position: absolute;
-	inset-block-end: 0;
-	inset-inline-end: calc(-18 * var(--dp));
-	inline-size: calc(90 * var(--dp));
-	block-size: calc(120 * var(--dp));
-	image-rendering: pixelated;
-}
-
-.avatarImage img {
-	object-position: bottom;
-	image-rendering: pixelated;
+	inline-size: calc(276 * var(--dp));
+	block-size: calc(392 * var(--dp));
 }

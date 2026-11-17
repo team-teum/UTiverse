@@ -12,13 +12,19 @@ import { WriteModal } from "./WriteModal";
 interface ShipPageProps {
 	profile: Profile;
 	myProfileId: string;
+	/** MY에서만: 우주선을 누르거나 위로 밀면 꾸미기 화면으로 */
+	onOpenCustomize?: () => void;
 }
 
 /**
  * S09 남의 우주선 / S11 내 우주선(MY) 공통 화면.
  * 위: 별자리 (별을 누르면 ?star= 로 별 상세), 아래: 우주선 + 아바타.
  */
-export function ShipPage({ profile, myProfileId }: ShipPageProps) {
+export function ShipPage({
+	profile,
+	myProfileId,
+	onOpenCustomize,
+}: ShipPageProps) {
 	const isMine = profile.id === myProfileId;
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -94,8 +100,35 @@ export function ShipPage({ profile, myProfileId }: ShipPageProps) {
 			</div>
 
 			<div className={styles.ship}>
-				<ShipView profile={profile} isMine={isMine} />
+				{onOpenCustomize ? (
+					<button
+						type="button"
+						className={styles.shipButton}
+						aria-label="우주선 꾸미기 열기"
+						onClick={onOpenCustomize}
+					>
+						<ShipView profile={profile} isMine={isMine} />
+					</button>
+				) : (
+					<ShipView profile={profile} isMine={isMine} />
+				)}
 			</div>
+
+			{onOpenCustomize && (
+				<button
+					type="button"
+					className={styles.swipeHint}
+					onClick={onOpenCustomize}
+				>
+					<span>위로 스와이프해서 우주선꾸미기</span>
+					<svg viewBox="0 0 142 18.5" aria-hidden="true">
+						<path d="M.3 17 70.3 1.5 141.8 17" />
+					</svg>
+					<svg viewBox="0 0 142 18.5" aria-hidden="true">
+						<path d="M.3 17 70.3 1.5 141.8 17" />
+					</svg>
+				</button>
+			)}
 
 			{writing && (
 				<WriteModal

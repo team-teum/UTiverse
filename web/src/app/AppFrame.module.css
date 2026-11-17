@@ -50,3 +50,8 @@
 	overflow: hidden;
 	padding: 0;
 }
+
+/* MY는 안에서 두 화면을 넘기므로 바깥은 스크롤하지 않는다 */
+.pagerHost {
+	overflow: hidden;
+}

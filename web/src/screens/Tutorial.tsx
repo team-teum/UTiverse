@@ -30,8 +30,14 @@ export function Tutorial() {
 	}
 
 	function next() {
-		if (isLast) finish("/universe");
+		if (isLast) toMy();
 		else setIndex(index + 1);
+	}
+
+	// 마지막 장면은 "MY를 눌러봐!"라서 끝나면 MY로 들어간다. MY에서 "위로 스와이프해봐!"가 이어진다.
+	function toMy() {
+		void repo.requestSwipeHint();
+		finish("/me");
 	}
 
 	return (
@@ -116,7 +122,10 @@ export function Tutorial() {
 			<div className={styles.top}>
 				<TopBar
 					glowMy={step.id === "my"}
-					onNavigate={() => void repo.completeTutorial()}
+					onNavigate={() => {
+						void repo.completeTutorial();
+						if (step.id === "my") void repo.requestSwipeHint();
+					}}
 				/>
 				<button
 					type="button"

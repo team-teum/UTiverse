@@ -16,7 +16,7 @@ export function AppFrame() {
 				{!fullScene && <TopBar />}
 				<main
 					id="main-content"
-					className={`${styles.content} ${fullScene ? styles.scene : ""}`}
+					className={`${styles.content} ${fullScene ? styles.scene : ""} ${pathname.startsWith("/me") ? styles.pagerHost : ""}`}
 					tabIndex={-1}
 				>
 					<Outlet />

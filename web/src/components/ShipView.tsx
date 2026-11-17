@@ -1,27 +1,25 @@
 import type { Profile } from "../api";
-import { AssetImage } from "./AssetImage";
+import { Pixel } from "../pixel/Pixel";
 import styles from "./ShipView.module.css";
 
-/** 우주선(277×394) + 그 앞에 선 아바타 (Figma Rectangle 33 37:12336) */
+/** 우주선 겉모습(277×394). 동그란 창문에 캐릭터 얼굴이 빼꼼 보인다. */
 export function ShipView({
 	profile,
 	isMine,
 }: {
-	profile: Pick<Profile, "nickname" | "shipAssetKey" | "avatarAssetKey">;
+	profile: Pick<Profile, "nickname" | "look">;
 	isMine: boolean;
 }) {
 	return (
-		<div className={styles.ship}>
-			<AssetImage
-				assetKey={profile.shipAssetKey}
-				alt={isMine ? "내 우주선" : `${profile.nickname}의 우주선`}
-				className={styles.shipImage}
-			/>
-			<AssetImage
-				assetKey={profile.avatarAssetKey}
-				alt={isMine ? "내 아바타" : `${profile.nickname}의 아바타`}
-				className={styles.avatarImage}
-			/>
-		</div>
+		<Pixel
+			kind="ship"
+			look={profile.look}
+			label={
+				isMine
+					? "내 우주선. 창문으로 내 캐릭터가 보여요"
+					: `${profile.nickname}의 우주선. 창문으로 캐릭터가 보여요`
+			}
+			className={styles.ship}
+		/>
 	);
 }

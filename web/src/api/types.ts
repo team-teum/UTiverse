@@ -1,7 +1,7 @@
 // 화면은 이 인터페이스만 사용한다. 지금은 샌드박스(메모리) 구현만 있고,
 // 실제 DB 모드는 같은 인터페이스의 Supabase 구현으로 바꿔 끼운다(SPECIFICATION 6.1).
 
-import type { AssetKey } from "../assets/manifest";
+import type { Look } from "../pixel/look";
 
 export const STAR_MAX_CHARS = 500;
 export const COMMENT_MAX_CHARS = 200;
@@ -15,8 +15,8 @@ export interface Profile {
 	tagline: string;
 	/** 팀이 준비한 예시 우주선이면 true. 화면에 '예시' 배지를 붙인다 */
 	isExample: boolean;
-	shipAssetKey: AssetKey;
-	avatarAssetKey: AssetKey;
+	/** 캐릭터·우주선 꾸미기 상태 (코드로 그리는 픽셀 아트의 재료) */
+	look: Look;
 }
 
 export interface Star {
@@ -58,6 +58,10 @@ export interface Repository {
 	/** 튜토리얼을 끝까지 봤거나 건너뛰었는지 (샌드박스: 메모리, 새로고침하면 초기화) */
 	isTutorialDone(): Promise<boolean>;
 	completeTutorial(): Promise<void>;
+	/** 튜토리얼에서 MY로 왔을 때 '위로 스와이프해봐!' 안내를 한 번 보여 줄지 */
+	takeSwipeHint(): Promise<boolean>;
+	requestSwipeHint(): Promise<void>;
+	updateMyLook(patch: Partial<Look>): Promise<Profile>;
 	/** 데이터가 바뀌면 listener를 부른다. 반환값은 구독 해제 함수 */
 	subscribe(listener: () => void): () => void;
 }
