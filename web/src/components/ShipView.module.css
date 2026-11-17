@@ -1,0 +1,5 @@
+/* 69×98 픽셀을 4배로 (Figma Rectangle 33: 277×394) */
+.ship {
+	inline-size: calc(276 * var(--dp));
+	block-size: calc(392 * var(--dp));
+}

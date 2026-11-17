@@ -1,10 +1,46 @@
+import { Link } from "react-router-dom";
+import { repo, useRepoData } from "../api";
+import { Pixel } from "../pixel/Pixel";
+import styles from "./Universe.module.css";
+
+// 회전 우주·탐색(기능 C)이 생기기 전까지 남의 우주선으로 가는 임시 입구.
 export function Universe() {
+	const { data: profiles } = useRepoData("profiles:others", () =>
+		repo.listOtherProfiles(),
+	);
+
 	return (
-		<section className="scaffold-screen" aria-labelledby="universe-heading">
-			<p className="eyebrow">개발 중</p>
-			<h1 id="universe-heading">우주를 준비하고 있어요</h1>
-			<p>다른 사람의 별과 우주선을 만날 공간이에요.</p>
-			<p>지금은 앱의 기본 틀만 있어요. 탐색과 별자리는 곧 이어서 만들어요.</p>
+		<section className={styles.screen} aria-labelledby="universe-heading">
+			<h1 id="universe-heading" className={styles.title}>
+				우주선 둘러보기
+			</h1>
+			<p className={styles.note}>
+				일부 우주선과 이야기는 테스트를 위해 만든 예시예요.
+			</p>
+			{!profiles && <p>불러오는 중…</p>}
+			<ul className={styles.list}>
+				{profiles?.map((profile) => (
+					<li key={profile.id}>
+						<Link className={styles.card} to={`/ship/${profile.id}`}>
+							<Pixel
+								kind="face"
+								look={profile.look}
+								label=""
+								className={styles.avatar}
+							/>
+							<span className={styles.name}>
+								{profile.nickname}
+								{profile.isExample && (
+									<span className={styles.badge}>예시</span>
+								)}
+							</span>
+							<span className={styles.go} aria-hidden="true">
+								놀러 가기
+							</span>
+						</Link>
+					</li>
+				))}
+			</ul>
 		</section>
 	);
 }

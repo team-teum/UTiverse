@@ -1,0 +1,75 @@
+/* Figma 별 만들기 (37:13523): 카드 313, 제목(가운데, 22 아래), X(270.5, 23), 입력칸 277×378(18, 61), 등록하기 90×32 */
+.form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(12 * var(--dp));
+	padding: calc(22 * var(--dp)) calc(18 * var(--dp)) calc(19 * var(--dp));
+}
+
+.header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 100%;
+	min-block-size: calc(27 * var(--dp));
+}
+
+.title {
+	margin: 0;
+	font-family: var(--font-latin);
+	font-size: calc(20 * var(--dp));
+	font-weight: 900;
+}
+
+.close {
+	position: absolute;
+	inset-inline-end: calc(-5 * var(--dp) - 12px);
+	inset-block-start: 50%;
+	transform: translateY(-50%);
+}
+
+.input {
+	inline-size: 100%;
+	block-size: calc(378 * var(--dp));
+	max-block-size: 50vh;
+	padding: calc(14 * var(--dp)) calc(15 * var(--dp));
+	border: 0;
+	border-radius: 0;
+	background: var(--color-input);
+	box-shadow: inset 0 0 4px rgb(0 0 0 / 25%);
+	color: #000;
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.6;
+	resize: none;
+}
+
+.input::placeholder {
+	color: rgb(0 0 0 / 50%);
+}
+
+.counter {
+	margin: calc(-6 * var(--dp)) 0 0;
+	align-self: flex-end;
+	font-family: var(--font-latin);
+	font-size: 0.75rem;
+	color: #6b6b6b;
+}
+
+.over {
+	color: #c4253f;
+	font-weight: 700;
+}
+
+.error {
+	margin: 0;
+	font-size: 0.875rem;
+	color: #c4253f;
+}
+
+.submit {
+	min-inline-size: calc(90 * var(--dp));
+	min-block-size: max(36px, calc(32 * var(--dp)));
+}

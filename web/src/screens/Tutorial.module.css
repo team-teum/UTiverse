@@ -1,0 +1,173 @@
+/* 좌표는 402×874 프레임 기준 디자인 px (Figma 70:6801·70:6850·70:6903·70:6964) */
+.screen {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: #000;
+	color: #fff;
+}
+
+.advance {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.tini,
+.bubble,
+.dialog,
+.pointer {
+	position: absolute;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.tini img {
+	filter: drop-shadow(0 0 10px rgb(0 0 0 / 60%));
+}
+
+/* 티니 위치·크기: 장면마다 다름 */
+.hello .tini {
+	inset-inline-start: calc(213 * var(--dp));
+	inset-block-start: calc(370 * var(--dp));
+	inline-size: calc(215 * var(--dp));
+	block-size: calc(215 * var(--dp));
+}
+
+.intro .tini {
+	inset-inline-start: calc(130 * var(--dp));
+	inset-block-start: calc(354 * var(--dp));
+	inline-size: calc(168 * var(--dp));
+	block-size: calc(168 * var(--dp));
+}
+
+.custom .tini {
+	inset-inline-start: calc(122 * var(--dp));
+	inset-block-start: calc(345 * var(--dp));
+	inline-size: calc(132 * var(--dp));
+	block-size: calc(132 * var(--dp));
+}
+
+.my .tini {
+	inset-inline-start: calc(111 * var(--dp));
+	inset-block-start: calc(321 * var(--dp));
+	inline-size: calc(198 * var(--dp));
+	block-size: calc(198 * var(--dp));
+}
+
+/* 말풍선 174.25 정사각, (126, 283). 「안녕!」 글자 (60, 75) 51×23.5 */
+.bubble {
+	inset-inline-start: calc(126 * var(--dp));
+	inset-block-start: calc(283 * var(--dp));
+	inline-size: calc(174.251 * var(--dp));
+	block-size: calc(174.251 * var(--dp));
+}
+
+.bubbleImage {
+	inline-size: 100%;
+	block-size: 100%;
+}
+
+.bubbleText {
+	position: absolute;
+	inset-inline-start: calc(55 * var(--dp));
+	inset-block-start: calc(71 * var(--dp));
+	inline-size: calc(62 * var(--dp));
+	margin: 0;
+	color: #000;
+	font-size: calc(22 * var(--dp));
+	line-height: 1.4;
+	text-align: center;
+}
+
+/* 대사 상자 337×141, (39, 470), 흰색 10%, 둥글기 30 */
+.dialog {
+	inset-inline-start: calc(39 * var(--dp));
+	inset-block-start: calc(470 * var(--dp));
+	inline-size: calc(337 * var(--dp));
+	block-size: calc(141 * var(--dp));
+	border-radius: 30px;
+	background: rgb(255 255 255 / 10%);
+}
+
+/* 글자: Inter 20 흰색, 상자 안 (26, 28) */
+.dialogText {
+	position: absolute;
+	inset-inline: calc(26 * var(--dp));
+	inset-block-start: calc(28 * var(--dp));
+	margin: 0;
+	font-family: var(--font-latin);
+	font-size: calc(20 * var(--dp));
+	line-height: 1.21;
+	white-space: pre-line;
+}
+
+/* 두 번째 장면은 Figma에서 한 줄로 가운데쯤 (57, 531) 작은 글자 */
+.intro .dialogText {
+	inset-inline: calc(18 * var(--dp));
+	inset-block-start: calc(61 * var(--dp));
+	font-size: calc(14.5 * var(--dp));
+	white-space: nowrap;
+}
+
+/* ▼ 17.3×15.3, 상자 안 (292, 104) */
+.next {
+	position: absolute;
+	inset-inline-start: calc(292.2 * var(--dp));
+	inset-block-start: calc(104 * var(--dp));
+	inline-size: calc(17.28 * var(--dp));
+	block-size: calc(15.33 * var(--dp));
+	fill: #f0edff;
+}
+
+/* 지시봉: 막대 Vector 114 + 손 (마지막 장면) */
+.pointer {
+	inset: 0;
+}
+
+/* 막대: 161×74 상자를 -56° 돌림. 중심 (294.14, 281.16) */
+.stick {
+	position: absolute;
+	inset-inline-start: calc((294.14 - 85.626) * var(--dp));
+	inset-block-start: calc((281.16 - 41.955) * var(--dp));
+	inline-size: calc(171.252 * var(--dp));
+	block-size: calc(83.911 * var(--dp));
+	transform: rotate(-56deg);
+	overflow: visible;
+}
+
+/* 손: 56.5×70.6을 -32° 돌림. 중심 (308.03, 161.76) */
+.hand {
+	position: absolute;
+	inset-inline-start: calc((308.03 - 28.27) * var(--dp));
+	inset-block-start: calc((161.76 - 35.276) * var(--dp));
+	inline-size: calc(56.539 * var(--dp));
+	block-size: calc(70.551 * var(--dp));
+	transform: rotate(-32deg);
+}
+
+.top {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-start: 0;
+	z-index: 3;
+}
+
+/* 「튜토리얼 건너뛰기>」 (39, 86) 151×17.5, 흰색 굵게 */
+.skip {
+	position: absolute;
+	inset-inline-start: calc(39 * var(--dp) - 4px);
+	inset-block-start: calc(86 * var(--dp) - 13px);
+	min-block-size: 44px;
+	padding: 0 4px;
+	border: 0;
+	background: transparent;
+	color: #fff;
+	font-size: calc(17 * var(--dp));
+	font-weight: 700;
+	cursor: pointer;
+}

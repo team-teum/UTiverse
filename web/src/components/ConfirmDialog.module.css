@@ -1,0 +1,19 @@
+.message {
+	margin: 0;
+	font-weight: 700;
+}
+
+.detail {
+	margin: 0;
+	font-size: 0.875rem;
+	color: #4a4760;
+}
+
+.actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.actions > * {
+	flex: 1;
+}

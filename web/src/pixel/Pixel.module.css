@@ -1,0 +1,4 @@
+.pixel {
+	display: block;
+	image-rendering: pixelated;
+}

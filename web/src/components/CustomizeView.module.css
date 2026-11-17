@@ -1,0 +1,210 @@
+/* Figma 33:14371·33:15522. 좌표는 402 프레임 기준 디자인 px */
+.view {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-block-size: 100%;
+	padding-block-end: calc(16 * var(--dp));
+}
+
+/* 맨 위 ∨∨ (Figma Vector 124·125, 142×15 두 줄) */
+.back {
+	display: grid;
+	gap: calc(-2 * var(--dp));
+	min-block-size: 44px;
+	padding: calc(4 * var(--dp)) calc(16 * var(--dp));
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.back svg {
+	inline-size: calc(142 * var(--dp));
+	block-size: calc(15 * var(--dp));
+	overflow: visible;
+	fill: none;
+	stroke: var(--color-star-line);
+	stroke-width: 3;
+}
+
+.stage {
+	display: grid;
+	place-items: center;
+	inline-size: 100%;
+	min-block-size: calc(312 * var(--dp));
+	touch-action: pan-x;
+}
+
+/* 128×104 픽셀 단면을 2.8배 */
+.room {
+	inline-size: calc(358 * var(--dp));
+	block-size: calc(291 * var(--dp));
+}
+
+/* Figma 「캐릭터 확대샷」 Rectangle 49·54 (359×313) 자리 */
+.closeup {
+	display: grid;
+	place-items: center;
+	inline-size: calc(359 * var(--dp));
+	block-size: calc(300 * var(--dp));
+	border-radius: 10px;
+	background:
+		radial-gradient(circle at 50% 60%, rgb(255 214 214 / 25%), transparent 60%),
+		#15152b;
+}
+
+.character {
+	inline-size: calc(192 * var(--dp));
+	block-size: calc(288 * var(--dp));
+}
+
+/* 패널: 368 폭, #120F2E, 테두리 rgba(129,126,196,.6), 둥글기 10 */
+.panel {
+	inline-size: calc(368 * var(--dp));
+	margin-block-start: calc(12 * var(--dp));
+	padding: calc(5 * var(--dp)) calc(5 * var(--dp)) calc(14 * var(--dp));
+	border: 1.5px solid rgb(129 126 196 / 60%);
+	border-radius: 10px;
+	background: #120f2e;
+}
+
+/* 제목줄 #817EC4 (Figma에선 제목만, 여기선 우주선/캐릭터 전환 버튼 두 개) */
+.title {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4px;
+	padding: 3px;
+	border-radius: 10px;
+	background: #817ec4;
+}
+
+.titleButton {
+	min-block-size: max(32px, calc(32 * var(--dp)));
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: #000;
+	font-size: 0.8125rem;
+	cursor: pointer;
+}
+
+.titleButton[aria-selected="true"] {
+	background: #e9dcff;
+	font-weight: 700;
+}
+
+/* 탭: #BE9AFA 둥글기 20, 고른 탭은 #15152B + 테두리 #817EC4 */
+.tabs {
+	display: flex;
+	gap: calc(4 * var(--dp));
+	padding: calc(12 * var(--dp)) calc(4 * var(--dp)) 0;
+}
+
+.tab {
+	flex: 1;
+	min-block-size: max(36px, calc(35 * var(--dp)));
+	margin-block-end: -16px;
+	padding-block-end: 16px;
+	border: 1.5px solid transparent;
+	border-radius: 20px 20px 0 0;
+	background: #be9afa;
+	color: #000;
+	font-size: calc(15 * var(--dp));
+	cursor: pointer;
+}
+
+.tab[aria-selected="true"] {
+	position: relative;
+	z-index: 1;
+	border-color: #817ec4;
+	border-block-end-color: #15152b;
+	background: #15152b;
+	color: #fff;
+}
+
+/* 안쪽 상자 341 폭, #15152B, 테두리 #817EC4 */
+.box {
+	position: relative;
+	padding: calc(14 * var(--dp)) calc(14 * var(--dp)) calc(18 * var(--dp));
+	border: 1.5px solid #817ec4;
+	background: #15152b;
+}
+
+/* 카테고리 줄: 309×38.5, 테두리 둥근 상자 안 "벽지 / 창문 / 외벽" */
+.categories {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	min-block-size: calc(38.5 * var(--dp));
+	padding: 2px 8px;
+	border: 1.5px solid #817ec4;
+	border-radius: 10px;
+}
+
+.categoryItem {
+	display: inline-flex;
+	align-items: center;
+}
+
+.slash {
+	color: rgb(255 255 255 / 60%);
+	font-size: calc(15 * var(--dp));
+}
+
+.category {
+	min-block-size: 36px;
+	padding: 0 calc(8 * var(--dp));
+	border: 0;
+	background: transparent;
+	color: rgb(255 255 255 / 60%);
+	font-size: calc(15 * var(--dp));
+	cursor: pointer;
+}
+
+.category[aria-pressed="true"] {
+	color: #fff;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+/* 아이템: #D9D9D9 68×67, 3칸 */
+.items {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: calc(18 * var(--dp)) calc(12 * var(--dp));
+	margin: calc(18 * var(--dp)) 0 0;
+	padding: 0 calc(8 * var(--dp));
+	list-style: none;
+}
+
+.item {
+	display: grid;
+	justify-items: center;
+	gap: 4px;
+	inline-size: 100%;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #fff;
+	cursor: pointer;
+}
+
+.thumb {
+	inline-size: calc(68 * var(--dp));
+	block-size: calc(67 * var(--dp));
+	padding: 3px;
+	background: #d9d9d9;
+	object-fit: contain;
+	outline: 3px solid transparent;
+	outline-offset: 1px;
+}
+
+.item[aria-pressed="true"] .thumb {
+	outline-color: var(--color-accent-yellow);
+}
+
+.itemLabel {
+	font-size: 0.75rem;
+}

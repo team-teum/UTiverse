@@ -1,0 +1,70 @@
+/* Figma 54:6841: 날짜(20, 19)·X(307, 19)·본문(30, 72) — 카드 기준 디자인 px */
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: calc(19 * var(--dp) - 8px) calc(20 * var(--dp) - 12px) 0
+		calc(20 * var(--dp));
+}
+
+.date {
+	margin: 0;
+	font-family: var(--font-latin);
+	font-size: calc(20 * var(--dp));
+	font-weight: 400;
+}
+
+.headerActions {
+	display: flex;
+	align-items: center;
+}
+
+.menuWrap {
+	position: relative;
+}
+
+.menu {
+	position: absolute;
+	inset-block-start: 100%;
+	inset-inline-end: 0;
+	z-index: 1;
+	min-inline-size: 8rem;
+	padding: 0.25rem;
+	border-radius: 0.75rem;
+	background: #fff;
+	box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+}
+
+.menuItem {
+	inline-size: 100%;
+	min-block-size: 44px;
+	padding: 0 0.75rem;
+	border: 0;
+	border-radius: 0.5rem;
+	background: transparent;
+	color: #c4253f;
+	text-align: start;
+	cursor: pointer;
+}
+
+.scroll {
+	display: flex;
+	flex-direction: column;
+	gap: calc(24 * var(--dp));
+	padding: calc(16 * var(--dp)) calc(26 * var(--dp)) calc(24 * var(--dp))
+		calc(30 * var(--dp));
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.body {
+	margin: 0;
+	font-size: calc(20 * var(--dp));
+	line-height: 1.45;
+	white-space: pre-wrap;
+}
+
+.muted {
+	margin: 0;
+	color: #5c5970;
+}

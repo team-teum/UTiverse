@@ -9,6 +9,15 @@
 	--color-ink: #070811;
 	--color-stroke: #817ec4;
 	--color-dialog: #e9e9ec;
+	/* Figma 「종합」 별자리·글쓰기 값 */
+	--color-star: #ffe9e9;
+	--color-star-line: #ffd6d6;
+	--color-card: #ededed;
+	--color-sheet: #fffcfc;
+	--color-input: #fffdfd;
+	--color-button-plain: #d9d9d9;
+	/* 디자인 1px: 402px 프레임 너비 기준 비례 (SPECIFICATION 4장). .app-frame 안에서만 쓴다 */
+	--dp: calc(100cqw / 402);
 	/* Use system fonts until licensed self-hosted font files are supplied. */
 	--font-body: "Noto Sans KR", system-ui, sans-serif;
 	--font-latin: "Inter", system-ui, sans-serif;

@@ -43,3 +43,15 @@
 .overlays > :where(*) {
 	pointer-events: auto;
 }
+
+/* 타이틀·튜토리얼: 장면이 프레임 전체를 채운다 */
+.scene {
+	position: relative;
+	overflow: hidden;
+	padding: 0;
+}
+
+/* MY는 안에서 두 화면을 넘기므로 바깥은 스크롤하지 않는다 */
+.pagerHost {
+	overflow: hidden;
+}

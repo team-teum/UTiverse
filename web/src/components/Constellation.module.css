@@ -1,0 +1,159 @@
+/* Figma 「종합」 MY(33:13894)·남의 우주선(54:6792)의 별자리 영역 */
+.root {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: calc(37 * var(--dp));
+}
+
+.row {
+	position: relative;
+	inline-size: 100%;
+}
+
+.sky {
+	position: relative;
+	inline-size: calc(281.5 * var(--dp));
+	block-size: calc(136 * var(--dp));
+	margin-inline: auto;
+	touch-action: pan-y;
+}
+
+/* MY는 연필 버튼까지 합친 320.5 묶음이 가운데에 온다 (Figma Group 22) */
+.withWrite .sky {
+	transform: translateX(calc(-19.5 * var(--dp)));
+}
+
+.lines {
+	position: absolute;
+	inset: 0;
+	inline-size: 100%;
+	block-size: 100%;
+	overflow: visible;
+}
+
+.lines line {
+	stroke: var(--color-star-line);
+	stroke-width: 3;
+}
+
+.list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.item {
+	position: absolute;
+	transform: translate(-50%, -50%);
+}
+
+.star {
+	display: grid;
+	place-items: center;
+	inline-size: max(44px, calc(34 * var(--dp)));
+	block-size: max(44px, calc(34 * var(--dp)));
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	cursor: pointer;
+}
+
+.starImage {
+	inline-size: calc(25 * var(--dp));
+	block-size: calc(24 * var(--dp));
+}
+
+.starImage svg {
+	inline-size: 100%;
+	block-size: 100%;
+}
+
+.new .starImage {
+	animation: twinkle 700ms ease-in-out 4;
+}
+
+@keyframes twinkle {
+	50% {
+		transform: scale(1.6);
+		filter: drop-shadow(0 0 8px var(--color-star));
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.new .starImage {
+		animation: none;
+	}
+}
+
+.write {
+	position: absolute;
+	inset-block-start: calc(63 * var(--dp));
+	inset-inline-start: calc(263.5 * var(--dp));
+}
+
+/* 화살표: Figma 왼쪽 x=25, 오른쪽 x=383 (16×29), 별자리 위에서 39 아래. 누르는 칸은 44px */
+.arrow {
+	position: absolute;
+	inset-block-start: calc(53.5 * var(--dp) - 22px);
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.arrow:first-child {
+	inset-inline-start: calc(33 * var(--dp) - 22px);
+}
+
+.arrow:last-child {
+	inset-inline-end: calc(11 * var(--dp) - 22px);
+}
+
+.arrow[hidden] {
+	display: grid;
+	visibility: hidden;
+}
+
+.arrow:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+
+.arrow svg {
+	inline-size: calc(16 * var(--dp));
+	block-size: calc(29 * var(--dp));
+	overflow: visible;
+}
+
+.arrow path {
+	fill: none;
+	stroke: var(--color-star-line);
+	stroke-width: 3;
+}
+
+.dots {
+	display: flex;
+	gap: calc(11 * var(--dp));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dot,
+.dotActive {
+	inline-size: calc(12 * var(--dp));
+	block-size: calc(12 * var(--dp));
+	border-radius: 50%;
+	background: var(--color-star);
+}
+
+.dot {
+	opacity: 0.35;
+}
