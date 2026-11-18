@@ -9,7 +9,6 @@
 	margin: 1rem 0 0;
 	font-size: 0.875rem;
 	text-wrap: balance;
-	word-break: keep-all;
 	text-align: center;
 	color: var(--color-lavender-light);
 }

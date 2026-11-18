@@ -17,10 +17,20 @@
 	inset-block-end: calc(16 * var(--dp) + env(safe-area-inset-bottom, 0px));
 	margin: 0;
 	padding: 0.375rem 0.75rem;
-	border-radius: 999px;
-	background: rgb(0 0 0 / 55%);
+	border-radius: 1rem;
+	background: rgb(0 0 0 / 72%);
 	color: #fff;
 	font-size: 0.75rem;
 	text-align: center;
 	pointer-events: none;
+}
+
+.notice p {
+	margin: 0;
+	text-wrap: balance;
+}
+
+.notice .count {
+	margin-block-start: 0.25rem;
+	color: var(--color-lavender-light);
 }

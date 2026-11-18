@@ -5,6 +5,12 @@ html {
 	background: #000;
 }
 
+:where(html:lang(ko)) {
+	/* 한글은 어절 사이에서, 긴 URL·이름은 공간이 모자랄 때만 줄을 바꾼다. */
+	word-break: keep-all;
+	overflow-wrap: anywhere;
+}
+
 body {
 	margin: 0;
 }
@@ -21,10 +27,6 @@ body {
 :where(button, a, input, textarea, select):focus-visible {
 	outline: 3px solid var(--color-accent-yellow);
 	outline-offset: -4px;
-}
-
-:where(h1, h2, p) {
-	overflow-wrap: anywhere;
 }
 
 :where(h1) {

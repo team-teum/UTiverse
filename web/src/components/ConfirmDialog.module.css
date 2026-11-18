@@ -1,6 +1,7 @@
 .message {
 	margin: 0;
 	font-weight: 700;
+	text-wrap: balance;
 }
 
 .detail {
@@ -11,9 +12,10 @@
 
 .actions {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.5rem;
 }
 
 .actions > * {
-	flex: 1;
+	flex: 1 1 auto;
 }

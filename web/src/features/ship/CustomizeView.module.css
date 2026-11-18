@@ -107,7 +107,8 @@
 }
 
 .tab {
-	flex: 1;
+	flex: 1 1 0;
+	min-inline-size: 0;
 	min-block-size: max(36px, calc(35 * var(--dp)));
 	margin-block-end: -16px;
 	padding-block-end: 16px;
@@ -115,7 +116,7 @@
 	border-radius: 20px 20px 0 0;
 	background: #be9afa;
 	color: #000;
-	font-size: calc(15 * var(--dp));
+	font-size: 0.875rem;
 	cursor: pointer;
 }
 
@@ -164,7 +165,7 @@
 	border: 0;
 	background: transparent;
 	color: rgb(255 255 255 / 60%);
-	font-size: calc(15 * var(--dp));
+	font-size: 0.875rem;
 	cursor: pointer;
 }
 
@@ -178,7 +179,7 @@
 /* 아이템: #D9D9D9 68×67, 3칸 */
 .items {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: calc(18 * var(--dp)) calc(12 * var(--dp));
 	margin: calc(18 * var(--dp)) 0 0;
 	padding: 0 calc(8 * var(--dp));
@@ -212,5 +213,7 @@
 }
 
 .itemLabel {
+	max-inline-size: 100%;
 	font-size: 0.75rem;
+	text-wrap: balance;
 }

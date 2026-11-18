@@ -59,9 +59,10 @@
 
 .body {
 	margin: 0;
-	font-size: calc(20 * var(--dp));
-	line-height: 1.45;
+	font-size: clamp(1rem, calc(20 * var(--dp)), 1.25rem);
+	line-height: 1.5;
 	white-space: pre-wrap;
+	text-wrap: pretty;
 }
 
 .muted {

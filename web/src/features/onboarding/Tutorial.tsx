@@ -13,7 +13,7 @@ const STEPS = [
 	{ id: "intro", text: "나는 너의 uTiverse 탐험을 도와줄 티니라고 해!" },
 	{
 		id: "custom",
-		text: "유T버스에서는 너만의 아바타를\n만들고 우주선을 꾸밀 수 있어!",
+		text: "유T버스에서는 너만의 아바타를 만들고 우주선을 꾸밀 수 있어!",
 	},
 	{ id: "explore", text: "이제 우주에서 이웃의 별자리를 만나 봐!" },
 ] as const;

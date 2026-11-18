@@ -1,11 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
 import styles from "./Title.module.css";
 import { TitleScene } from "./TitleScene";
 
 /** S01 타이틀 (Figma 「Tap to Start」 39:5801). 처음이면 튜토리얼, 본 적 있으면 우주로 간다. */
 export function Title() {
 	const navigate = useNavigate();
+	const { data: neighbors } = useRepositoryData("profiles:others", () =>
+		repo.listOtherProfiles(),
+	);
+	const exampleCount =
+		neighbors?.filter((profile) => profile.isExample).length ?? 0;
 
 	async function start() {
 		const done = await repo.isTutorialDone();
@@ -23,10 +29,13 @@ export function Title() {
 			>
 				<TitleScene />
 			</button>
-			<p className={styles.notice}>
-				테스트 모드예요. 작성한 글과 댓글은 다른 사람에게 보이지 않고,
-				새로고침하면 사라져요.
-			</p>
+			<div className={styles.notice}>
+				<strong>테스트 모드예요.</strong>
+				<p>글과 댓글은 나만 볼 수 있고, 새로고침하면 사라져요.</p>
+				{exampleCount > 0 && (
+					<p className={styles.count}>{exampleCount}명이 함께하고 있어요.</p>
+				)}
+			</div>
 		</>
 	);
 }
