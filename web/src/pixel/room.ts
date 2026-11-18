@@ -6,9 +6,6 @@ import { box, ellipse, paint, type Span, shape } from "./grid";
 import type { Look } from "./look";
 import { FLAG_COLORS as FLAGS, HULLS } from "./ship";
 
-export { CHARACTER_SIZE, drawCharacter } from "./character";
-export { drawShip, SHIP_SIZE } from "./ship";
-
 type Ctx = CanvasRenderingContext2D;
 
 const OUTLINE = "#2b2238";

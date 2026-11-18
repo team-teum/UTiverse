@@ -1,19 +1,20 @@
 import { type FormEvent, useId, useRef, useState } from "react";
-import { repo, STAR_MAX_CHARS, type Star } from "../api";
-import { useDiscardGuard } from "../hooks/useDiscardGuard";
-import { countChars, lengthError } from "../lib/text";
-import { ConfirmDialog } from "./ConfirmDialog";
-import { FigmaCloseIcon } from "./icons";
-import { Overlay } from "./Overlay";
-import styles from "./WriteModal.module.css";
+import { repo } from "../../api/repository";
+import { STAR_MAX_CHARS, type Star } from "../../api/types";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { FigmaCloseIcon } from "../../components/icons";
+import { ModalDialog } from "../../components/ModalDialog";
+import { useDiscardGuard } from "../../hooks/useDiscardGuard";
+import { countChars, lengthError } from "../../lib/postText";
+import styles from "./WriteStarDialog.module.css";
 
-interface WriteModalProps {
+interface WriteStarDialogProps {
 	onClose: () => void;
 	onCreated: (star: Star) => void;
 }
 
 /** S12 별 만들기. 오늘의 주제 추천 카드는 이번 MVP에서 뺀다(prd.md 7장). */
-export function WriteModal({ onClose, onCreated }: WriteModalProps) {
+export function WriteStarDialog({ onClose, onCreated }: WriteStarDialogProps) {
 	const titleId = useId();
 	const counterId = useId();
 	const validationId = useId();
@@ -62,7 +63,11 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 
 	return (
 		<>
-			<Overlay variant="modal" labelledBy={titleId} onDismiss={requestClose}>
+			<ModalDialog
+				variant="modal"
+				labelledBy={titleId}
+				onDismiss={requestClose}
+			>
 				<form
 					className={styles.form}
 					onSubmit={handleSubmit}
@@ -131,7 +136,7 @@ export function WriteModal({ onClose, onCreated }: WriteModalProps) {
 						{submitting ? "등록하는 중…" : "등록하기"}
 					</button>
 				</form>
-			</Overlay>
+			</ModalDialog>
 			{confirmClose && (
 				<ConfirmDialog
 					message="작성 중인 글이 사라져요"

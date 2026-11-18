@@ -27,8 +27,13 @@ npm run dev
 web/
   src/
     app/           앱 프레임·라우트 정의
-    screens/       화면 컴포넌트
-    components/    공통 UI
+    features/      onboarding · universe · ship · stars (화면·전용 UI·스타일)
+    components/    여러 기능이 함께 쓰는 UI
+    api/           저장소 인터페이스·샌드박스 구현·예시 콘텐츠
+    hooks/         공통 데이터 구독·초안 보호
+    lib/           날짜 표시·글자 수 검사
+    pixel/         우주선·캐릭터·방 픽셀 렌더러
+    assets/        에셋 경로 manifest
     styles/        디자인 토큰·기본 스타일
   vite.config.ts   개발·빌드 설정
   wrangler.jsonc   Cloudflare 정적 SPA 배포 설정

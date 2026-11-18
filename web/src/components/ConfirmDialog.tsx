@@ -1,6 +1,6 @@
 import { useId } from "react";
 import styles from "./ConfirmDialog.module.css";
-import { Overlay } from "./Overlay";
+import { ModalDialog } from "./ModalDialog";
 
 interface ConfirmDialogProps {
 	message: string;
@@ -22,7 +22,7 @@ export function ConfirmDialog({
 	const id = useId();
 
 	return (
-		<Overlay variant="confirm" labelledBy={id} onDismiss={onCancel}>
+		<ModalDialog variant="confirm" labelledBy={id} onDismiss={onCancel}>
 			<p id={id} className={styles.message}>
 				{message}
 			</p>
@@ -40,6 +40,6 @@ export function ConfirmDialog({
 					{confirmLabel}
 				</button>
 			</div>
-		</Overlay>
+		</ModalDialog>
 	);
 }

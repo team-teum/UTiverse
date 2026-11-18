@@ -1,10 +1,10 @@
 import { type PointerEvent, type ReactNode, useRef } from "react";
-import type { Star } from "../api";
-import { constellationFor } from "../data/constellations";
-import { formatMonthDay } from "../lib/text";
-import { AssetImage } from "./AssetImage";
+import type { Star } from "../../api/types";
+import { AssetImage } from "../../components/AssetImage";
+import { StarShape } from "../../components/icons";
+import { formatMonthDay } from "../../lib/dateFormat";
 import styles from "./Constellation.module.css";
-import { StarShape } from "./icons";
+import { getConstellationPattern } from "./constellationPatterns";
 
 export const STARS_PER_PAGE = 6;
 
@@ -84,7 +84,7 @@ export function Constellation({
 		go(current + (delta < 0 ? 1 : -1));
 	}
 
-	const { points, edges } = constellationFor(profileId);
+	const { points, edges } = getConstellationPattern(profileId);
 	const lines = edges
 		.filter(([from, to]) => from < visible.length && to < visible.length)
 		.map(([from, to]) => segment(points[from], points[to], STAR_GAP, STAR_GAP));

@@ -1,11 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { sandboxRepository } from "./sandboxRepository";
-import type { Repository } from "./types";
-
-export * from "./types";
-
-/** 지금은 샌드박스만 있다. 실제 DB 모드를 붙일 때 여기서 구현을 고른다. */
-export const repo: Repository = sandboxRepository;
+import { repo } from "../api/repository";
 
 let version = 0;
 repo.subscribe(() => {
@@ -24,7 +18,7 @@ interface Loaded<T> {
  * key가 바뀌거나 저장소 데이터가 바뀌면 load를 다시 실행한다.
  * 다시 불러오는 동안에는 같은 key의 이전 값을 그대로 보여 준다.
  */
-export function useRepoData<T>(key: string, load: () => Promise<T>) {
+export function useRepositoryData<T>(key: string, load: () => Promise<T>) {
 	const currentVersion = useSyncExternalStore(repo.subscribe, getVersion);
 	const requestKey = `${key}#${currentVersion}`;
 	const loadRef = useRef(load);

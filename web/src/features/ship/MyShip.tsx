@@ -7,11 +7,12 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
-import { repo, useRepoData } from "../api";
-import { AssetImage } from "../components/AssetImage";
-import { type CustomizeMode, CustomizeView } from "../components/CustomizeView";
-import { ShipPage } from "../components/ShipPage";
+import { repo } from "../../api/repository";
+import { AssetImage } from "../../components/AssetImage";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
+import { ShipPage } from "./ShipPage";
 
 const SWIPE = 60;
 
@@ -25,7 +26,7 @@ export function MyShip() {
 	const { pathname, search } = useLocation();
 	const customizing = pathname.startsWith("/me/customize");
 	const mode: CustomizeMode = pathname.endsWith("/avatar") ? "avatar" : "ship";
-	const { data: me } = useRepoData("me", () => repo.getMyProfile());
+	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
 	const [hint, setHint] = useState(false);
 	const mainRef = useRef<HTMLDivElement>(null);
 	const customizeRef = useRef<HTMLDivElement>(null);

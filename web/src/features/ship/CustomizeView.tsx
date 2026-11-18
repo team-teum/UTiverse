@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { type Profile, repo } from "../api";
-import { AVATAR_TABS, type Look, SHIP_TABS } from "../pixel/look";
-import { Pixel } from "../pixel/Pixel";
+import { repo } from "../../api/repository";
+import type { Profile } from "../../api/types";
+import { AVATAR_TABS, type Look, SHIP_TABS } from "../../pixel/look";
+import { PixelCanvas } from "../../pixel/PixelCanvas";
 import styles from "./CustomizeView.module.css";
 
 export type CustomizeMode = "ship" | "avatar";
@@ -59,7 +60,7 @@ export function CustomizeView({
 
 			<div className={styles.stage} data-swipe-back>
 				{mode === "ship" ? (
-					<Pixel
+					<PixelCanvas
 						kind="room"
 						look={look}
 						label="내 우주선 안쪽 방과 내 캐릭터"
@@ -67,7 +68,7 @@ export function CustomizeView({
 					/>
 				) : (
 					<div className={styles.closeup}>
-						<Pixel
+						<PixelCanvas
 							kind="character"
 							look={look}
 							label="내 캐릭터"
@@ -152,7 +153,7 @@ export function CustomizeView({
 										aria-pressed={selected}
 										onClick={() => choose(option.id)}
 									>
-										<Pixel
+										<PixelCanvas
 											kind={
 												mode === "ship"
 													? category.key === "hull"

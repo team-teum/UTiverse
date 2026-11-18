@@ -1,5 +1,5 @@
-import type { Profile } from "../api";
-import { Pixel } from "../pixel/Pixel";
+import type { Profile } from "../../api/types";
+import { PixelCanvas } from "../../pixel/PixelCanvas";
 import styles from "./ShipView.module.css";
 
 /** 우주선 겉모습(277×394). 동그란 창문에 캐릭터 얼굴이 빼꼼 보인다. */
@@ -11,7 +11,7 @@ export function ShipView({
 	isMine: boolean;
 }) {
 	return (
-		<Pixel
+		<PixelCanvas
 			kind="ship"
 			look={profile.look}
 			label={

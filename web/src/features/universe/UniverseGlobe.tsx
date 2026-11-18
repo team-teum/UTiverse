@@ -8,14 +8,14 @@ import {
 	useState,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Profile } from "../api";
+import type { Profile } from "../../api/types";
 import {
 	projectPoint,
 	type Rotation,
 	rotateBy,
 	spherePoint,
-} from "../lib/globe";
-import styles from "./Universe3D.module.css";
+} from "./globeProjection";
+import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
 const FLIGHT_MS = 680;
@@ -42,7 +42,7 @@ interface Drag {
 }
 
 /** 실제 구면 좌표를 투영한다. 점 하나 = 프로필 하나, 뒤쪽 점은 앞에 올 때만 선택된다. */
-export function Universe3D({ profiles }: { profiles: Profile[] }) {
+export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 	const helpId = useId();
 	const navigate = useNavigate();
 	const globeRef = useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ export function Universe3D({ profiles }: { profiles: Profile[] }) {
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
 
-	function visit(
+	function handleVisitClick(
 		event: MouseEvent<HTMLAnchorElement>,
 		to: string,
 		profile: Profile,
@@ -140,7 +140,7 @@ export function Universe3D({ profiles }: { profiles: Profile[] }) {
 		);
 	}
 
-	function turn(direction: (typeof DIRECTIONS)[number]) {
+	function rotateWithKey(direction: (typeof DIRECTIONS)[number]) {
 		if (zoomRef.current) return;
 		setRotation((current) => rotateBy(current, direction.yaw, direction.pitch));
 		setAnnouncement(`우주를 ${direction.name} 돌렸어요.`);
@@ -228,7 +228,7 @@ export function Universe3D({ profiles }: { profiles: Profile[] }) {
 							const direction = DIRECTIONS.find(({ key }) => key === event.key);
 							if (!direction) return;
 							event.preventDefault();
-							turn(direction);
+							rotateWithKey(direction);
 						}}
 					/>
 					<ul className={styles.stars} aria-label="우주선 목록">
@@ -262,7 +262,9 @@ export function Universe3D({ profiles }: { profiles: Profile[] }) {
 										title={profile.nickname}
 										draggable={false}
 										tabIndex={front ? 0 : -1}
-										onClick={(event) => visit(event, to, profile, front)}
+										onClick={(event) =>
+											handleVisitClick(event, to, profile, front)
+										}
 									>
 										<span className={styles.dot} aria-hidden="true" />
 										<span className={styles.name}>

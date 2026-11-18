@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { repo } from "../api";
-import { AssetImage } from "../components/AssetImage";
-import { TitleScene } from "../components/TitleScene";
-import { TopBar } from "../components/TopBar";
+import { repo } from "../../api/repository";
+import { AssetImage } from "../../components/AssetImage";
+import { TopBar } from "../../components/TopBar";
+import { TitleScene } from "./TitleScene";
 import styles from "./Tutorial.module.css";
 
 // S02 튜토리얼: Figma 70:6801 → 70:6850 → 70:6903 → 70:6964 네 장면 그대로.

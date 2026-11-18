@@ -1,4 +1,4 @@
-import { AssetImage } from "./AssetImage";
+import { AssetImage } from "../../components/AssetImage";
 import styles from "./TitleScene.module.css";
 
 /**

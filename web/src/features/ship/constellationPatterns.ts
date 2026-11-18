@@ -85,7 +85,7 @@ const PATTERNS: readonly ConstellationPattern[] = [
 ];
 
 /** 사용자 ID가 시드다. 방문·글 추가 때 다시 뽑지 않는다. */
-export function constellationFor(profileId: string) {
+export function getConstellationPattern(profileId: string) {
 	let hash = 2166136261;
 	for (let index = 0; index < profileId.length; index += 1) {
 		hash = Math.imul(hash ^ profileId.charCodeAt(index), 16777619);

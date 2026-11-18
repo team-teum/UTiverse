@@ -1,14 +1,9 @@
 import { useEffect, useRef } from "react";
-import {
-	CHARACTER_SIZE,
-	drawCharacter,
-	drawRoom,
-	drawShip,
-	ROOM_SIZE,
-	SHIP_SIZE,
-} from "./draw";
+import { CHARACTER_SIZE, drawCharacter } from "./character";
 import type { Look } from "./look";
-import styles from "./Pixel.module.css";
+import styles from "./PixelCanvas.module.css";
+import { drawRoom, ROOM_SIZE } from "./room";
+import { drawShip, SHIP_SIZE } from "./ship";
 
 type Kind = "character" | "ship" | "room";
 
@@ -18,7 +13,7 @@ const SIZES: Record<Kind, { width: number; height: number }> = {
 	room: ROOM_SIZE,
 };
 
-interface PixelProps {
+interface PixelCanvasProps {
 	kind: Kind;
 	look: Look;
 	label: string;
@@ -26,7 +21,12 @@ interface PixelProps {
 }
 
 /** 코드로 그린 픽셀 아트 한 장. 크기는 className으로 정하고, 픽셀은 흐리지 않게 키운다. */
-export function Pixel({ kind, look, label, className }: PixelProps) {
+export function PixelCanvas({
+	kind,
+	look,
+	label,
+	className,
+}: PixelCanvasProps) {
 	const ref = useRef<HTMLCanvasElement>(null);
 	const { width, height } = SIZES[kind];
 	const key = JSON.stringify(look);

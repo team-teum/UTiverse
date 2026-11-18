@@ -4,8 +4,9 @@ import {
 	useNavigationType,
 	useParams,
 } from "react-router-dom";
-import { repo, useRepoData } from "../api";
-import { ShipPage } from "../components/ShipPage";
+import { repo } from "../../api/repository";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { ShipPage } from "./ShipPage";
 
 /** S09 남의 우주선 (/ship/:profileId) */
 export function OtherShip() {
@@ -14,9 +15,10 @@ export function OtherShip() {
 	const fromUniverse =
 		useNavigationType() === "PUSH" &&
 		(state as { fromUniverse?: boolean } | null)?.fromUniverse === true;
-	const { data: me } = useRepoData("me", () => repo.getMyProfile());
-	const { data: profile, loading } = useRepoData(`profile:${profileId}`, () =>
-		repo.getProfile(profileId),
+	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
+	const { data: profile, loading } = useRepositoryData(
+		`profile:${profileId}`,
+		() => repo.getProfile(profileId),
 	);
 
 	if (!me || (loading && profile === undefined)) {

@@ -8,8 +8,8 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 CI 및 웹 접근성·입력 검증 보완. 미사용 코드 정리·검증 기록은 3.3, 모바일 전체 폭은 4장 |
-| 로컬 테스트 샌드박스 | 일부 (글·댓글·반응·예시 우주선) | 3.2·6.1; 예시 프로필·별은 고정 UUID로 직접 링크 새로고침 지원. `web/src/api/` 공통 인터페이스 + 메모리 구현. 예시 우주선 10개·별 31개·댓글은 `web/src/data/examples.ts`(Claude 초안, **팀 검토·승인 필요**) |
+| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 CI 및 웹 접근성·입력 검증 보완. 미사용 코드·기능별 디렉터리 정리 및 검증은 3.3·3.4, 모바일 전체 폭은 4장 |
+| 로컬 테스트 샌드박스 | 일부 (글·댓글·반응·예시 우주선) | 3.2·6.1; 예시 프로필·별은 고정 UUID로 직접 링크 새로고침 지원. `web/src/api/` 공통 인터페이스 + 메모리 구현. 예시 우주선 10개·별 31개·댓글은 `web/src/api/sandboxExamples.ts`(Claude 초안, **팀 검토·승인 필요**) |
 | Supabase 스키마 · RLS · 함수 (migration) | 미착수 | 7장 |
 | 시드 데이터 | 미착수 | 7.6 |
 | 기능 A 회원가입·로그인 | 미착수 | |
@@ -64,7 +64,7 @@
 
 ## 3. 저장소 구조
 
-아래는 전체 목표 구조다. 현재 생성된 파일과 실행 방법은 루트 `README.md`와 3.1에 적는다. 실제 DB·미구현 기능을 위한 빈 모듈이나 Supabase 설정을 미리 만들지 않는다.
+아래는 현재 웹 구조와 후속 DB 파일의 예정 위치다. 같은 기능의 화면·전용 UI·CSS는 `features/<기능>/`에 함께 둔다. 여러 기능에서 사용하는 UI만 `components/`에 둔다. 실제 DB·미구현 기능을 위한 빈 모듈이나 Supabase 설정을 미리 만들지 않는다.
 
 ```text
 UTiverse/
@@ -73,7 +73,7 @@ UTiverse/
 ├─ new_requests.md           변경 요청·버그
 ├─ AGENTS.md                 코딩 에이전트 작업 규칙
 ├─ docs/ASSETS.md            에셋 교체 가이드 (디자이너용)
-├─ supabase/
+├─ supabase/                 실제 DB 도입 시 추가
 │  ├─ config.toml
 │  ├─ migrations/            2026111700xxxx_<이름>.sql (7장 순서대로)
 │  └─ seed.sql               시드 우주선·별·댓글·행사
@@ -86,31 +86,28 @@ UTiverse/
    │  ├─ assets/             이미지 (파일명 규칙: docs/ASSETS.md)
    │  └─ fonts/
    └─ src/
-      ├─ main.tsx, App.tsx
-      ├─ app/                AppFrame(세로 프레임), routes, providers
-      ├─ lib/supabase.ts     클라이언트 생성 (공개 키만)
-      ├─ api/                auth.ts, profiles.ts, stars.ts, comments.ts,
-      │                      reactions.ts, explore.ts, location.ts, events.ts, reports.ts
-      ├─ assets/manifest.ts  에셋 키 → 파일 경로 (유일한 이미지 참조 지점)
-      ├─ data/               코드에 두는 고정 데이터: tutorial.ts, customItems.ts,
-      │                      regions.ts(시·도/시·군·구), copy.ts(화면 문구)
-      ├─ hooks/              useSession, useRequireLogin, useSwipe, useDragRotate, useToast
-      ├─ components/         TopBar, MenuPanel, Modal, BottomSheet, AuthModal,
-      │                      LocationModal, WriteModal, StarDetail, ReactionBar,
-      │                      CommentList, Constellation, ShipView, AvatarView,
-      │                      Universe3D, ExploreToggle, SpeechCard, Toast, AssetImage
-      ├─ screens/            Title, Tutorial, Universe, Explore, Ship, MyShip,
-      │                      CustomizeShip, CustomizeAvatar, Calendar, EventDetail,
-      │                      Bookmarks, Settings
-      └─ styles/             tokens.css, global.css
+      ├─ main.tsx           React 진입점
+      ├─ app/               AppFrame·공통 라우트
+      ├─ features/
+      │  ├─ onboarding/    Title·Tutorial·TitleScene
+      │  ├─ universe/      Universe·UniverseGlobe·구면 투영
+      │  ├─ ship/          MY·방문 화면·별자리 패턴·꾸미기
+      │  └─ stars/         작성/상세 대화창·댓글·반응
+      ├─ components/        ModalDialog·ConfirmDialog·TopBar·Toast·AssetImage
+      ├─ api/               저장소 선택·계약·샌드박스 구현·예시 콘텐츠
+      ├─ hooks/             useRepositoryData·useDiscardGuard
+      ├─ lib/               날짜 포맷·글자 수 검사
+      ├─ pixel/             공용 PixelCanvas·우주선·캐릭터·방 렌더러
+      ├─ assets/manifest.ts 에셋 키 → 파일 경로
+      └─ styles/            tokens.css·global.css
 ```
 
 `.gitignore`: `node_modules/`, `dist/`, `.env*`(`.env.example` 제외), `.wrangler/`, `.dev.vars*`, `supabase/.temp/` 등.
 
-### 3.1 현재 scaffold와 검증 기록
+### 3.1 초기 scaffold와 검증 기록
 
-**현재 범위**
-- React·TypeScript strict·Vite, BrowserRouter, 작은 AppFrame·내비게이션과 `/`·`/universe`·`/me` 플레이스홀더만 둔다. 도메인 기능·데이터 계층·최종 Figma 화면은 미구현이다.
+**초기 범위와 도구**
+- 첫 scaffold는 React·TypeScript strict·Vite와 작은 AppFrame, `/`·`/universe`·`/me` 플레이스홀더로 시작했다. 이후 기능별 구현 상태는 0장·8장을 따른다.
 - 라우터는 `createBrowserRouter`(데이터 라우터)다. 쓰던 글·댓글이 있을 때 뒤로가기·이동을 확인하는 `useBlocker`가 이 방식에서만 동작한다(2026-11-17).
 - 미사용 Query provider, Vitest·Testing Library·jsdom·Playwright 환경을 제거했다. 테스트·추상화는 필요한 기능과 함께 추가한다. CLI는 로컬 의존성이다.
 - `.github/workflows/ci.yml`: main push마다 Node `.nvmrc` + `npm ci` → `npm run check` → `npm run deploy` (빌드 포함). 검사 실패 시 배포하지 않고 파일 자동 수정·커밋은 하지 않는다. concurrency로 병렬 배포를 제한한다. 직접 push를 막는 보호 규칙은 아니다. 계정 ID·배포 토큰은 저장소 Actions secrets로 전달하며 로컬 OAuth 자격 증명은 업로드하지 않는다.
@@ -128,7 +125,7 @@ UTiverse/
 - 환경: Node 24.22.2 / npm 11.19.1, 로컬 macOS.
 - 재현: `cd web && npm ci && npm run check && npm run build`.
 - 이전 scaffold에서 Chromium 내비게이션/프레임 스모크 및 Wrangler 로컬 fallback/dry-run을 확인했으나 테스트 환경은 이번 경량화에서 제거했다. 현재 CI에 브라우저 테스트는 없다.
-- 도메인 기능·실제 DB는 여전히 미착수다. 기본 검사 통과를 MVP 기능 완료로 해석하지 않는다.
+- 당시에는 도메인 기능·실제 DB가 미착수였다. 기본 검사 통과를 MVP 기능 완료로 해석하지 않는다.
 
 **배포 검증 기록 (2026-11-17)**
 - `npm run check && npm run deploy` 성공. 공개 scaffold: https://utiverse.11-5e0.workers.dev
@@ -138,7 +135,7 @@ UTiverse/
 
 ### 3.2 웹 기본 동작 보완 · 검증 기록 (2026-11-18)
 
-- [x] `Overlay`를 native `dialog.showModal()`로 교체. 초기 초점·배경 inert·키보드 초점 제한·닫힌 뒤 복귀는 브라우저에 맡긴다. `useLayoutEffect` 정리에서 DOM 제거 전에 닫아 초점 복귀를 지킨다.
+- [x] 공통 `ModalDialog`에 native `dialog.showModal()`을 적용. 초기 초점·배경 inert·키보드 초점 제한·닫힌 뒤 복귀는 브라우저에 맡긴다. `useLayoutEffect` 정리에서 DOM 제거 전에 닫아 초점 복귀를 지킨다.
 - [x] 중첩 확인 창의 Esc는 가장 위 창만 닫는다. React portal의 `cancel` 전파를 막고 기존 미저장 글·댓글 확인을 유지한다. 앱 프레임만 어둡게 하고 좌우 검은 여백은 그대로다.
 - [x] 예시 프로필·별 직접 링크는 새로고침·다른 탭에서도 열린다. 예시 프로필 ID는 데이터에 고정하고 별 ID는 프로필 UUID + 배열 번호로 만든다. 새로 작성한 글·댓글은 기존처럼 새로고침하면 초기화한다.
 - [x] 글쓰기 입력은 최소 1rem. 꾸미기 선택은 불완전한 ARIA tab 대신 legend가 있는 fieldset + 일반 버튼/`aria-pressed`로 제공하고 Enter·Space로 동작한다.
@@ -158,6 +155,15 @@ UTiverse/
 **검증 기록**
 - `cd web && npm run check && npm run build` 통과. 첫 튜토리얼·글·댓글·반응·모달·꾸미기·회전 우주는 로컬 Chromium 시나리오로 확인했다. 실제 iPhone·VoiceOver 확인을 대신하지 않는다.
 - MVP는 완성형 프리셋이고 아이템 조합은 후속이지만, 사용 중인 UI의 프리셋 전환은 기능 G의 미착수 작업으로 남긴다.
+
+### 3.4 기능별 디렉터리 정리
+
+- `UniverseGlobe`, `ModalDialog`, `WriteStarDialog`, `StarDetailDialog`, `PixelCanvas`처럼 구현의 역할을 이름에 드러낸다. 예시 콘텐츠는 샌드박스 구현 옆에 둔다.
+- `api/repository.ts`는 구현 선택만 맡고, React 구독은 `hooks/useRepositoryData.ts`에 둔다. 실제 DB 도입에 필요한 저장소 계약과 환경 변수 예시, 작동 중인 픽셀 렌더러·초안 보존·에셋 manifest를 유지한다. 경로·화면 동작·의존성은 바꾸지 않는다.
+
+**검증 기록**
+- `cd web && npm run check && npm run build` 통과. 일회성 Knip 검사에서 미사용 export·파일을 보고하지 않았다(저장소에 도구 추가 없음).
+- Chromium production preview에서 온보딩 → 우주 방향키 회전·별자리 방문 → 별 상세 직접 링크 새로고침, MY 우주선·아바타 꾸미기와 캔버스 출력, 초안 닫기 확인, 글 작성·반응·댓글 작성/삭제, 샌드박스 새로고침 초기화를 확인했다. JS·HTTP 오류 없음. 실기기·실제 DB는 미검증이다.
 
 ## 4. 화면 비율과 레이아웃
 
@@ -371,7 +377,7 @@ create table public.event_bookmarks (
 - 별·댓글 삭제는 **하드 삭제**(행 삭제, 댓글·반응 연쇄 삭제).
 - `updated_at`은 트리거로 갱신한다.
 - 별도 비공개 테이블 `location_change_limits(profile_id PK/FK, last_region_set_at timestamptz)`로 지역 변경 시각을 보관한다. 위치 삭제 시 이 행은 유지하고 프로필 삭제 시에만 연쇄 삭제한다. 클라이언트 직접 쓰기 권한은 없다.
-- 시·도 / 시·군·구 이름 목록은 DB가 아니라 `web/src/data/regions.ts`(행정표준코드 5자리, 2026년 기준. 강원특별자치도 51, 전북특별자치도 52 포함)에 둔다. DB에는 코드만 저장한다.
+- 시·도 / 시·군·구 이름 목록은 DB가 아니라 `web/src/features/explore/regions.ts`(행정표준코드 5자리, 2026년 기준. 강원특별자치도 51, 전북특별자치도 52 포함)에 둔다. DB에는 코드만 저장한다.
 
 ### 7.3 권한 (RLS · 컬럼 권한)
 
@@ -490,7 +496,7 @@ supabase/migrations/
 ### 기능 B: 튜토리얼
 
 **동작**
-- `screens/Tutorial.tsx`의 네 장면: 인사 → 티니 소개 → 꾸미기 소개 → MY 안내. 기존 Figma 배경·요정·대사 카드와 다음 버튼을 사용한다. 닉네임 입력·가입은 요구하지 않는다.
+- `features/onboarding/Tutorial.tsx`의 네 장면: 인사 → 티니 소개 → 꾸미기 소개 → MY 안내. 기존 Figma 배경·요정·대사 카드와 다음 버튼을 사용한다. 닉네임 입력·가입은 요구하지 않는다.
 - 타이틀에서 처음 시작하면 `/tutorial`. 「튜토리얼 건너뛰기>」는 모든 장면에 있으며 완료 처리 후 `/universe`로 간다. 마지막 MY·끝내기는 완료 처리 후 `/me`와 위로 밀기 안내로 이어진다. 홈으로 나갈 수도 있다.
 - 완료·건너뛰기 여부는 샌드박스 메모리에 둔다. 같은 세션에서 타이틀을 다시 시작하면 `/universe`, 새로고침하면 다음 테스터에게 다시 튜토리얼을 보여 준다.
 - 실제 DB 모드의 기기·계정 완료 저장, 설정의 다시 보기, 예전 닉네임 입력·추가 대사는 후속 범위다.
@@ -510,7 +516,7 @@ supabase/migrations/
 
 **동작**
 - 우주(S03, 현재 샌드박스): `listOtherProfiles()`의 예시 사용자 10명을 **한 명당 점 하나**로 피보나치 구면 배치(반지름 140 디자인 px). 홈의 점은 사용자, 방문한 별자리의 별은 게시글이며 서로 다른 단위다. 실지역·거리 정보는 쓰지 않는다.
-- `Universe3D` + `lib/globe.ts`: yaw/pitch 회전 → 원근 투영 `scale = 600/(600+z)` + 깊이순 겹침. 뒤쪽 점은 흐리고 이름을 숨기며 inert·탭 제외로 선택되지 않는다. 앞쪽 점과 닉네임은 native 링크로 `/ship/:id`에 연결한다. 44px 터치 영역은 원근 크기로 축소하지 않는다.
+- `UniverseGlobe` + `features/universe/globeProjection.ts`: yaw/pitch 회전 → 원근 투영 `scale = 600/(600+z)` + 깊이순 겹침. 뒤쪽 점은 흐리고 이름을 숨기며 inert·탭 제외로 선택되지 않는다. 앞쪽 점과 닉네임은 native 링크로 `/ship/:id`에 연결한다. 44px 터치 영역은 원근 크기로 축소하지 않는다.
 - 드래그는 0.4°/실제 px, 이동 6px 미만은 일반 탭. 원래 링크/버튼에서 pointer capture를 유지하고 회전 후 click은 막는다. pointercancel/lostpointercapture에 정리한다. 방향키(회당 22.5°)를 지원하며 동작을 status로 안내한다. 디자인·원래 명세에 없던 하단 4개 화살표는 제거한다.
 - 앞쪽 점이나 이름을 일반 클릭·탭 또는 Enter로 열면, 카메라가 기울지 않고 선택한 점을 중앙으로 가져오며 680ms 동안 부드럽게 확대한다. 크기와 출발 시점이 다른 별빛이 가장자리로 지나가고 해당 우주선의 별자리에 도착한다. 조종석 창틀·조준점·목적지 오버레이는 표시하지 않는다. 상단 바는 고정한다. 동작 줄이기 설정에서는 비행·등장 효과 없이 이동하고, 일반 링크 동작과 브라우저 뒤로가기·직접 링크는 유지한다. Figma Make의 탐험 전환을 참고하되 선택 후 확인 버튼은 추가하지 않는다.
 - 홈에는 점과 사람의 관계를 별도 문장으로 설명하지 않는다. 대신 구 아래에 드래그·이름 선택 안내를 두고, 방향키 안내는 회전 컨트롤의 접근성 설명으로 연결한다. 테스트용 예시 고지와 프로필별 `예시` 배지는 유지한다.
@@ -603,14 +609,14 @@ supabase/migrations/
 **검증 기록**
 - 확인한 동작 (2026-11-17, 샌드박스): 위 샌드박스 항목. 402×874·360×740·PC 1280×800에서 별 상세 카드가 프레임 안에 뜬다. 오류 콘솔 없음.
 - 재현 방법: `cd web && npm run build && npx vite preview` → Playwright Chromium 402×874에서 `/` → MY → 별 만들기 → 별 열기 → 반응·댓글·삭제·뒤로가기 시나리오를 일회성 스크립트로 실행(저장소에 테스트 환경은 추가하지 않음).
-- 남은 문제: 예시 우주선 10개의 글·댓글은 초안이다. 팀이 `web/src/data/examples.ts`를 읽고 고치거나 승인한 뒤 테스트한다(prd.md 6장). 신고(⋯)는 미구현. `/universe` 회전 우주에 10명이 표시되며 앞면 점만 선택할 수 있다. 랜덤·주변 탐색은 후속이다. 반응 아이콘은 디자인 확정 전이라 글자만 표시. 실제 휴대폰 미확인.
+- 남은 문제: 예시 우주선 10개의 글·댓글은 초안이다. 팀이 `web/src/api/sandboxExamples.ts`를 읽고 고치거나 승인한 뒤 테스트한다(prd.md 6장). 신고(⋯)는 미구현. `/universe` 회전 우주에 10명이 표시되며 앞면 점만 선택할 수 있다. 랜덤·주변 탐색은 후속이다. 반응 아이콘은 디자인 확정 전이라 글자만 표시. 실제 휴대폰 미확인.
 
 ### 기능 F: 내 우주선(MY)과 별 만들기
 
 **동작**
 - MY(S11): 기능 E의 우주선 화면 + 오른쪽 연필 버튼(`ui.write`) + 하단 「우주선 꾸미기」 버튼 + 위 화살표. 별이 없으면 별자리 자리에 "첫 별을 만들어 볼까요?".
 - 위로 밀기(60 디자인 px 이상) 또는 우주선 탭 → `/me/customize/ship`. 꾸미기에서 아래로 밀기 → `/me`.
-- WriteModal(S12): 제목 "별 만들기", X, 입력 칸(placeholder "무엇이든 자유롭게 써보세요.", 1~500자, 남은 글자 수), [등록하기](제출 중에만 비활성). 빈 값·제한 초과는 입력 오류로 안내한다. 주제 추천 카드는 없음.
+- WriteStarDialog(S12): 제목 "별 만들기", X, 입력 칸(placeholder "무엇이든 자유롭게 써보세요.", 1~500자, 남은 글자 수), [등록하기](제출 중에만 비활성). 빈 값·제한 초과는 입력 오류로 안내한다. 주제 추천 카드는 없음.
 - 등록 → `stars` insert → 모달 닫힘 → 별자리 마지막 페이지로 이동 + 새 별 반짝임 → 토스트 "새 별이 떴어요". 기존 별은 글 추가로 위치가 바뀌지 않는다. 연필은 마지막 페이지의 별이 1~5개일 때만 선으로 연결한다. 공통 샌드박스 프로필 ID는 고정이지만 작성 내용은 새로고침하면 초기화된다.
 - 쓰는 중 닫으면 "작성 중인 글이 사라져요" 확인. 저장 실패 시 입력값 유지 + 다시 시도 안내.
 
@@ -641,7 +647,7 @@ supabase/migrations/
 **2026-11-18 범위 재확정:** 아래 완성형 프리셋이 MVP 목표다. 현재는 이전 요청에 따른 조합 UI·`look`·픽셀 렌더러가 동작하므로 프리셋 전환은 **미착수인 별도 기능 작업**이다. 요청 003의 아이템별 조합 확장은 MVP 이후로 보류한다. 이번 미사용 코드 정리에서 사용 중인 구현을 삭제하거나 프리셋 구현을 완료로 표시하지 않는다.
 
 **동작**
-- 프리셋 목록은 `web/src/data/customItems.ts` (`{ id, target: 'ship'|'avatar', name, assetKey }`). 우주선·아바타 각각 기본값 포함 3종 이상이며 카테고리별 조합은 하지 않는다.
+- 프리셋 목록은 `web/src/features/ship/shipPresets.ts` (`{ id, target: 'ship'|'avatar', name, assetKey }`). 우주선·아바타 각각 기본값 포함 3종 이상이며 카테고리별 조합은 하지 않는다.
 - 상단 미리보기, 하단 3열 완성형 프리셋 목록. 선택하면 전체 이미지 한 장으로 즉시 미리보기한다. 우주선 ↔ 캐릭터 전환 버튼을 둔다.
 - [저장] → `profiles.ship_preset_id` / `avatar_preset_id` update → 토스트. 저장하지 않고 나가면 확인한다. 허용된 프리셋 ID는 DB에서도 제약으로 검증한다.
 - 모든 화면은 저장한 프리셋 ID를 동일한 manifest 키로 해석한다. 시드 전용 이미지 키는 시드 프로필에서만 우선 사용한다. 선택 순서나 마지막 클릭에 의존하지 않는다.

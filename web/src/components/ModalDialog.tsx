@@ -1,8 +1,8 @@
 import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import styles from "./Overlay.module.css";
+import styles from "./ModalDialog.module.css";
 
-interface OverlayProps {
+interface ModalDialogProps {
 	/** card: 별 상세(Figma 341 카드), modal: 별 만들기(313 카드), confirm: 확인 창 */
 	variant: "card" | "modal" | "confirm";
 	labelledBy: string;
@@ -11,12 +11,12 @@ interface OverlayProps {
 }
 
 /** 앱 프레임 안(#overlay-root)에 그린다. 검은 여백까지 덮지 않는다(SPECIFICATION 4장). */
-export function Overlay({
+export function ModalDialog({
 	variant,
 	labelledBy,
 	onDismiss,
 	children,
-}: OverlayProps) {
+}: ModalDialogProps) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
 
 	useLayoutEffect(() => {

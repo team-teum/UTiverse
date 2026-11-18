@@ -1,8 +1,11 @@
 import { type FormEvent, useId, useRef, useState } from "react";
-import { COMMENT_MAX_CHARS, type Comment, repo, useRepoData } from "../api";
-import { countChars, formatRelative, lengthError } from "../lib/text";
+import { repo } from "../../api/repository";
+import { COMMENT_MAX_CHARS, type Comment } from "../../api/types";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { formatRelative } from "../../lib/dateFormat";
+import { countChars, lengthError } from "../../lib/postText";
 import styles from "./CommentSection.module.css";
-import { ConfirmDialog } from "./ConfirmDialog";
 
 interface CommentSectionProps {
 	starId: string;
@@ -23,8 +26,9 @@ export function CommentSection({
 	const validationId = useId();
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const [validationError, setValidationError] = useState<string | null>(null);
-	const { data: comments, error } = useRepoData(`comments:${starId}`, () =>
-		repo.listComments(starId),
+	const { data: comments, error } = useRepositoryData(
+		`comments:${starId}`,
+		() => repo.listComments(starId),
 	);
 	const [submitting, setSubmitting] = useState(false);
 	const [submitError, setSubmitError] = useState<string | null>(null);

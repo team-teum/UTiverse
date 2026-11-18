@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { type Profile, repo, type Star, useRepoData } from "../api";
+import { repo } from "../../api/repository";
+import type { Profile, Star } from "../../api/types";
+import { Toast } from "../../components/Toast";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { StarDetailDialog } from "../stars/StarDetailDialog";
+import { WriteStarDialog } from "../stars/WriteStarDialog";
 import { Constellation, STARS_PER_PAGE } from "./Constellation";
 import styles from "./ShipPage.module.css";
 import { ShipView } from "./ShipView";
-import { StarDetail } from "./StarDetail";
-import { Toast } from "./Toast";
-import { WriteButton } from "./WriteButton";
-import { WriteModal } from "./WriteModal";
+import { WriteStarButton } from "./WriteStarButton";
 
 interface ShipPageProps {
 	profile: Profile;
@@ -33,7 +35,7 @@ export function ShipPage({
 	const [searchParams, setSearchParams] = useSearchParams();
 	const openStarId = searchParams.get("star");
 
-	const { data: stars, error } = useRepoData(`stars:${profile.id}`, () =>
+	const { data: stars, error } = useRepositoryData(`stars:${profile.id}`, () =>
 		repo.listStars(profile.id),
 	);
 
@@ -99,7 +101,7 @@ export function ShipPage({
 						highlightId={highlightId}
 						writeButton={
 							isMine ? (
-								<WriteButton onClick={() => setWriting(true)} />
+								<WriteStarButton onClick={() => setWriting(true)} />
 							) : undefined
 						}
 						empty={
@@ -147,13 +149,13 @@ export function ShipPage({
 			)}
 
 			{writing && (
-				<WriteModal
+				<WriteStarDialog
 					onClose={() => setWriting(false)}
 					onCreated={handleCreated}
 				/>
 			)}
 			{openStarId && (
-				<StarDetail
+				<StarDetailDialog
 					key={openStarId}
 					starId={openStarId}
 					myProfileId={myProfileId}

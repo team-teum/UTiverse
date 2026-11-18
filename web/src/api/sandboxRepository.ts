@@ -1,6 +1,6 @@
-import { exampleProfiles } from "../data/examples";
-import { isValidLength } from "../lib/text";
+import { isValidLength } from "../lib/postText";
 import { DEFAULT_LOOK, withLook } from "../pixel/look";
+import { exampleProfiles } from "./sandboxExamples";
 import {
 	COMMENT_MAX_CHARS,
 	type Comment,

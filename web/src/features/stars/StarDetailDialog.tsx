@@ -1,15 +1,16 @@
 import { useId, useState } from "react";
-import { repo, useRepoData } from "../api";
-import { useDiscardGuard } from "../hooks/useDiscardGuard";
-import { formatStarDate } from "../lib/text";
+import { repo } from "../../api/repository";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { FigmaCloseIcon, MoreIcon } from "../../components/icons";
+import { ModalDialog } from "../../components/ModalDialog";
+import { useDiscardGuard } from "../../hooks/useDiscardGuard";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { formatStarDate } from "../../lib/dateFormat";
 import { CommentSection } from "./CommentSection";
-import { ConfirmDialog } from "./ConfirmDialog";
-import { FigmaCloseIcon, MoreIcon } from "./icons";
-import { Overlay } from "./Overlay";
 import { ReactionBar } from "./ReactionBar";
-import styles from "./StarDetail.module.css";
+import styles from "./StarDetailDialog.module.css";
 
-interface StarDetailProps {
+interface StarDetailDialogProps {
 	starId: string;
 	myProfileId: string;
 	/** 창을 닫는 이동(뒤로가기 또는 ?star 제거) */
@@ -18,14 +19,14 @@ interface StarDetailProps {
 }
 
 /** S10 별 상세 (Figma 「(남의) 별 눌렀을 때」 54:6841): 날짜·본문·반응·댓글. `?star=:starId`로 열린다. */
-export function StarDetail({
+export function StarDetailDialog({
 	starId,
 	myProfileId,
 	onClose,
 	onDeleted,
-}: StarDetailProps) {
+}: StarDetailDialogProps) {
 	const titleId = useId();
-	const { data: star, loading } = useRepoData(`star:${starId}`, () =>
+	const { data: star, loading } = useRepositoryData(`star:${starId}`, () =>
 		repo.getStar(starId),
 	);
 	const [draft, setDraft] = useState("");
@@ -50,7 +51,7 @@ export function StarDetail({
 
 	return (
 		<>
-			<Overlay variant="card" labelledBy={titleId} onDismiss={onClose}>
+			<ModalDialog variant="card" labelledBy={titleId} onDismiss={onClose}>
 				<header className={styles.header}>
 					<h2 id={titleId} className={styles.date}>
 						{star ? (
@@ -124,7 +125,7 @@ export function StarDetail({
 						</>
 					)}
 				</div>
-			</Overlay>
+			</ModalDialog>
 
 			{confirmDelete && (
 				<ConfirmDialog

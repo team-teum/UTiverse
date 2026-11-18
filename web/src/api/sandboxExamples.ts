@@ -23,7 +23,7 @@ interface ExampleStar {
 	reactions?: Partial<Record<"empathy" | "cheer" | "metoo", number>>;
 }
 
-export interface ExampleProfile {
+interface ExampleProfile {
 	/** 고정 UUID: 새로고침·새 탭에서도 예시 링크가 같은 프로필을 가리킨다. */
 	id: string;
 	key: string;

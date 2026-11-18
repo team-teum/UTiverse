@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import { REACTION_TYPES, type ReactionType, repo, useRepoData } from "../api";
+import { repo } from "../../api/repository";
+import { REACTION_TYPES, type ReactionType } from "../../api/types";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
 import styles from "./ReactionBar.module.css";
 
 // 아이콘은 디자인 확정 전까지 글자로만 보여 준다(prd.md Q3).
@@ -11,7 +13,7 @@ const LABELS: Record<ReactionType, string> = {
 
 /** 긍정 반응 3종. 개수만 보이고 누가 눌렀는지는 보이지 않는다. */
 export function ReactionBar({ starId }: { starId: string }) {
-	const { data } = useRepoData(`reactions:${starId}`, () =>
+	const { data } = useRepositoryData(`reactions:${starId}`, () =>
 		repo.getReactions(starId),
 	);
 	const [pending, setPending] = useState<ReactionType | null>(null);

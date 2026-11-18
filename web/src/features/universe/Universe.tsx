@@ -1,9 +1,10 @@
-import { repo, useRepoData } from "../api";
-import { Universe3D } from "../components/Universe3D";
+import { repo } from "../../api/repository";
+import { useRepositoryData } from "../../hooks/useRepositoryData";
 import styles from "./Universe.module.css";
+import { UniverseGlobe } from "./UniverseGlobe";
 
 export function Universe() {
-	const { data: profiles, error } = useRepoData("profiles:others", () =>
+	const { data: profiles, error } = useRepositoryData("profiles:others", () =>
 		repo.listOtherProfiles(),
 	);
 
@@ -22,7 +23,7 @@ export function Universe() {
 				) : profiles.length === 0 ? (
 					<p>아직 둘러볼 우주선이 없어요.</p>
 				) : (
-					<Universe3D profiles={profiles} />
+					<UniverseGlobe profiles={profiles} />
 				)}
 			</div>
 			<p className={styles.note}>

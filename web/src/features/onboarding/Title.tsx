@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { repo } from "../api";
-import { TitleScene } from "../components/TitleScene";
+import { repo } from "../../api/repository";
 import styles from "./Title.module.css";
+import { TitleScene } from "./TitleScene";
 
 /** S01 타이틀 (Figma 「Tap to Start」 39:5801). 처음이면 튜토리얼, 본 적 있으면 우주로 간다. */
 export function Title() {
