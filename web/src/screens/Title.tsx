@@ -18,14 +18,14 @@ export function Title() {
 			<button
 				className={styles.start}
 				type="button"
-				aria-label="화면을 클릭해서 시작하기"
+				aria-label="시작하기"
 				onClick={start}
 			>
 				<TitleScene />
 			</button>
 			<p className={styles.notice}>
-				테스트 모드예요. 작성한 내용은 이 화면에서만 보이고, 새로고침하면
-				사라져요.
+				테스트 모드예요. 작성한 글과 댓글은 다른 사람에게 보이지 않고,
+				새로고침하면 사라져요.
 			</p>
 		</>
 	);

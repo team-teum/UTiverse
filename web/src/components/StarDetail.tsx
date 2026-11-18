@@ -104,7 +104,7 @@ export function StarDetail({
 				<div className={styles.scroll}>
 					{!star && loading && <p className={styles.muted}>불러오는 중…</p>}
 					{!star && !loading && (
-						<p className={styles.muted}>이미 지워졌거나 없는 별이에요.</p>
+						<p className={styles.muted}>별을 찾을 수 없어요.</p>
 					)}
 					{star && (
 						<>

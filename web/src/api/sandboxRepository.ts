@@ -43,7 +43,8 @@ interface StoredReaction {
 
 /** 공통 테스트 식별자 tester@utiverse.invalid 의 프로필. 이메일은 화면에 보이지 않는다. */
 const me: Profile = {
-	id: newId(),
+	// 새로고침해도 공통 테스트 프로필의 별자리 모양은 같다. 글은 초기화된다.
+	id: "00000000-0000-4000-8000-000000000000",
 	nickname: "테스터",
 	tagline: "",
 	isExample: false,

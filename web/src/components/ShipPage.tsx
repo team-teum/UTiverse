@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { type Profile, repo, type Star, useRepoData } from "../api";
 import { Constellation, STARS_PER_PAGE } from "./Constellation";
@@ -12,6 +12,7 @@ import { WriteModal } from "./WriteModal";
 interface ShipPageProps {
 	profile: Profile;
 	myProfileId: string;
+	fromUniverse?: boolean;
 	/** MY에서만: 우주선을 누르거나 위로 밀면 꾸미기 화면으로 */
 	onOpenCustomize?: () => void;
 }
@@ -23,6 +24,7 @@ interface ShipPageProps {
 export function ShipPage({
 	profile,
 	myProfileId,
+	fromUniverse = false,
 	onOpenCustomize,
 }: ShipPageProps) {
 	const isMine = profile.id === myProfileId;
@@ -60,11 +62,24 @@ export function ShipPage({
 	}
 
 	const headingId = `ship-heading-${profile.id}`;
+	const headingRef = useRef<HTMLHeadingElement>(null);
+
+	useEffect(() => {
+		if (fromUniverse) headingRef.current?.focus();
+	}, [fromUniverse]);
 
 	return (
-		<section className={styles.screen} aria-labelledby={headingId}>
+		<section
+			className={`${styles.screen} ${fromUniverse ? styles.arrival : ""}`}
+			aria-labelledby={headingId}
+		>
 			<header className={styles.profile}>
-				<h1 id={headingId} className={styles.nickname}>
+				<h1
+					ref={headingRef}
+					tabIndex={fromUniverse ? -1 : undefined}
+					id={headingId}
+					className={styles.nickname}
+				>
 					{isMine ? `${profile.nickname} (나)` : profile.nickname}
 					{profile.isExample && <span className={styles.badge}>예시</span>}
 				</h1>
@@ -76,6 +91,7 @@ export function ShipPage({
 					<p className={styles.notice}>별자리를 불러오지 못했어요.</p>
 				) : (
 					<Constellation
+						profileId={profile.id}
 						stars={stars ?? []}
 						page={page}
 						onPageChange={setPage}
@@ -91,7 +107,7 @@ export function ShipPage({
 								<p className={styles.empty}>
 									{isMine
 										? "첫 별을 만들어 볼까요?"
-										: "아직 떠 있는 별이 없어요"}
+										: "아직 작성한 별이 없어요"}
 								</p>
 							)
 						}
@@ -120,7 +136,7 @@ export function ShipPage({
 					className={styles.swipeHint}
 					onClick={onOpenCustomize}
 				>
-					<span>위로 스와이프해서 우주선꾸미기</span>
+					<span>우주선 꾸미기</span>
 					<svg viewBox="0 0 142 18.5" aria-hidden="true">
 						<path d="M.3 17 70.3 1.5 141.8 17" />
 					</svg>

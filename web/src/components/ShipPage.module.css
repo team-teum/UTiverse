@@ -7,6 +7,20 @@
 	padding-block: calc(3 * var(--dp)) calc(24 * var(--dp));
 }
 
+@media (prefers-reduced-motion: no-preference) {
+	.arrival {
+		animation: arrive 220ms ease-out both;
+		transform-origin: 50% 24%;
+	}
+}
+
+@keyframes arrive {
+	from {
+		opacity: 0.25;
+		transform: scale(1.035);
+	}
+}
+
 .profile {
 	min-block-size: calc(41 * var(--dp));
 	padding-inline: calc(24 * var(--dp));

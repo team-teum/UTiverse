@@ -1,16 +1,24 @@
 .screen {
+	/* 트랜스젠더 프라이드 색은 우주 장면의 빛에만 사용한다. */
+	--universe-blue: #5bcefa;
+	--universe-pink: #f5a9b8;
+	--universe-white: #fff;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	min-block-size: 100%;
 	padding: 1.5rem 1rem;
-}
-
-.intro {
-	margin: 0;
-	font-size: 1rem;
-	text-align: center;
-	color: #fff;
+	background:
+		radial-gradient(
+			ellipse at 35% 43%,
+			color-mix(in srgb, var(--universe-blue) 8%, transparent),
+			transparent 63%
+		),
+		radial-gradient(
+			ellipse at 68% 57%,
+			color-mix(in srgb, var(--universe-pink) 8%, transparent),
+			transparent 63%
+		);
 }
 
 .scene {
@@ -23,6 +31,7 @@
 
 .note {
 	margin: 0;
+	text-wrap: balance;
 	font-size: 0.75rem;
 	text-align: center;
 	color: var(--color-lavender-light);

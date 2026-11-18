@@ -13,9 +13,9 @@ const STEPS = [
 	{ id: "intro", text: "나는 너의 uTiverse 탐험을 도와줄 티니라고 해!" },
 	{
 		id: "custom",
-		text: "유T버스에서는 너만의 아바타를\n만들고 우주선을 꾸밀수 있어~!",
+		text: "유T버스에서는 너만의 아바타를\n만들고 우주선을 꾸밀 수 있어!",
 	},
-	{ id: "my", text: "저 위의 MY를 눌러봐!" },
+	{ id: "my", text: "위에 있는 MY를 눌러 봐!" },
 ] as const;
 
 export function Tutorial() {

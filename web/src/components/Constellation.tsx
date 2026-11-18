@@ -1,5 +1,6 @@
 import { type PointerEvent, type ReactNode, useRef } from "react";
 import type { Star } from "../api";
+import { constellationFor } from "../data/constellations";
 import { formatMonthDay } from "../lib/text";
 import { AssetImage } from "./AssetImage";
 import styles from "./Constellation.module.css";
@@ -7,16 +8,8 @@ import { StarShape } from "./icons";
 
 export const STARS_PER_PAGE = 6;
 
-// Figma 「별자리 예시」(37:12476) 281.5×136 안의 별 중심 좌표(디자인 px). 놓인 순서대로 선을 잇는다.
+// Figma 「별자리 예시」(37:12476) 영역 (디자인 px).
 const BOX = { width: 281.5, height: 136 };
-const PATTERN: ReadonlyArray<readonly [number, number]> = [
-	[17, 74],
-	[70, 28],
-	[147, 119],
-	[164, 51],
-	[212, 85],
-	[246, 17],
-];
 /** 연필 버튼 중심 (Figma 「작성 아이콘」 37:12214, 별자리 기준) */
 const WRITE_CENTER: readonly [number, number] = [292, 91];
 /** 선이 별에 닿지 않게 비우는 길이 (Figma 선 끝과 별 중심 사이 거리) */
@@ -44,6 +37,7 @@ function segment(
 }
 
 interface ConstellationProps {
+	profileId: string;
 	stars: Star[];
 	page: number;
 	onPageChange: (page: number) => void;
@@ -56,6 +50,7 @@ interface ConstellationProps {
 }
 
 export function Constellation({
+	profileId,
 	stars,
 	page,
 	onPageChange,
@@ -89,14 +84,19 @@ export function Constellation({
 		go(current + (delta < 0 ? 1 : -1));
 	}
 
-	const lines = visible
-		.slice(1)
-		.map((_, index) =>
-			segment(PATTERN[index], PATTERN[index + 1], STAR_GAP, STAR_GAP),
-		);
-	if (writeButton && isLastPage && visible.length > 0) {
+	const { points, edges } = constellationFor(profileId);
+	const lines = edges
+		.filter(([from, to]) => from < visible.length && to < visible.length)
+		.map(([from, to]) => segment(points[from], points[to], STAR_GAP, STAR_GAP));
+	// 다음 글이 새 페이지를 열면 완성된 모양에 연필을 연결하지 않는다.
+	if (
+		writeButton &&
+		isLastPage &&
+		visible.length > 0 &&
+		visible.length < STARS_PER_PAGE
+	) {
 		lines.push(
-			segment(PATTERN[visible.length - 1], WRITE_CENTER, STAR_GAP, WRITE_GAP),
+			segment(points[visible.length - 1], WRITE_CENTER, STAR_GAP, WRITE_GAP),
 		);
 	}
 
@@ -146,7 +146,7 @@ export function Constellation({
 					{stars.length === 0 && empty}
 					<ul className={styles.list}>
 						{visible.map((star, index) => {
-							const [x, y] = PATTERN[index];
+							const [x, y] = points[index];
 							return (
 								<li
 									key={star.id}
