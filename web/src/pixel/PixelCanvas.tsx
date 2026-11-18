@@ -13,7 +13,7 @@ type Kind = "character" | "face" | "ship" | "room";
 
 const SIZES: Record<Kind, { width: number; height: number }> = {
 	character: CHARACTER_SIZE,
-	face: { width: 28, height: 26 },
+	face: { width: 32, height: 26 },
 	ship: SHIP_SIZE,
 	room: ROOM_SIZE,
 };

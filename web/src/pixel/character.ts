@@ -1,5 +1,5 @@
 // 이등신 도트 캐릭터: 기본 몸 + 우주복 + 머리(뒤·앞) 레이어를 겹쳐 그린다.
-// 원본(편집용): art/character.aseprite — 레이어 body / suit-1~5 / hair-back-1~5 / hair-front-1~5 (칸 28×40)
+// 기본 아바타 = 원래 시안 'Lumi'의 외곽선을 따른 몸(머리만 둥글게, 눈은 더 귀엽게). 원본(편집용): art/character.aseprite — 레이어 body / suit-1~5 / hair-back-1~5 / hair-front-1~5 (칸 32×40)
 // 내보낸 PNG: web/public/assets/avatar/base.png · suits.png(5칸) · hair.png(5칸 × 위: 뒷머리, 아래: 앞머리)
 // 피부·머리는 기준색(회색 3단)으로 그려 두고 코드가 고른 색으로 바꿔 칠한다. 1칸 = 1픽셀이라 흐려지지 않는다.
 
@@ -7,7 +7,7 @@ import { assets } from "../assets/manifest";
 import type { Ctx } from "./grid";
 import type { Look } from "./look";
 
-export const CHARACTER_SIZE = { width: 28, height: 40 } as const;
+export const CHARACTER_SIZE = { width: 32, height: 40 } as const;
 const { width: W, height: H } = CHARACTER_SIZE;
 
 type Tri = readonly [string, string, string]; // 밝은면, 기본, 그림자
@@ -67,7 +67,7 @@ function hex(c: string): [number, number, number] {
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-/** 시트의 한 칸을 잘라, 기준색을 실제 색으로 바꾼 28×40 캔버스 */
+/** 시트의 한 칸을 잘라, 기준색을 실제 색으로 바꾼 32×40 캔버스 */
 function piece(
 	sheet: Sheet,
 	col: number,
@@ -117,7 +117,7 @@ export interface CharacterParts {
 	hair?: boolean;
 }
 
-/** 캐릭터를 (ox, oy)에 28×40 칸 그대로 그린다. parts로 일부 부품만 그릴 수 있다(아이템 칸 그림용). */
+/** 캐릭터를 (ox, oy)에 32×40 칸 그대로 그린다. parts로 일부 부품만 그릴 수 있다(아이템 칸 그림용). */
 export function drawCharacter(
 	ctx: Ctx,
 	look: Look,

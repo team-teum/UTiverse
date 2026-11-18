@@ -263,7 +263,7 @@ export function drawShip(ctx: Ctx, look: Look) {
 	ctx.arc(x + 0.5, y + 0.5, r - 3.4, 0, Math.PI * 2);
 	ctx.clip();
 	// 창에는 얼굴이 가운데 오게 조금 올려 그린다
-	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y - 5);
+	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y - 4);
 	ctx.restore();
 	paint(
 		ctx,
