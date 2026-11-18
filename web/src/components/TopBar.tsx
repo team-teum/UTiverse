@@ -6,16 +6,22 @@ import styles from "./TopBar.module.css";
 interface TopBarProps {
 	/** MY·홈을 눌렀을 때 이동 전에 할 일 (튜토리얼 완료 처리 등) */
 	onNavigate?: () => void;
+	/** 튜토리얼처럼 버튼을 누를 수 없게 할 때 (보이기만 한다) */
+	locked?: boolean;
 }
 
 /** 공통 상단 바 (Figma 44:11686): ☰ 메뉴 · MY · 우주(홈). */
-export function TopBar({ onNavigate }: TopBarProps) {
+export function TopBar({ onNavigate, locked = false }: TopBarProps) {
 	const { pathname } = useLocation();
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	return (
 		<header className={styles.header}>
-			<nav className={styles.nav} aria-label="주요 메뉴">
+			<nav
+				className={`${styles.nav} ${locked ? styles.locked : ""}`}
+				aria-label="주요 메뉴"
+				inert={locked}
+			>
 				<button
 					type="button"
 					className={styles.menu}

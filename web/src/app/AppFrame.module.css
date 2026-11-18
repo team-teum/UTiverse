@@ -13,7 +13,8 @@
 	inline-size: min(100%, calc(100vh * 402 / 874));
 	block-size: 100vh;
 	overflow: hidden;
-	container-type: inline-size;
+	/* 너비·높이 모두 기준이 되어 --dp가 둘 중 작은 쪽에 맞춰진다 (tokens.css) */
+	container-type: size;
 	isolation: isolate;
 	background: var(--color-space);
 }
@@ -35,7 +36,7 @@
 .content {
 	flex: 1;
 	min-block-size: 0;
-	overflow: auto;
+	overflow: hidden auto;
 	overscroll-behavior: contain;
 	padding-block-end: env(safe-area-inset-bottom, 0px);
 }

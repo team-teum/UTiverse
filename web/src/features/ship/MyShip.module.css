@@ -1,5 +1,5 @@
 /* 튜토리얼 이어 보기 안내 (Figma 70:7022: 티니 (0, 591) 98×198, 말풍선 (101, 479)) */
-.hint {
+.hint.hint {
 	position: absolute;
 	inset: 0;
 	z-index: 3;

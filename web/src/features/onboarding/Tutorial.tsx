@@ -49,6 +49,15 @@ export function Tutorial() {
 		>
 			<TitleScene dimmed />
 
+			{/* 화면 어디를 눌러도 다음 대사로 (건너뛰기 버튼 제외). 키보드는 아래 「다음」 버튼을 쓴다 */}
+			<button
+				type="button"
+				className={styles.tapArea}
+				tabIndex={-1}
+				aria-hidden="true"
+				onClick={next}
+			/>
+
 			<AssetImage
 				assetKey={index < 2 ? "character.tini" : "character.tiniTalk"}
 				alt="안내 요정 티니"
@@ -73,7 +82,8 @@ export function Tutorial() {
 			)}
 
 			<div className={styles.top}>
-				<TopBar onNavigate={complete} />
+				{/* 튜토리얼 중에는 메뉴·MY·홈을 누를 수 없다 */}
+				<TopBar locked />
 				<button type="button" className={styles.skip} onClick={finish}>
 					튜토리얼 건너뛰기&gt;
 				</button>

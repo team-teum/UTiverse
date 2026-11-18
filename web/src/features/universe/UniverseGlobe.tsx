@@ -336,19 +336,14 @@ export function UniverseGlobe({
 										state={VISIT_STATE}
 										className={styles.link}
 										data-profile-id={profile.id}
-										aria-label={`${profile.nickname}${profile.isExample ? " · 예시" : ""} 우주선 방문`}
+										aria-label={`${profile.nickname} 우주선 방문`}
 										title={profile.nickname}
 										draggable={false}
 										tabIndex={front ? 0 : -1}
 										onClick={(event) => handleVisitClick(event, profile, front)}
 									>
 										<span className={styles.dot} aria-hidden="true" />
-										<span className={styles.name}>
-											{profile.nickname}
-											{profile.isExample && (
-												<span className={styles.badge}>예시</span>
-											)}
-										</span>
+										<span className={styles.name}>{profile.nickname}</span>
 									</Link>
 								</li>
 							);
@@ -402,7 +397,7 @@ export function UniverseGlobe({
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="2"
+					strokeWidth="1.8"
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					aria-hidden="true"

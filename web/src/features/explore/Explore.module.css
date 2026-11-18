@@ -4,7 +4,8 @@
 	flex-direction: column;
 	align-items: center;
 	min-block-size: 100%;
-	padding: calc(8 * var(--dp)) calc(16 * var(--dp)) calc(20 * var(--dp));
+	gap: calc(20 * var(--dp));
+	padding: calc(28 * var(--dp)) calc(16 * var(--dp)) calc(28 * var(--dp));
 	box-sizing: border-box;
 }
 
@@ -169,8 +170,27 @@
 
 /* ── 주변: 위치 없음 (47:6414 카드) ── */
 .nearbyEmpty {
+	position: relative;
 	display: grid;
 	place-items: center;
+	min-block-size: calc(400 * var(--dp));
+}
+
+.preview {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	opacity: 0.55;
+	filter: blur(1px);
+	pointer-events: none;
+}
+
+.nearbyEmpty .needCard {
+	position: relative;
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	background: rgb(18 15 46 / 82%);
 }
 
 .needCard {

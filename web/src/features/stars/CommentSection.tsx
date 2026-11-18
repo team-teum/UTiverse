@@ -9,6 +9,8 @@ import styles from "./CommentSection.module.css";
 
 interface CommentSectionProps {
 	starId: string;
+	/** 별 주인 (점 색: 주인 분홍 · 다른 사람 하늘) */
+	ownerId: string;
 	myProfileId: string;
 	draft: string;
 	onDraftChange: (draft: string) => void;
@@ -16,9 +18,13 @@ interface CommentSectionProps {
 	onReport?: (commentId: string) => void;
 }
 
-/** 댓글 목록(시간순, 대댓글 없음)과 입력 칸. 입력 중인 글은 부모가 들고 있다(닫기 확인용). */
+/**
+ * 댓글 목록(시간순)과 입력 칸. 「답글」로 대댓글을 달면 그 아래로 가지처럼 이어진다(별자리 가지와 같은 관계).
+ * 입력 중인 글은 부모가 들고 있다(닫기 확인용).
+ */
 export function CommentSection({
 	starId,
+	ownerId,
 	myProfileId,
 	draft,
 	onDraftChange,
@@ -37,6 +43,7 @@ export function CommentSection({
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [deleting, setDeleting] = useState<Comment | null>(null);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [replyTo, setReplyTo] = useState<Comment | null>(null);
 
 	const length = countChars(draft);
 
@@ -57,8 +64,9 @@ export function CommentSection({
 		setSubmitting(true);
 		setSubmitError(null);
 		try {
-			await repo.createComment(starId, draft);
+			await repo.createComment(starId, draft, replyTo?.id ?? null);
 			onDraftChange("");
+			setReplyTo(null);
 		} catch {
 			setSubmitError("댓글을 저장하지 못했어요. 다시 시도해 주세요.");
 		} finally {
@@ -78,6 +86,68 @@ export function CommentSection({
 		}
 	}
 
+	function renderThread(comment: Comment, depth: number) {
+		const replies = (comments ?? []).filter((c) => c.parentId === comment.id);
+		const mine = comment.author.id === myProfileId;
+		return (
+			<li
+				key={comment.id}
+				className={`${styles.item} ${depth > 0 ? styles.reply : ""}`}
+			>
+				<p className={styles.meta}>
+					<span
+						className={
+							comment.author.id === ownerId ? styles.dotMine : styles.dotOther
+						}
+						aria-hidden="true"
+					/>
+					<strong>{comment.author.nickname}</strong>
+					<time dateTime={comment.createdAt}>
+						{formatRelative(comment.createdAt)}
+					</time>
+					<span className={styles.actions}>
+						<button
+							type="button"
+							className={styles.replyButton}
+							onClick={() => {
+								setReplyTo(comment);
+								inputRef.current?.focus();
+							}}
+						>
+							답글
+						</button>
+						{mine ? (
+							<button
+								type="button"
+								className={styles.delete}
+								onClick={() => setDeleting(comment)}
+							>
+								삭제
+							</button>
+						) : (
+							onReport && (
+								<button
+									type="button"
+									className={styles.delete}
+									aria-label={`${comment.author.nickname}님의 댓글 신고`}
+									onClick={() => onReport(comment.id)}
+								>
+									신고
+								</button>
+							)
+						)}
+					</span>
+				</p>
+				<p className={styles.body}>{comment.body}</p>
+				{replies.length > 0 && (
+					<ul className={styles.replies}>
+						{replies.map((reply) => renderThread(reply, depth + 1))}
+					</ul>
+				)}
+			</li>
+		);
+	}
+
 	return (
 		<section className={styles.root} aria-labelledby={headingId}>
 			<h3 id={headingId} className={styles.heading}>
@@ -95,37 +165,13 @@ export function CommentSection({
 			)}
 			{comments && comments.length > 0 && (
 				<ul className={styles.list}>
-					{comments.map((comment) => (
-						<li key={comment.id} className={styles.item}>
-							<p className={styles.meta}>
-								<strong>{comment.author.nickname}</strong>
-								<time dateTime={comment.createdAt}>
-									{formatRelative(comment.createdAt)}
-								</time>
-								{comment.author.id === myProfileId ? (
-									<button
-										type="button"
-										className={styles.delete}
-										onClick={() => setDeleting(comment)}
-									>
-										삭제
-									</button>
-								) : (
-									onReport && (
-										<button
-											type="button"
-											className={styles.delete}
-											aria-label={`${comment.author.nickname}님의 댓글 신고`}
-											onClick={() => onReport(comment.id)}
-										>
-											신고
-										</button>
-									)
-								)}
-							</p>
-							<p className={styles.body}>{comment.body}</p>
-						</li>
-					))}
+					{comments
+						.filter(
+							(c) =>
+								c.parentId === null ||
+								!comments.some((p) => p.id === c.parentId),
+						)
+						.map((comment) => renderThread(comment, 0))}
 				</ul>
 			)}
 			{deleteError && (
@@ -140,6 +186,16 @@ export function CommentSection({
 				aria-labelledby={headingId}
 				noValidate
 			>
+				{replyTo && (
+					<p className={styles.replying}>
+						<span>
+							<strong>{replyTo.author.nickname}</strong>님에게 답글
+						</span>
+						<button type="button" onClick={() => setReplyTo(null)}>
+							취소
+						</button>
+					</p>
+				)}
 				<textarea
 					ref={inputRef}
 					name="body"
@@ -158,8 +214,10 @@ export function CommentSection({
 					onBlur={() => {
 						if (draft !== "") validate();
 					}}
-					placeholder="댓글 달기"
-					aria-label="댓글 달기"
+					placeholder={replyTo ? "답글 달기" : "댓글 달기"}
+					aria-label={
+						replyTo ? `${replyTo.author.nickname}님에게 답글 달기` : "댓글 달기"
+					}
 					aria-invalid={validationError ? true : undefined}
 					aria-describedby={`${counterId}${validationError ? ` ${validationId}` : ""}`}
 					rows={2}

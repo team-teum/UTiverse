@@ -4,14 +4,19 @@ import { REACTION_TYPES, type ReactionType } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import styles from "./ReactionBar.module.css";
 
-// 아이콘은 디자인 확정 전까지 글자로만 보여 준다(prd.md Q3).
-const LABELS: Record<ReactionType, string> = {
-	empathy: "공감",
-	cheer: "응원",
-	metoo: "나도 그래",
+// 카카오톡 반응처럼 알록달록한 이모지. 싫어요 같은 부정 반응은 두지 않는다.
+const REACTIONS: Record<
+	ReactionType,
+	{ label: string; emoji: string; tone: string }
+> = {
+	empathy: { label: "공감", emoji: "💗", tone: "pink" },
+	cheer: { label: "응원", emoji: "👏", tone: "yellow" },
+	metoo: { label: "나도 그래", emoji: "🙋", tone: "sky" },
+	hug: { label: "토닥토닥", emoji: "🤗", tone: "peach" },
+	sparkle: { label: "반짝", emoji: "✨", tone: "lilac" },
 };
 
-/** 긍정 반응 3종. 개수만 보이고 누가 눌렀는지는 보이지 않는다. */
+/** 긍정 반응 5종. 개수만 보이고 누가 눌렀는지는 보이지 않는다. */
 export function ReactionBar({ starId }: { starId: string }) {
 	const { data } = useRepositoryData(`reactions:${starId}`, () =>
 		repo.getReactions(starId),
@@ -46,15 +51,18 @@ export function ReactionBar({ starId }: { starId: string }) {
 						<li key={type}>
 							<button
 								type="button"
-								className={`${styles.reaction} ${pressed ? styles.pressed : ""}`}
+								className={`${styles.reaction} ${styles[REACTIONS[type].tone]} ${pressed ? styles.pressed : ""}`}
 								aria-pressed={pressed}
-								aria-label={`${LABELS[type]} ${count}개`}
+								aria-label={`${REACTIONS[type].label} ${count}개`}
 								disabled={!data || pending === type}
 								onClick={() => toggle(type)}
 							>
-								<span aria-hidden="true">{LABELS[type]}</span>
-								<span className={styles.count} aria-hidden="true">
-									{count}
+								<span className={styles.bubble} aria-hidden="true">
+									<span className={styles.emoji}>{REACTIONS[type].emoji}</span>
+									{count > 0 && <span className={styles.count}>{count}</span>}
+								</span>
+								<span className={styles.label} aria-hidden="true">
+									{REACTIONS[type].label}
 								</span>
 							</button>
 						</li>

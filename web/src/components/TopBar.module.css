@@ -75,3 +75,7 @@
 	stroke-width: 3;
 	stroke-linecap: round;
 }
+
+.locked {
+	pointer-events: none;
+}

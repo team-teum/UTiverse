@@ -35,6 +35,7 @@ function newId(): string {
 interface StoredComment {
 	id: string;
 	starId: string;
+	parentId: string | null;
 	profileId: string;
 	body: string;
 	createdAt: string;
@@ -179,14 +180,20 @@ function loadExamples() {
 				createdAt: daysAgo(exampleStar.daysAgo, starIndex),
 			};
 			stars.push(star);
+			// 글쓴이가 남긴 댓글은 바로 앞 다른 사람 댓글에 다는 답글(대댓글)로 본다.
+			let lastOther: string | null = null;
 			exampleStar.comments?.forEach((comment, commentIndex) => {
+				const authorId = idByKey.get(comment.by) ?? profileId;
+				const id = newId();
 				comments.push({
-					id: newId(),
+					id,
 					starId: star.id,
-					profileId: idByKey.get(comment.by) ?? profileId,
+					parentId: authorId === profileId ? lastOther : null,
+					profileId: authorId,
 					body: comment.body,
 					createdAt: daysAgo(comment.daysAgo, commentIndex),
 				});
+				if (authorId !== profileId) lastOther = id;
 			});
 			// 반응은 글쓴이를 뺀 다른 예시 프로필이 누른 것으로 친다(같은 사람이 같은 종류를 두 번 누를 수 없음).
 			const reactors = [...idByKey.values()].filter((id) => id !== profileId);
@@ -208,6 +215,20 @@ loadExamples();
 const listeners = new Set<() => void>();
 function notify() {
 	for (const listener of listeners) listener();
+}
+
+function toComment(comment: StoredComment): Comment {
+	return {
+		id: comment.id,
+		starId: comment.starId,
+		parentId: comment.parentId,
+		author: {
+			id: comment.profileId,
+			nickname: profiles.get(comment.profileId)?.nickname ?? "알 수 없음",
+		},
+		body: comment.body,
+		createdAt: comment.createdAt,
+	};
 }
 
 function findStar(starId: string): Star {
@@ -434,28 +455,31 @@ export const sandboxRepository: Repository = {
 	async listComments(starId) {
 		return comments
 			.filter((comment) => comment.starId === starId)
-			.map(
-				(comment): Comment => ({
-					id: comment.id,
-					starId: comment.starId,
-					author: {
-						id: comment.profileId,
-						nickname: profiles.get(comment.profileId)?.nickname ?? "알 수 없음",
-					},
-					body: comment.body,
-					createdAt: comment.createdAt,
-				}),
-			);
+			.map(toComment);
 	},
 
-	async createComment(starId, body) {
+	async listConstellationComments(profileId) {
+		const own = new Set(
+			stars.filter((star) => star.profileId === profileId).map((s) => s.id),
+		);
+		return comments.filter((c) => own.has(c.starId)).map(toComment);
+	},
+
+	async createComment(starId, body, parentId = null) {
 		findStar(starId);
+		if (
+			parentId &&
+			!comments.some((c) => c.id === parentId && c.starId === starId)
+		) {
+			throw new Error("답글을 달 댓글이 없어요.");
+		}
 		if (!isValidLength(body, COMMENT_MAX_CHARS)) {
 			throw new Error(`댓글은 1~${COMMENT_MAX_CHARS}자로 써 주세요.`);
 		}
 		const stored: StoredComment = {
 			id: newId(),
 			starId,
+			parentId,
 			profileId: me.id,
 			body: body.trim(),
 			createdAt: new Date().toISOString(),
@@ -465,6 +489,7 @@ export const sandboxRepository: Repository = {
 		return {
 			id: stored.id,
 			starId,
+			parentId,
 			author: { id: me.id, nickname: me.nickname },
 			body: stored.body,
 			createdAt: stored.createdAt,
@@ -477,13 +502,20 @@ export const sandboxRepository: Repository = {
 		if (comment.profileId !== me.id) {
 			throw new Error("내 댓글만 지울 수 있어요.");
 		}
-		comments = comments.filter((item) => item.id !== commentId);
+		// 답글은 남기고, 지운 댓글의 부모(없으면 별)에 다시 붙인다.
+		comments = comments
+			.filter((item) => item.id !== commentId)
+			.map((item) =>
+				item.parentId === commentId
+					? { ...item, parentId: comment.parentId }
+					: item,
+			);
 		notify();
 	},
 
 	async getReactions(starId) {
 		const summary: ReactionSummary = {
-			counts: { empathy: 0, cheer: 0, metoo: 0 },
+			counts: { empathy: 0, cheer: 0, metoo: 0, hug: 0, sparkle: 0 },
 			mine: [],
 		};
 		for (const reaction of reactions) {

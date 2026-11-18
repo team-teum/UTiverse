@@ -98,6 +98,7 @@
 	inset-inline: 0;
 	inset-block-start: 0;
 	z-index: 3;
+	pointer-events: none;
 }
 
 /* 「튜토리얼 건너뛰기>」 (39, 86) 151×17.5, 흰색 굵게 */
@@ -113,4 +114,17 @@
 	font-size: 0.875rem;
 	font-weight: 700;
 	cursor: pointer;
+	pointer-events: auto;
+}
+
+/* 화면 전체를 덮는 투명 「다음」 영역 (티니·대사 카드 아래, 건너뛰기 아래) */
+.tapArea {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
 }

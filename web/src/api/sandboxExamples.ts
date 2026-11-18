@@ -20,7 +20,9 @@ interface ExampleStar {
 	daysAgo: number;
 	comments?: ExampleComment[];
 	/** 반응 수 (글쓴이를 뺀 다른 예시 프로필들이 누른 것으로 친다) */
-	reactions?: Partial<Record<"empathy" | "cheer" | "metoo", number>>;
+	reactions?: Partial<
+		Record<"empathy" | "cheer" | "metoo" | "hug" | "sparkle", number>
+	>;
 }
 
 interface ExampleProfile {

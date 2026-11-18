@@ -4,6 +4,8 @@
 	flex-direction: column;
 	align-items: center;
 	gap: calc(37 * var(--dp));
+	/* 댓글 가지가 별자리 칸 밖으로 뻗을 자리 */
+	padding-block: calc(30 * var(--dp)) calc(4 * var(--dp));
 }
 
 .row {
@@ -65,9 +67,38 @@
 	block-size: calc(24 * var(--dp));
 }
 
-.starImage svg {
-	inline-size: 100%;
-	block-size: 100%;
+/* 별 주인의 글 = 분홍 별 (트랜스젠더 프라이드의 분홍) */
+.starImage path {
+	fill: #ffb3c7;
+}
+
+.starImage {
+	overflow: visible;
+	filter: drop-shadow(0 0 5px rgb(255 160 190 / 70%));
+}
+
+/* 가지: 주인의 답글은 분홍, 다른 사람의 댓글은 하늘 (프라이드의 하늘) */
+.lines .branchOwner,
+.lines .branchOther {
+	stroke-width: 1.5;
+	stroke-linecap: round;
+}
+
+.lines .branchOwner {
+	stroke: rgb(255 179 199 / 70%);
+}
+
+.lines .branchOther {
+	stroke: rgb(122 214 255 / 70%);
+}
+
+.leafOwner {
+	fill: #ffb3c7;
+}
+
+.leafOther {
+	fill: #8fe0ff;
+	filter: drop-shadow(0 0 3px rgb(91 206 250 / 80%));
 }
 
 .new .starImage {
@@ -109,11 +140,11 @@
 }
 
 .arrow:first-child {
-	inset-inline-start: calc(33 * var(--dp) - 22px);
+	inset-inline-start: max(0px, calc(33 * var(--dp) - 22px));
 }
 
 .arrow:last-child {
-	inset-inline-end: calc(11 * var(--dp) - 22px);
+	inset-inline-end: max(0px, calc(11 * var(--dp) - 22px));
 }
 
 .arrow[hidden] {

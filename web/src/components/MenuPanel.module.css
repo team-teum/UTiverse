@@ -30,7 +30,7 @@
 	animation: fade 180ms ease-out;
 }
 
-/* Figma: 0~197, #868AFF */
+/* 밤하늘 패널: 짙은 남색 그라데이션 + 라벤더 테두리 */
 .panel {
 	position: absolute;
 	inset-block: 0;
@@ -38,12 +38,15 @@
 	display: flex;
 	flex-direction: column;
 	box-sizing: border-box;
-	inline-size: calc(210 * var(--dp));
-	padding: calc(14 * var(--dp)) calc(14 * var(--dp))
-		calc(24 * var(--dp) + env(safe-area-inset-bottom, 0px));
-	padding-block-start: calc(14 * var(--dp) + env(safe-area-inset-top, 0px));
-	background: var(--color-menu);
-	box-shadow: 4px 0 24px rgb(0 0 0 / 35%);
+	inline-size: calc(250 * var(--dp));
+	padding: calc(14 * var(--dp) + env(safe-area-inset-top, 0px))
+		calc(16 * var(--dp)) calc(24 * var(--dp) + env(safe-area-inset-bottom, 0px));
+	border-inline-end: 1.5px solid rgb(129 126 196 / 55%);
+	background:
+		radial-gradient(circle at 85% 12%, rgb(190 154 250 / 22%), transparent 45%),
+		radial-gradient(circle at 10% 90%, rgb(91 206 250 / 12%), transparent 40%),
+		linear-gradient(180deg, #1b1745 0%, #110e2b 100%);
+	box-shadow: 8px 0 32px rgb(0 0 0 / 45%);
 	animation: slide 220ms ease-out;
 }
 
@@ -52,7 +55,7 @@
 	place-items: center;
 	inline-size: 44px;
 	block-size: 44px;
-	margin: calc(-1 * var(--dp)) 0 0 calc(-1 * var(--dp));
+	margin-inline-start: calc(19 * var(--dp) - 22px);
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -69,41 +72,91 @@
 	stroke-linecap: round;
 }
 
-/* Figma: 캘린더/설정/북마크 흰 29, 줄 간격 촘촘 */
+.brand {
+	margin: calc(22 * var(--dp)) 0 calc(14 * var(--dp)) calc(4 * var(--dp));
+	color: var(--color-lavender);
+	font-family: var(--font-latin);
+	font-size: calc(13 * var(--dp));
+	font-weight: 700;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+}
+
 .list {
 	display: grid;
-	gap: calc(6 * var(--dp));
-	margin: calc(22 * var(--dp)) 0 0;
+	gap: calc(8 * var(--dp));
+	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
 .item {
-	display: grid;
-	padding: calc(6 * var(--dp)) 0;
+	display: flex;
+	gap: calc(14 * var(--dp));
+	align-items: center;
+	padding: calc(12 * var(--dp)) calc(12 * var(--dp));
+	border: 1px solid transparent;
+	border-radius: 14px;
 	color: #fff;
-	font-size: calc(29 * var(--dp));
-	font-weight: 500;
-	line-height: 1.15;
 	text-decoration: none;
+	transition: background 150ms;
+}
+
+.item:hover,
+.item:focus-visible {
+	background: rgb(255 255 255 / 6%);
 }
 
 .item[aria-current="page"] {
-	text-decoration: underline;
-	text-underline-offset: 6px;
+	border-color: rgb(190 154 250 / 55%);
+	background: rgb(190 154 250 / 14%);
+}
+
+.icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	inline-size: calc(40 * var(--dp));
+	block-size: calc(40 * var(--dp));
+	border-radius: 12px;
+	background: rgb(190 154 250 / 16%);
+}
+
+.icon svg {
+	inline-size: 58%;
+	block-size: 58%;
+	fill: none;
+	stroke: var(--color-lavender-light);
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.text {
+	display: grid;
+	gap: calc(4 * var(--dp));
+	min-inline-size: 0;
+}
+
+.label {
+	font-size: calc(18 * var(--dp));
+	font-weight: 700;
+	line-height: 1.2;
 }
 
 .hint {
+	color: #a9a6d6;
 	font-size: calc(12 * var(--dp));
-	font-weight: 400;
-	color: rgb(255 255 255 / 78%);
+	line-height: 1.3;
 }
 
 .foot {
-	margin: auto 0 0;
-	color: rgb(255 255 255 / 80%);
+	margin: auto 0 0 calc(4 * var(--dp));
+	padding-block-start: calc(14 * var(--dp));
+	border-block-start: 1px solid rgb(129 126 196 / 30%);
+	color: #8d8ab8;
 	font-size: calc(11 * var(--dp));
-	line-height: 1.5;
+	line-height: 1.6;
 }
 
 @keyframes slide {

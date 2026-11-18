@@ -33,6 +33,12 @@ export function MyShip() {
 	}, []);
 
 	useEffect(() => {
+		if (!hint) return;
+		const timer = window.setTimeout(() => setHint(false), 4500);
+		return () => window.clearTimeout(timer);
+	}, [hint]);
+
+	useEffect(() => {
 		// 꾸미기 주소로 들어왔으면 /me로 정리 (스크롤 위치가 화면 상태를 대신한다)
 		if (startAtCustomize) navigate("/me", { replace: true });
 	}, [startAtCustomize, navigate]);

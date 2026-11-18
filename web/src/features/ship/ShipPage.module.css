@@ -3,8 +3,16 @@
 .screen {
 	display: flex;
 	flex-direction: column;
+	gap: calc(12 * var(--dp));
+	box-sizing: border-box;
 	min-block-size: 100%;
-	padding-block: calc(3 * var(--dp)) calc(24 * var(--dp));
+	/* 상단 바와 닉네임 사이를 띄운다 */
+	padding-block: calc(22 * var(--dp)) calc(24 * var(--dp));
+}
+
+/* 남의 우주선: 별자리 아래 남는 공간에서 우주선이 가운데에 온다 */
+.screen:not(.scroller) .ship {
+	margin-block: auto;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -52,7 +60,7 @@
 }
 
 .sky {
-	min-block-size: calc(185 * var(--dp));
+	min-block-size: calc(220 * var(--dp));
 }
 
 .notice {

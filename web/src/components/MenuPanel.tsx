@@ -9,13 +9,29 @@ interface MenuPanelProps {
 }
 
 const ITEMS = [
-	{ to: "/calendar", label: "캘린더", hint: "커뮤니T 행사" },
-	{ to: "/bookmarks", label: "북마크", hint: "저장한 행사" },
-	{ to: "/settings", label: "설정", hint: "닉네임 · 위치 · 계정" },
+	{
+		to: "/calendar",
+		label: "캘린더",
+		hint: "커뮤니T 행사 일정",
+		icon: "M4 6.5h16v13H4zM4 10.5h16M8.5 4v4M15.5 4v4",
+	},
+	{
+		to: "/bookmarks",
+		label: "북마크",
+		hint: "저장한 행사",
+		icon: "M7 4h10v16l-5-3.5L7 20z",
+	},
+	{
+		to: "/settings",
+		label: "설정",
+		hint: "닉네임 · 위치 · 계정",
+		icon: "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8",
+	},
 ] as const;
 
 /**
- * S04 메뉴 (Figma 52:13601): 왼쪽에서 나오는 보라색 패널(폭 197, #868AFF).
+ * S04 메뉴 (Figma 52:13601 구성): 왼쪽에서 나오는 밤하늘 패널.
+ * 색은 Figma의 임시 보라(#868AFF) 대신 앱의 짙은 남색 + 라벤더 포인트로 맞췄다.
  * 바깥을 누르거나 Esc로 닫힌다.
  */
 export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
@@ -54,6 +70,7 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 						<path d="M1.5 1.5h33M1.5 13.5h33M1.5 25.5h33" />
 					</svg>
 				</button>
+				<p className={styles.brand}>uTiverse</p>
 				<ul className={styles.list}>
 					{ITEMS.map((item) => (
 						<li key={item.to}>
@@ -66,8 +83,15 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 									onClose();
 								}}
 							>
-								{item.label}
-								<span className={styles.hint}>{item.hint}</span>
+								<span className={styles.icon} aria-hidden="true">
+									<svg viewBox="0 0 24 24" aria-hidden="true">
+										<path d={item.icon} />
+									</svg>
+								</span>
+								<span className={styles.text}>
+									<span className={styles.label}>{item.label}</span>
+									<span className={styles.hint}>{item.hint}</span>
+								</span>
 							</Link>
 						</li>
 					))}

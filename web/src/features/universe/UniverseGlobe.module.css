@@ -6,7 +6,7 @@
 
 .help {
 	max-inline-size: 19rem;
-	margin: 1rem 0 0;
+	margin: 0.75rem 0 0;
 	font-size: 0.875rem;
 	text-wrap: balance;
 	text-align: center;
@@ -17,31 +17,49 @@
 	inline-size: 100%;
 }
 
-/* Figma 50:6604: 지름 107 노란 원(#FFF159), 쌍안경 + 「탐색하기」 */
+/* 「탐색하기」: 반투명 흰 버블 스티커 (볼록한 퍼피 스티커 느낌) */
 .telescope {
+	position: relative;
 	justify-self: center;
 	display: grid;
 	place-content: center;
 	justify-items: center;
-	gap: calc(4 * var(--dp));
+	gap: calc(2 * var(--dp));
 	box-sizing: border-box;
-	inline-size: max(64px, calc(107 * var(--dp)));
-	block-size: max(64px, calc(107 * var(--dp)));
-	margin-block-start: calc(16 * var(--dp));
+	inline-size: max(72px, calc(104 * var(--dp)));
+	block-size: max(72px, calc(104 * var(--dp)));
+	margin-block-start: calc(40 * var(--dp));
 	padding: 0;
-	border: 0;
+	border: 3px solid rgb(255 255 255 / 85%);
 	border-radius: 50%;
-	background: var(--color-accent-yellow);
-	color: #000;
+	background:
+		radial-gradient(
+			circle at 34% 26%,
+			rgb(255 255 255 / 95%) 0 7%,
+			rgb(255 255 255 / 45%) 20%,
+			rgb(255 255 255 / 16%) 58%,
+			rgb(233 220 255 / 10%) 100%
+		),
+		rgb(255 255 255 / 8%);
+	box-shadow:
+		inset 0 -10px 18px rgb(190 154 250 / 40%),
+		inset 0 6px 12px rgb(255 255 255 / 55%),
+		0 10px 24px rgb(0 0 0 / 40%),
+		0 0 32px rgb(190 154 250 / 30%);
+	color: #fff;
 	font-size: calc(14 * var(--dp));
-	font-weight: 500;
+	font-weight: 700;
+	text-shadow: 0 1px 4px rgb(60 30 120 / 70%);
 	cursor: pointer;
-	box-shadow: 0 0 24px rgb(255 241 89 / 25%);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	transition: transform 160ms ease-out;
 }
 
 .telescope svg {
-	inline-size: calc(52 * var(--dp));
-	block-size: calc(52 * var(--dp));
+	inline-size: calc(40 * var(--dp));
+	block-size: calc(40 * var(--dp));
+	filter: drop-shadow(0 1px 3px rgb(60 30 120 / 60%));
 }
 
 .telescope:focus-visible {
@@ -50,7 +68,7 @@
 
 @media (hover: hover) {
 	.telescope:hover:not([aria-disabled="true"]) {
-		filter: brightness(1.05);
+		transform: translateY(-2px);
 	}
 }
 

@@ -16,8 +16,10 @@
 	--color-sheet: #fffcfc;
 	--color-input: #fffdfd;
 	--color-button-plain: #d9d9d9;
-	/* 디자인 1px: 402px 프레임 너비 기준 비례 (SPECIFICATION 4장). .app-frame 안에서만 쓴다 */
-	--dp: calc(100cqw / 402);
+	/* 디자인 1px: 402×874 프레임 기준 비례 (SPECIFICATION 4장). .app-frame 안에서만 쓴다.
+	   너비·높이 중 더 좁은 쪽에 맞춰서, 창 크기를 바꿔도 부품 크기 비율은 그대로이고
+	   남는 공간은 각 화면의 레이아웃(가운데 정렬·여백)이 나눠 가진다. */
+	--dp: min(calc(100cqw / 402), calc(100cqh / 874));
 	/* Use system fonts until licensed self-hosted font files are supplied. */
 	--font-body: "Noto Sans KR", system-ui, sans-serif;
 	--font-latin: "Inter", system-ui, sans-serif;

@@ -1,7 +1,12 @@
 import { type CSSProperties, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { repo } from "../../api/repository";
-import type { DistanceTier, MyLocation, NearbyShip } from "../../api/types";
+import type {
+	DistanceTier,
+	MyLocation,
+	NearbyShip,
+	Profile,
+} from "../../api/types";
 import { AssetImage } from "../../components/AssetImage";
 import ui from "../../components/SpaceUi.module.css";
 import { Toast } from "../../components/Toast";
@@ -74,11 +79,6 @@ export function Explore() {
 					/>
 				)}
 			</div>
-			<p className={styles.note}>
-				{mode === "nearby" && location
-					? "예시 우주선의 위치는 가상으로 설정되어 있어요."
-					: "일부 우주선과 이야기는 테스트를 위해 만든 예시예요."}
-			</p>
 		</section>
 	);
 }
@@ -108,10 +108,7 @@ function RandomExplore() {
 									label=""
 									className={styles.cardShip}
 								/>
-								<span className={styles.cardName}>
-									{profile.nickname}
-									{profile.isExample && <span className={ui.badge}>예시</span>}
-								</span>
+								<span className={styles.cardName}>{profile.nickname}</span>
 								<span className={styles.cardStar}>
 									{latestStar ?? "아직 작성한 별이 없어요"}
 								</span>
@@ -195,6 +192,31 @@ function NearbyExplore({
 		return out;
 	}, [ships]);
 
+	const { data: others } = useRepositoryData("profiles:others", () =>
+		repo.listOtherProfiles(),
+	);
+	const previewShips = useMemo(() => {
+		if (!others) return [];
+		const tiers: DistanceTier[] = [
+			"sigungu",
+			"sido",
+			"sido",
+			"nation",
+			"nation",
+		];
+		const out: Array<NearbyShip & { angle: number }> = [];
+		for (const tier of TIER_ORDER) {
+			const inTier = others
+				.slice(0, tiers.length)
+				.filter((_, i) => tiers[i] === tier);
+			const angles = randomAngles(inTier.length);
+			inTier.forEach((profile, i) => {
+				out.push({ profile, tier, angle: angles[i] });
+			});
+		}
+		return out;
+	}, [others]);
+
 	const dialog = editing && (
 		<LocationDialog
 			current={location}
@@ -209,6 +231,18 @@ function NearbyExplore({
 	if (!location) {
 		return (
 			<div className={styles.nearbyEmpty}>
+				{/* 뒤에 흐릿한 예시 궤도: 위치를 등록하면 이렇게 보인다는 미리보기 */}
+				<div className={styles.preview} aria-hidden="true" inert>
+					<OrbitView
+						labels={tierLabels({
+							sido: "서울특별시",
+							sigungu: "관악구",
+							visible: false,
+						})}
+						ships={previewShips}
+						me={me}
+					/>
+				</div>
 				<div className={styles.needCard}>
 					<h2 className={styles.needTitle}>
 						가까운 별을 찾으려면 내 위치가 필요해요
@@ -237,69 +271,11 @@ function NearbyExplore({
 		);
 	}
 
-	const labels: Record<DistanceTier, string> = {
-		sigungu: `같은 시·군·구 · ${location.sigungu}`,
-		sido: `같은 시·도 · ${shortSido(location.sido)}`,
-		nation: "전국",
-	};
+	const labels = tierLabels(location);
 
 	return (
 		<div className={styles.nearby}>
-			<div className={styles.orbits}>
-				{TIER_ORDER.map((tier) => {
-					const empty = !placed.some((ship) => ship.tier === tier);
-					return (
-						<div
-							key={tier}
-							className={styles.ring}
-							style={{ "--r": RADIUS[tier] } as CSSProperties}
-						>
-							<span className={styles.ringLabel}>
-								{labels[tier]}
-								{empty && " · 아직 공개된 별이 없어요"}
-							</span>
-						</div>
-					);
-				})}
-				{me && (
-					<div className={styles.center}>
-						<PixelCanvas
-							kind="ship"
-							look={me.look}
-							label="내 우주선"
-							className={styles.centerShip}
-						/>
-						<span className={styles.centerLabel}>나</span>
-					</div>
-				)}
-				<ul className={styles.orbitShips} aria-label="주변 우주선">
-					{placed.map(({ profile, tier, angle }) => {
-						const r = RADIUS[tier];
-						const x = Math.cos((angle * Math.PI) / 180) * r;
-						const y = Math.sin((angle * Math.PI) / 180) * r;
-						return (
-							<li
-								key={profile.id}
-								className={styles.orbitShip}
-								style={{ "--x": x, "--y": y } as CSSProperties}
-							>
-								<Link
-									to={`/ship/${profile.id}`}
-									aria-label={`${profile.nickname}${profile.isExample ? " · 예시" : ""} · ${labels[tier].split(" · ")[0]}`}
-								>
-									<PixelCanvas
-										kind="ship"
-										look={profile.look}
-										label=""
-										className={styles.orbitShipArt}
-									/>
-									<span className={styles.orbitName}>{profile.nickname}</span>
-								</Link>
-							</li>
-						);
-					})}
-				</ul>
-			</div>
+			<OrbitView labels={labels} ships={placed} me={me} />
 			<div className={styles.nearbyFoot}>
 				<span>
 					{location.visible
@@ -316,6 +292,83 @@ function NearbyExplore({
 			</div>
 			{dialog}
 			<Toast message={toast} onDone={() => setToast(null)} />
+		</div>
+	);
+}
+
+function tierLabels(location: MyLocation): Record<DistanceTier, string> {
+	return {
+		sigungu: `같은 시·군·구 · ${location.sigungu}`,
+		sido: `같은 시·도 · ${shortSido(location.sido)}`,
+		nation: "전국",
+	};
+}
+
+/** 궤도 그림: 가운데 내 우주선, 거리 단계 궤도 3개, 그 위의 우주선들 */
+function OrbitView({
+	labels,
+	ships,
+	me,
+}: {
+	labels: Record<DistanceTier, string>;
+	ships: Array<NearbyShip & { angle: number }>;
+	me: Profile | undefined;
+}) {
+	return (
+		<div className={styles.orbits}>
+			{TIER_ORDER.map((tier) => {
+				const empty = !ships.some((ship) => ship.tier === tier);
+				return (
+					<div
+						key={tier}
+						className={styles.ring}
+						style={{ "--r": RADIUS[tier] } as CSSProperties}
+					>
+						<span className={styles.ringLabel}>
+							{labels[tier]}
+							{empty && " · 아직 공개된 별이 없어요"}
+						</span>
+					</div>
+				);
+			})}
+			{me && (
+				<div className={styles.center}>
+					<PixelCanvas
+						kind="ship"
+						look={me.look}
+						label="내 우주선"
+						className={styles.centerShip}
+					/>
+					<span className={styles.centerLabel}>나</span>
+				</div>
+			)}
+			<ul className={styles.orbitShips} aria-label="주변 우주선">
+				{ships.map(({ profile, tier, angle }) => {
+					const r = RADIUS[tier];
+					const x = Math.cos((angle * Math.PI) / 180) * r;
+					const y = Math.sin((angle * Math.PI) / 180) * r;
+					return (
+						<li
+							key={profile.id}
+							className={styles.orbitShip}
+							style={{ "--x": x, "--y": y } as CSSProperties}
+						>
+							<Link
+								to={`/ship/${profile.id}`}
+								aria-label={`${profile.nickname} · ${labels[tier].split(" · ")[0]}`}
+							>
+								<PixelCanvas
+									kind="ship"
+									look={profile.look}
+									label=""
+									className={styles.orbitShipArt}
+								/>
+								<span className={styles.orbitName}>{profile.nickname}</span>
+							</Link>
+						</li>
+					);
+				})}
+			</ul>
 		</div>
 	);
 }

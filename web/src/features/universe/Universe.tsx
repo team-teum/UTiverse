@@ -35,9 +35,6 @@ export function Universe() {
 					/>
 				)}
 			</div>
-			<p className={styles.note}>
-				‘예시’로 표시된 우주선과 글은 테스트용이에요.
-			</p>
 		</section>
 	);
 }

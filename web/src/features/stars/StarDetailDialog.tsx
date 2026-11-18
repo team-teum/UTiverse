@@ -141,6 +141,7 @@ export function StarDetailDialog({
 							<ReactionBar starId={star.id} />
 							<CommentSection
 								starId={star.id}
+								ownerId={star.profileId}
 								myProfileId={myProfileId}
 								draft={draft}
 								onDraftChange={setDraft}

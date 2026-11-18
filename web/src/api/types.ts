@@ -6,7 +6,13 @@ import type { Look } from "../pixel/look";
 export const STAR_MAX_CHARS = 500;
 export const COMMENT_MAX_CHARS = 200;
 
-export const REACTION_TYPES = ["empathy", "cheer", "metoo"] as const;
+export const REACTION_TYPES = [
+	"empathy",
+	"cheer",
+	"metoo",
+	"hug",
+	"sparkle",
+] as const;
 export type ReactionType = (typeof REACTION_TYPES)[number];
 
 export interface Profile {
@@ -29,6 +35,8 @@ export interface Star {
 export interface Comment {
 	id: string;
 	starId: string;
+	/** 대댓글이면 부모 댓글 ID */
+	parentId: string | null;
 	author: Pick<Profile, "id" | "nickname">;
 	body: string;
 	createdAt: string;
@@ -104,7 +112,13 @@ export interface Repository {
 	deleteStar(starId: string): Promise<void>;
 	/** 시간순 */
 	listComments(starId: string): Promise<Comment[]>;
-	createComment(starId: string, body: string): Promise<Comment>;
+	createComment(
+		starId: string,
+		body: string,
+		parentId?: string | null,
+	): Promise<Comment>;
+	/** 한 사람의 별(글)에 달린 모든 댓글·대댓글. 별자리 가지를 그린다 */
+	listConstellationComments(profileId: string): Promise<Comment[]>;
 	deleteComment(commentId: string): Promise<void>;
 	getReactions(starId: string): Promise<ReactionSummary>;
 	toggleReaction(starId: string, type: ReactionType): Promise<void>;
