@@ -3,7 +3,6 @@
 .screen {
 	display: flex;
 	flex-direction: column;
-	gap: calc(12 * var(--dp));
 	box-sizing: border-box;
 	min-block-size: 100%;
 	/* 상단 바와 닉네임 사이를 띄운다 */
@@ -11,8 +10,36 @@
 }
 
 /* 남의 우주선: 별자리 아래 남는 공간에서 우주선이 가운데에 온다 */
-.screen:not(.scroller) .ship {
+.stack {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: calc(12 * var(--dp));
+}
+
+/* 남의 우주선: 별자리 아래 남는 공간에서 우주선이 가운데에 온다 */
+.screen:not(.pager) .ship {
 	margin-block: auto;
+}
+
+/* MY: 두 장 넘기기. 바깥은 스크롤하지 않고 stack을 한 장씩 위로 민다 */
+.pager {
+	block-size: 100%;
+	overflow: hidden;
+	touch-action: pan-x;
+	overscroll-behavior: contain;
+}
+
+.pager .stack {
+	flex: none;
+	transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pager .stack {
+		transition-duration: 1ms;
+	}
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -118,21 +145,21 @@
 	stroke-width: 3;
 }
 
-/* MY: 별자리 ↔ 꾸미기를 한 페이지 스크롤로 오간다. 두 지점에 딱 멈춘다 */
-.scroller {
-	block-size: 100%;
-	min-block-size: 0;
+.customize {
+	box-sizing: border-box;
+	transition: opacity 360ms ease;
 	overflow-y: auto;
 	overscroll-behavior: contain;
-	scroll-snap-type: y mandatory;
-	padding-block-end: 0;
+	touch-action: pan-y;
+	padding-block-end: calc(12 * var(--dp));
 }
 
-.snapStart {
-	scroll-snap-align: start;
+.hintSmall {
+	font-size: calc(12 * var(--dp));
+	color: var(--color-lavender-light);
 }
 
-.customize {
-	scroll-snap-align: end;
-	padding-block-end: calc(16 * var(--dp));
+/* 별자리 장에서는 아래 꾸미기 패널이 비치지 않게 */
+.customize[inert] {
+	opacity: 0;
 }

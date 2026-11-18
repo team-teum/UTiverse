@@ -58,7 +58,7 @@ export interface Tab {
 	categories: Category[];
 }
 
-const none = { id: "none", label: "없음" };
+const none = { id: "none", label: "비우기" };
 
 /**
  * Figma 「내 캐릭터 꾸미기」(33:15522): 몸 / 우주복.
@@ -67,7 +67,7 @@ const none = { id: "none", label: "없음" };
 export const AVATAR_TABS: Tab[] = [
 	{
 		id: "body",
-		label: "몸",
+		label: "헤어·피부",
 		categories: [
 			{
 				key: "hairStyle",
@@ -111,7 +111,7 @@ export const AVATAR_TABS: Tab[] = [
 	},
 	{
 		id: "suit",
-		label: "우주복",
+		label: "옷장",
 		categories: [
 			{
 				key: "suit",
@@ -144,11 +144,11 @@ export function unlockedAt(starCount: number): string[] {
 export const SHIP_TABS: Tab[] = [
 	{
 		id: "ship",
-		label: "우주선",
+		label: "선체·방",
 		categories: [
 			{
 				key: "hull",
-				label: "외벽",
+				label: "선체 색",
 				options: [
 					{ id: "sky", label: "하늘" },
 					{ id: "lilac", label: "라일락" },
@@ -213,7 +213,7 @@ export const SHIP_TABS: Tab[] = [
 	},
 	{
 		id: "decor",
-		label: "장식품",
+		label: "소품",
 		categories: [
 			{
 				key: "plant",
@@ -247,11 +247,11 @@ export const SHIP_TABS: Tab[] = [
 	},
 	{
 		id: "flag",
-		label: "플래그",
+		label: "깃발",
 		categories: [
 			{
 				key: "flag",
-				label: "플래그",
+				label: "깃발",
 				options: [
 					none,
 					{ id: "trans", label: "트랜스젠더" },

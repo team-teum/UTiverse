@@ -1,10 +1,16 @@
 import {
 	type ReactNode,
+	type TouchEvent,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
+	type WheelEvent,
 } from "react";
+
+const SWIPE = 45;
+
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { repo } from "../../api/repository";
 import type { Profile, Star } from "../../api/types";
@@ -45,35 +51,90 @@ export function ShipPage({
 	startAtCustomize,
 	onProgress,
 }: ShipPageProps) {
-	const scrollerRef = useRef<HTMLElement>(null);
-	const [progress, setProgress] = useState(0);
+	// MY: 별자리 화면 ⇄ 꾸미기 화면 두 장. 위/아래로 밀면 중간에 멈추지 않고 한 장씩 넘어간다.
+	const sectionRef = useRef<HTMLElement>(null);
+	const shipRef = useRef<HTMLDivElement>(null);
+	const hintRef = useRef<HTMLButtonElement>(null);
+	const panelRef = useRef<HTMLDivElement>(null);
+	const [open, setOpen] = useState(Boolean(customize && startAtCustomize));
+	const [offset, setOffset] = useState(0);
+	const [panelHeight, setPanelHeight] = useState<number | undefined>();
+	const progress = customize && open ? 1 : 0;
 	const progressRef = useRef(onProgress);
 	progressRef.current = onProgress;
-
-	function updateProgress() {
-		const el = scrollerRef.current;
-		if (!el) return;
-		const max = el.scrollHeight - el.clientHeight;
-		const value = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
-		setProgress(value);
-		progressRef.current?.(value);
-	}
-
-	function scrollToCustomize(open: boolean) {
-		const el = scrollerRef.current;
-		if (!el) return;
-		el.scrollTo({ top: open ? el.scrollHeight : 0, behavior: "smooth" });
-	}
+	const touch = useRef<{
+		y: number;
+		panelTop: boolean;
+		inPanel: boolean;
+	} | null>(null);
+	const lastWheel = useRef(0);
 
 	useEffect(() => {
-		const el = scrollerRef.current;
-		if (!customize || !el || !startAtCustomize) return;
-		el.scrollTop = el.scrollHeight;
-		const max = el.scrollHeight - el.clientHeight;
-		const value = max > 0 ? Math.min(1, el.scrollTop / max) : 0;
-		setProgress(value);
-		progressRef.current?.(value);
-	}, [customize, startAtCustomize]);
+		progressRef.current?.(progress);
+	}, [progress]);
+
+	useLayoutEffect(() => {
+		if (!customize) return;
+		const measure = () => {
+			const section = sectionRef.current;
+			const ship = shipRef.current;
+			const hint = hintRef.current;
+			if (!section || !ship || !hint) return;
+			const pad = Number.parseFloat(getComputedStyle(section).paddingTop) || 0;
+			const shipTop = ship.offsetTop;
+			setOffset(Math.max(0, shipTop - pad));
+			setPanelHeight(
+				section.clientHeight - pad - ship.offsetHeight - hint.offsetHeight,
+			);
+		};
+		measure();
+		const observer = new ResizeObserver(measure);
+		if (sectionRef.current) observer.observe(sectionRef.current);
+		return () => observer.disconnect();
+	}, [customize]);
+
+	function turn(next: boolean) {
+		setOpen(next);
+		if (!next) panelRef.current?.scrollTo({ top: 0 });
+	}
+
+	function onTouchStart(event: TouchEvent) {
+		const panel = panelRef.current;
+		const inPanel = Boolean(panel?.contains(event.target as Node));
+		touch.current = {
+			y: event.touches[0].clientY,
+			inPanel,
+			panelTop: !panel || panel.scrollTop <= 0,
+		};
+	}
+
+	function onTouchEnd(event: TouchEvent) {
+		const start = touch.current;
+		touch.current = null;
+		if (!start) return;
+		const dy = event.changedTouches[0].clientY - start.y;
+		if (!open && dy < -SWIPE) turn(true);
+		else if (open && dy > SWIPE && (!start.inPanel || start.panelTop))
+			turn(false);
+	}
+
+	function onWheel(event: WheelEvent) {
+		const now = Date.now();
+		if (now - lastWheel.current < 700) return;
+		const panel = panelRef.current;
+		const inPanel = Boolean(panel?.contains(event.target as Node));
+		if (!open && event.deltaY > 25) {
+			lastWheel.current = now;
+			turn(true);
+		} else if (
+			open &&
+			event.deltaY < -25 &&
+			(!inPanel || !panel || panel.scrollTop <= 0)
+		) {
+			lastWheel.current = now;
+			turn(false);
+		}
+	}
 
 	const isMine = profile.id === myProfileId;
 	const navigate = useNavigate();
@@ -123,103 +184,123 @@ export function ShipPage({
 
 	return (
 		<section
-			ref={scrollerRef}
-			className={`${styles.screen} ${customize ? styles.scroller : ""} ${fromUniverse ? styles.arrival : ""}`}
+			ref={sectionRef}
+			className={`${styles.screen} ${customize ? styles.pager : ""} ${fromUniverse ? styles.arrival : ""}`}
 			aria-labelledby={headingId}
-			onScroll={customize ? updateProgress : undefined}
+			onTouchStart={customize ? onTouchStart : undefined}
+			onTouchEnd={customize ? onTouchEnd : undefined}
+			onWheel={customize ? onWheel : undefined}
 		>
-			<header className={`${styles.profile} ${styles.snapStart}`}>
-				<h1
-					ref={headingRef}
-					tabIndex={fromUniverse ? -1 : undefined}
-					id={headingId}
-					className={styles.nickname}
-				>
-					{isMine ? `${profile.nickname} (나)` : profile.nickname}
-					{profile.isExample && <span className={styles.badge}>예시</span>}
-				</h1>
-				{profile.tagline && <p className={styles.tagline}>{profile.tagline}</p>}
-			</header>
+			<div
+				className={styles.stack}
+				style={
+					customize
+						? { transform: `translateY(${open ? -offset : 0}px)` }
+						: undefined
+				}
+			>
+				<header className={styles.profile} inert={customize ? open : undefined}>
+					<h1
+						ref={headingRef}
+						tabIndex={fromUniverse ? -1 : undefined}
+						id={headingId}
+						className={styles.nickname}
+					>
+						{isMine ? `${profile.nickname} (나)` : profile.nickname}
+						{profile.isExample && <span className={styles.badge}>예시</span>}
+					</h1>
+					{profile.tagline && (
+						<p className={styles.tagline}>{profile.tagline}</p>
+					)}
+				</header>
 
-			<div className={styles.sky}>
-				{error !== undefined ? (
-					<p className={styles.notice}>별자리를 불러오지 못했어요.</p>
-				) : (
-					<Constellation
-						profileId={profile.id}
-						stars={stars ?? []}
-						page={page}
-						onPageChange={setPage}
-						onSelect={openStar}
-						highlightId={highlightId}
-						writeButton={
-							isMine ? (
-								<WriteStarButton onClick={() => setWriting(true)} />
-							) : undefined
-						}
-						empty={
-							stars && (
-								<p className={styles.empty}>
-									{isMine
-										? "첫 별을 만들어 볼까요?"
-										: "아직 작성한 별이 없어요"}
-								</p>
-							)
-						}
-					/>
+				<div className={styles.sky}>
+					{error !== undefined ? (
+						<p className={styles.notice}>별자리를 불러오지 못했어요.</p>
+					) : (
+						<Constellation
+							profileId={profile.id}
+							stars={stars ?? []}
+							page={page}
+							onPageChange={setPage}
+							onSelect={openStar}
+							highlightId={highlightId}
+							writeButton={
+								isMine ? (
+									<WriteStarButton onClick={() => setWriting(true)} />
+								) : undefined
+							}
+							empty={
+								stars && (
+									<p className={styles.empty}>
+										{isMine
+											? "첫 별을 만들어 볼까요?"
+											: "아직 작성한 별이 없어요"}
+									</p>
+								)
+							}
+						/>
+					)}
+				</div>
+
+				<div ref={shipRef} className={styles.ship}>
+					{customize ? (
+						<button
+							type="button"
+							className={styles.shipButton}
+							aria-label={
+								progress > 0.5 ? "별자리로 돌아가기" : "우주선 꾸미기 열기"
+							}
+							onClick={() => turn(!open)}
+						>
+							<ShipView profile={profile} isMine={isMine} cutaway={progress} />
+						</button>
+					) : (
+						<ShipView profile={profile} isMine={isMine} />
+					)}
+				</div>
+
+				{customize && (
+					<>
+						{/* 우주선과 패널 사이 한 칸: 위에선 "위로 스와이프", 꾸미기에선 "∨ 별자리로" */}
+						<button
+							ref={hintRef}
+							type="button"
+							className={styles.swipeHint}
+							aria-label={
+								open ? "별자리로 돌아가기" : "위로 스와이프해서 우주선 꾸미기"
+							}
+							onClick={() => turn(!open)}
+						>
+							{open ? (
+								<>
+									<svg viewBox="0 0 142 18.5" aria-hidden="true">
+										<path d="M.3 1.5 70.3 17 141.8 1.5" />
+									</svg>
+									<span aria-hidden="true" className={styles.hintSmall}>
+										아래로 밀면 별자리
+									</span>
+								</>
+							) : (
+								<>
+									<span aria-hidden="true">위로 스와이프해서 우주선꾸미기</span>
+									<svg viewBox="0 0 142 18.5" aria-hidden="true">
+										<path d="M.3 17 70.3 1.5 141.8 17" />
+									</svg>
+								</>
+							)}
+						</button>
+						<div
+							ref={panelRef}
+							className={styles.customize}
+							style={{ blockSize: panelHeight }}
+							inert={!open}
+						>
+							{customize}
+						</div>
+					</>
 				)}
 			</div>
-
-			<div className={styles.ship}>
-				{customize ? (
-					<button
-						type="button"
-						className={styles.shipButton}
-						aria-label={
-							progress > 0.5 ? "별자리로 돌아가기" : "우주선 꾸미기 열기"
-						}
-						onClick={() => scrollToCustomize(progress < 0.5)}
-					>
-						<ShipView profile={profile} isMine={isMine} cutaway={progress} />
-					</button>
-				) : (
-					<ShipView profile={profile} isMine={isMine} />
-				)}
-			</div>
-
-			{customize && (
-				<>
-					{/* 우주선과 패널 사이 한 칸: 위에선 "위로 스와이프", 꾸미기에선 "∨ 별자리로" */}
-					<button
-						type="button"
-						className={styles.swipeHint}
-						aria-label={
-							progress > 0.5
-								? "별자리로 돌아가기"
-								: "위로 스와이프해서 우주선꾸미기"
-						}
-						onClick={() => scrollToCustomize(progress < 0.5)}
-					>
-						{progress > 0.5 ? (
-							<svg
-								className={styles.down}
-								viewBox="0 0 142 18.5"
-								aria-hidden="true"
-							>
-								<path d="M.3 1.5 70.3 17 141.8 1.5" />
-							</svg>
-						) : (
-							<>
-								<span aria-hidden="true">위로 스와이프해서 우주선꾸미기</span>
-								<svg viewBox="0 0 142 18.5" aria-hidden="true">
-									<path d="M.3 17 70.3 1.5 141.8 17" />
-								</svg>
-							</>
-						)}
-					</button>
-					<div className={styles.customize}>{customize}</div>
-				</>
-			)}
 
 			{writing && (
 				<WriteStarDialog

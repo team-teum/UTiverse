@@ -9,7 +9,7 @@ import styles from "./ShipView.module.css";
 export function ShipView({
 	profile,
 	isMine,
-	cutaway = 0,
+	cutaway,
 }: {
 	profile: Pick<Profile, "nickname" | "look">;
 	isMine: boolean;
@@ -24,7 +24,7 @@ export function ShipView({
 				label={`${owner} 우주선. 창문으로 캐릭터가 보여요`}
 				className={styles.layer}
 			/>
-			{cutaway > 0 && (
+			{cutaway !== undefined && (
 				<PixelCanvas
 					kind="room"
 					look={profile.look}

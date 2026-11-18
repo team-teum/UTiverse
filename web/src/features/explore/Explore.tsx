@@ -120,13 +120,13 @@ function RandomExplore() {
 			<button
 				type="button"
 				className={styles.refresh}
-				aria-label="다른 우주선 찾기"
 				onClick={() => setRound(round + 1)}
 			>
 				<svg viewBox="0 0 48 48" aria-hidden="true">
 					<path d="M10 24a14 14 0 1 0 4.1-9.9" />
 					<path d="M8 8v8h8" />
 				</svg>
+				다시 뽑기
 			</button>
 		</div>
 	);

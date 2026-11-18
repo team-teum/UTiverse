@@ -1,8 +1,8 @@
-/* 72×142 도트를 2.5배로 (별자리·꾸미기 패널과 한 화면에 함께 보이게) */
+/* 72×142 도트를 2배로 (한 화면에 별자리 또는 꾸미기 패널과 함께 보이게) */
 .ship {
 	position: relative;
-	inline-size: calc(180 * var(--dp));
-	block-size: calc(355 * var(--dp));
+	inline-size: calc(144 * var(--dp));
+	block-size: calc(284 * var(--dp));
 }
 
 .layer {
@@ -13,4 +13,8 @@
 .cutaway {
 	position: absolute;
 	inset: 0;
+}
+
+.cutaway {
+	transition: opacity 420ms ease;
 }
