@@ -6,7 +6,7 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!**/public/assets"]
+		"includes": ["**", "!!**/dist", "!!**/public/assets", "!!**/public/fonts"]
 	},
 	"formatter": {
 		"enabled": true,
