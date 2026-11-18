@@ -18,6 +18,48 @@
 	inline-size: 100%;
 }
 
+.telescope {
+	justify-self: end;
+	display: grid;
+	place-content: center;
+	justify-items: center;
+	gap: 0.125rem;
+	box-sizing: border-box;
+	inline-size: max(44px, 4rem);
+	min-block-size: max(44px, 4rem);
+	margin-block-start: 0.75rem;
+	padding: 0.25rem;
+	border: 1px solid color-mix(in srgb, var(--color-lavender) 46%, transparent);
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--color-panel) 70%, transparent);
+	color: var(--color-lavender-light);
+	font-size: 0.75rem;
+	cursor: pointer;
+}
+
+.telescope svg {
+	inline-size: 1.25rem;
+	block-size: 1.25rem;
+}
+
+.telescope:focus-visible {
+	outline-offset: 3px;
+}
+
+@media (hover: hover) {
+	.telescope:hover:not([aria-disabled="true"]) {
+		border-color: var(--color-lavender);
+	}
+}
+
+.telescope:active:not([aria-disabled="true"]) {
+	background: var(--color-panel);
+}
+
+.telescope[aria-disabled="true"] {
+	cursor: wait;
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	.flightStage {
 		position: relative;
@@ -257,15 +299,20 @@
 	color: var(--color-lavender-light);
 }
 
-.back .dot {
+/* 망원경이 뒤쪽 점을 골라도 출발 순간 목적지를 볼 수 있다. */
+.back:not(:where(.destination)) .dot {
 	inline-size: 5px;
 	block-size: 5px;
 	opacity: 0.45;
 	filter: blur(0.75px);
 }
 
-.back .dot::before {
+.back:not(:where(.destination)) .dot::before {
 	clip-path: circle(50%);
+}
+
+.destination .dot {
+	filter: drop-shadow(0 0 5px var(--universe-blue));
 }
 
 .back .name {
@@ -287,7 +334,12 @@
 }
 
 @media (forced-colors: active) {
-	.front .dot::before {
+	.telescope {
+		border-color: ButtonText;
+	}
+
+	.front .dot::before,
+	.destination .dot::before {
 		box-sizing: border-box;
 		border: 2px solid LinkText;
 		clip-path: none;

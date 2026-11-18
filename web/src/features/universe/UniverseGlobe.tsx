@@ -19,6 +19,7 @@ import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
 const FLIGHT_MS = 680;
+const VISIT_STATE = { fromUniverse: true };
 const STREAKS = Array.from({ length: 24 }, (_, index) => ({
 	angle: `${(index * 137.5) % 360}deg`,
 	start: `${5 + ((index * 7) % 25)}cqw`,
@@ -52,9 +53,10 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 	const suppressClick = useRef(false);
 	const [rotation, setRotation] = useState<Rotation>({ yaw: 0, pitch: 0 });
 	const [dragging, setDragging] = useState(false);
-	const [flightOrigin, setFlightOrigin] = useState<{
+	const [flight, setFlight] = useState<{
 		x: number;
 		y: number;
+		profileId: string;
 	} | null>(null);
 	const [announcement, setAnnouncement] = useState("");
 
@@ -62,7 +64,6 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 
 	function handleVisitClick(
 		event: MouseEvent<HTMLAnchorElement>,
-		to: string,
 		profile: Profile,
 		front: boolean,
 	) {
@@ -85,18 +86,33 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 			return;
 		}
 
+		if (startVisitFlight(profile, event.currentTarget)) event.preventDefault();
+	}
+
+	function visitRandomNeighbor() {
+		if (zoomRef.current) return;
+		const profile = profiles[Math.floor(Math.random() * profiles.length)];
+		if (!profile) return;
+		const link = globeRef.current?.querySelector(
+			`[data-profile-id="${CSS.escape(profile.id)}"]`,
+		);
+		if (!link || !startVisitFlight(profile, link)) {
+			navigate(`/ship/${profile.id}`, { state: VISIT_STATE });
+		}
+	}
+
+	function startVisitFlight(profile: Profile, target: Element) {
 		const globe = globeRef.current;
 		if (
 			!globe?.animate ||
 			!window.matchMedia("(prefers-reduced-motion: no-preference)").matches
 		) {
-			return;
+			return false;
 		}
 
-		event.preventDefault();
 		// 링크의 44px 영역 중심은 별의 중심이다. 이름을 눌러도 별에 초점을 맞춘다.
 		const bounds = globe.getBoundingClientRect();
-		const link = event.currentTarget.getBoundingClientRect();
+		const link = target.getBoundingClientRect();
 		const x = link.left + link.width / 2 - bounds.left;
 		const y = link.top + link.height / 2 - bounds.top;
 		const transformOrigin = `${x}px ${y}px`;
@@ -127,17 +143,18 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 			{ duration: FLIGHT_MS, fill: "forwards" },
 		);
 		zoomRef.current = zoom;
-		setFlightOrigin(origin);
+		setFlight({ ...origin, profileId: profile.id });
 		setAnnouncement(`${profile.nickname}의 우주선으로 이동 중이에요.`);
 		void zoom.finished.then(
-			() => navigate(to, { state: { fromUniverse: true } }),
+			() => navigate(`/ship/${profile.id}`, { state: VISIT_STATE }),
 			() => {
 				if (zoomRef.current !== zoom || !globe.isConnected) return;
 				zoomRef.current = null;
-				setFlightOrigin(null);
+				setFlight(null);
 				setAnnouncement("");
 			},
 		);
+		return true;
 	}
 
 	function rotateWithKey(direction: (typeof DIRECTIONS)[number]) {
@@ -207,7 +224,7 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 			<p id={helpId} className="sr-only">
 				방향키를 눌러 우주를 돌릴 수 있어요.
 			</p>
-			<div className={flightOrigin ? styles.flightStage : undefined}>
+			<div className={flight ? styles.flightStage : undefined}>
 				<div
 					ref={globeRef}
 					className={`${styles.globe} ${dragging ? styles.dragging : ""}`}
@@ -242,7 +259,7 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 							return (
 								<li
 									key={profile.id}
-									className={`${styles.star} ${front ? styles.front : styles.back}`}
+									className={`${styles.star} ${front ? styles.front : styles.back} ${flight?.profileId === profile.id ? styles.destination : ""}`}
 									inert={!front}
 									aria-hidden={!front}
 									style={
@@ -255,16 +272,14 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 								>
 									<Link
 										to={to}
-										state={{ fromUniverse: true }}
+										state={VISIT_STATE}
 										className={styles.link}
 										data-profile-id={profile.id}
 										aria-label={`${profile.nickname}${profile.isExample ? " · 예시" : ""} 우주선 방문`}
 										title={profile.nickname}
 										draggable={false}
 										tabIndex={front ? 0 : -1}
-										onClick={(event) =>
-											handleVisitClick(event, to, profile, front)
-										}
+										onClick={(event) => handleVisitClick(event, profile, front)}
 									>
 										<span className={styles.dot} aria-hidden="true" />
 										<span className={styles.name}>
@@ -279,15 +294,15 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 						})}
 					</ul>
 				</div>
-				{flightOrigin && (
+				{flight && (
 					<div
 						className={styles.flyby}
 						aria-hidden="true"
 						style={
 							{
 								"--flight-duration": `${FLIGHT_MS}ms`,
-								"--origin-x": `${flightOrigin.x}px`,
-								"--origin-y": `${flightOrigin.y}px`,
+								"--origin-x": `${flight.x}px`,
+								"--origin-y": `${flight.y}px`,
 							} as CSSProperties
 						}
 					>
@@ -314,6 +329,27 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 				<br />
 				이름을 누르면 우주선으로 이동해요.
 			</p>
+			<button
+				type="button"
+				className={styles.telescope}
+				aria-disabled={flight !== null}
+				onClick={visitRandomNeighbor}
+			>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.6"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+				>
+					<circle cx="5.5" cy="16" r="3.75" />
+					<circle cx="18.5" cy="16" r="3.75" />
+					<path d="M2 14.5 5.3 6a2 2 0 0 1 3.95.5V16m5.5 0V6.5A2 2 0 0 1 18.7 6l3.3 8.5M9.25 8h5.5" />
+				</svg>
+				랜덤 방문
+			</button>
 			<p className="sr-only" role="status">
 				{announcement}
 			</p>
