@@ -313,12 +313,6 @@
 	transform: translateX(-50%);
 }
 
-.badge {
-	margin-inline-start: 0.3rem;
-	font-size: 0.625rem;
-	color: var(--color-lavender-light);
-}
-
 /* 망원경이 뒤쪽 점을 골라도 출발 순간 목적지를 볼 수 있다. */
 .back:not(:where(.destination)) .dot {
 	inline-size: 5px;

@@ -19,7 +19,7 @@ export interface Profile {
 	id: string;
 	nickname: string;
 	tagline: string;
-	/** 팀이 준비한 예시 우주선이면 true. 화면에 '예시' 배지를 붙인다 */
+	/** 팀이 준비한 예시 우주선이면 true. 시작 화면의 테스트용 집계에 사용한다. */
 	isExample: boolean;
 	/** 캐릭터·우주선 꾸미기 상태 (코드로 그리는 픽셀 아트의 재료) */
 	look: Look;

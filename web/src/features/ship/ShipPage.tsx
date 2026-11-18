@@ -218,7 +218,6 @@ export function ShipPage({
 						className={styles.nickname}
 					>
 						{isMine ? `${profile.nickname} (나)` : profile.nickname}
-						{profile.isExample && <span className={styles.badge}>예시</span>}
 					</h1>
 					{profile.tagline && isMine && (
 						<p className={styles.tagline}>{profile.tagline}</p>
