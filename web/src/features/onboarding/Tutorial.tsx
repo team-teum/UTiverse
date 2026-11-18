@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { TopBar } from "../../components/TopBar";
+import { AuthDialog } from "../auth/AuthDialog";
 import { TitleScene } from "./TitleScene";
 import styles from "./Tutorial.module.css";
 
@@ -21,6 +22,7 @@ const STEPS = [
 export function Tutorial() {
 	const navigate = useNavigate();
 	const [index, setIndex] = useState(0);
+	const [askAuth, setAskAuth] = useState(false);
 	const step = STEPS[index];
 	const isLast = index === STEPS.length - 1;
 
@@ -35,7 +37,8 @@ export function Tutorial() {
 	}
 
 	function next() {
-		if (isLast) finish();
+		// 마지막 장면: 가입·로그인을 권하고(나중에 해도 됨) 우주로 간다.
+		if (isLast) setAskAuth(true);
 		else setIndex(index + 1);
 	}
 
@@ -60,6 +63,14 @@ export function Tutorial() {
 					{isLast ? "우주 둘러보기" : "다음"}
 				</button>
 			</div>
+
+			{askAuth && (
+				<AuthDialog
+					intro="우주선을 만들면 내 별자리와 꾸미기가 내 계정에 남아요. 지금 안 해도 둘러볼 수 있어요."
+					onDone={finish}
+					onSkip={finish}
+				/>
+			)}
 
 			<div className={styles.top}>
 				<TopBar onNavigate={complete} />

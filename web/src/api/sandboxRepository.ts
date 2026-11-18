@@ -1,9 +1,14 @@
 import { isValidLength } from "../lib/postText";
+import { isValidRegion } from "../lib/regions";
 import { DEFAULT_LOOK, withLook } from "../pixel/look";
+import { sandboxEvents } from "./sandboxEvents";
 import { exampleProfiles } from "./sandboxExamples";
 import {
 	COMMENT_MAX_CHARS,
 	type Comment,
+	type DistanceTier,
+	type MyLocation,
+	type NearbyShip,
 	type Profile,
 	REACTION_TYPES,
 	type ReactionSummary,
@@ -57,6 +62,88 @@ let comments: StoredComment[] = [];
 let reactions: StoredReaction[] = [];
 /** 새 테스터가 새로고침하면 다시 false가 되어 튜토리얼을 처음부터 본다 */
 let tutorialDone = false;
+/** 내 가상 위치 (테스터가 고른 시·도/시·군·구만) */
+let myLocation: MyLocation | null = null;
+/** 샌드박스 가입 정보 (메모리만. 비밀번호는 비교에만 쓰고 어디에도 보내지 않는다) */
+const accounts = new Map<string, { password: string; nickname: string }>();
+let session: { email: string } | null = null;
+
+/** 행사 북마크 */
+let bookmarks = new Set<string>();
+
+/**
+ * 예시 우주선의 가상 위치(prd.md 6장: "예시 우주선의 위치는 가상으로 설정되어 있어요").
+ * 서울 관악구·경기 구리시를 고르면 세 궤도가 모두 채워진다. visible=false 인 둘은 주변 탐색에 안 나온다.
+ */
+const exampleLocations: Record<string, MyLocation> = {
+	"00000000-0000-4000-8000-000000010000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000020000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000030000": {
+		sido: "서울특별시",
+		sigungu: "마포구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000040000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000050000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000060000": {
+		sido: "경기도",
+		sigungu: "수원시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000070000": {
+		sido: "부산광역시",
+		sigungu: "해운대구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000080000": {
+		sido: "대전광역시",
+		sigungu: "유성구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000090000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: false,
+	},
+	"00000000-0000-4000-8000-000000100000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: false,
+	},
+};
+
+function tierOf(other: MyLocation, mine: MyLocation): DistanceTier {
+	if (other.sido === mine.sido && other.sigungu === mine.sigungu)
+		return "sigungu";
+	if (other.sido === mine.sido) return "sido";
+	return "nation";
+}
+
+function shuffle<T>(items: T[]): T[] {
+	const copy = [...items];
+	for (let i = copy.length - 1; i > 0; i -= 1) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[copy[i], copy[j]] = [copy[j], copy[i]];
+	}
+	return copy;
+}
+
 // MY에 처음 들어가면 한 번 "위로 스와이프해봐!" (새로고침하면 다시)
 let swipeHintPending = true;
 
@@ -139,6 +226,165 @@ export const sandboxRepository: Repository = {
 		profiles.set(me.id, me);
 		notify();
 		return { ...me, look: { ...me.look } };
+	},
+
+	async getSession() {
+		return session ? { ...session } : null;
+	},
+
+	async signUp({ email, password, nickname }) {
+		const key = email.trim().toLowerCase();
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(key)) {
+			throw new Error("이메일 형식을 확인해 주세요.");
+		}
+		if (password.length < 8) throw new Error("비밀번호는 8자 이상이에요.");
+		const name = nickname.trim();
+		if (name.length < 1 || name.length > 12) {
+			throw new Error("닉네임은 1~12자로 써 주세요.");
+		}
+		if (accounts.has(key))
+			throw new Error("이미 가입한 이메일이에요. 로그인해 주세요.");
+		accounts.set(key, { password, nickname: name });
+		session = { email: key };
+		me.nickname = name;
+		profiles.set(me.id, me);
+		notify();
+	},
+
+	async signIn({ email, password }) {
+		const key = email.trim().toLowerCase();
+		const account = accounts.get(key);
+		if (!account || account.password !== password) {
+			throw new Error("이메일 또는 비밀번호가 맞지 않아요.");
+		}
+		session = { email: key };
+		me.nickname = account.nickname;
+		profiles.set(me.id, me);
+		notify();
+	},
+
+	async signOut() {
+		session = null;
+		notify();
+	},
+
+	async updateMyProfile(patch) {
+		if (patch.nickname !== undefined) {
+			const nickname = patch.nickname.trim();
+			if (nickname.length < 1 || nickname.length > 12) {
+				throw new Error("닉네임은 1~12자로 써 주세요.");
+			}
+			me.nickname = nickname;
+		}
+		if (patch.tagline !== undefined) {
+			const tagline = patch.tagline.trim();
+			if (tagline.length > 40) throw new Error("한 줄 소개는 40자까지예요.");
+			me.tagline = tagline;
+		}
+		profiles.set(me.id, me);
+		notify();
+		return { ...me };
+	},
+
+	async exploreRandom(count) {
+		const others = [...profiles.values()].filter((p) => p.id !== me.id);
+		return shuffle(others)
+			.slice(0, count)
+			.map((profile) => {
+				const own = stars.filter((star) => star.profileId === profile.id);
+				const latest = own[own.length - 1];
+				return {
+					profile: { ...profile },
+					latestStar: latest ? latest.body.split("\n")[0] : null,
+				};
+			});
+	},
+
+	async getMyLocation() {
+		return myLocation ? { ...myLocation } : null;
+	},
+
+	async setMyLocation(location) {
+		if (!isValidRegion(location.sido, location.sigungu)) {
+			throw new Error("시·도와 시·군·구를 다시 골라 주세요.");
+		}
+		// 샌드박스의 가상 위치는 실제 DB의 7일 변경 제한을 적용하지 않는다(SPECIFICATION 기능 D).
+		myLocation = { ...location };
+		notify();
+	},
+
+	async deleteMyLocation() {
+		myLocation = null;
+		notify();
+	},
+
+	async setLocationVisibility(visible) {
+		if (!myLocation) return;
+		myLocation = { ...myLocation, visible };
+		notify();
+	},
+
+	async exploreNearby() {
+		const mine = myLocation;
+		if (!mine) return [];
+		const result: NearbyShip[] = [];
+		for (const [profileId, location] of Object.entries(exampleLocations)) {
+			const profile = profiles.get(profileId);
+			if (!profile || !location.visible) continue;
+			// 다른 사람의 지역명은 돌려주지 않는다. 거리 단계만.
+			result.push({ profile: { ...profile }, tier: tierOf(location, mine) });
+		}
+		// 단계마다 최대 2개, 전체 최대 6개 (prd.md 기능 C)
+		const order: DistanceTier[] = ["sigungu", "sido", "nation"];
+		return order.flatMap((tier) =>
+			shuffle(result.filter((item) => item.tier === tier)).slice(0, 2),
+		);
+	},
+
+	async report(target, reason) {
+		// 샌드박스: 실제로 접수하지 않는다. 대상이 있는지만 확인한다.
+		if (target.starId) findStar(target.starId);
+		if (target.commentId && !comments.some((c) => c.id === target.commentId)) {
+			throw new Error("이미 지워졌거나 없는 댓글이에요.");
+		}
+		void reason;
+	},
+
+	async listEvents(month) {
+		return sandboxEvents
+			.filter(
+				(event) =>
+					event.date.startsWith(month) ||
+					(event.endDate !== undefined &&
+						event.date.slice(0, 7) <= month &&
+						event.endDate.slice(0, 7) >= month),
+			)
+			.sort((a, b) => a.date.localeCompare(b.date))
+			.map((event) => ({ ...event }));
+	},
+
+	async getEvent(eventId) {
+		const event = sandboxEvents.find((item) => item.id === eventId);
+		return event ? { ...event } : null;
+	},
+
+	async listBookmarkedEvents() {
+		return sandboxEvents
+			.filter((event) => bookmarks.has(event.id))
+			.sort((a, b) => a.date.localeCompare(b.date))
+			.map((event) => ({ ...event }));
+	},
+
+	async isBookmarked(eventId) {
+		return bookmarks.has(eventId);
+	},
+
+	async toggleBookmark(eventId) {
+		const next = new Set(bookmarks);
+		if (next.has(eventId)) next.delete(eventId);
+		else next.add(eventId);
+		bookmarks = next;
+		notify();
 	},
 
 	async getProfile(profileId) {

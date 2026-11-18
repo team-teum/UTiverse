@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { MenuPanel } from "./MenuPanel";
 import styles from "./TopBar.module.css";
 
 interface TopBarProps {
@@ -6,13 +8,25 @@ interface TopBarProps {
 	onNavigate?: () => void;
 }
 
-/** 공통 상단 바: 내 우주선 · 우주(홈). */
+/** 공통 상단 바 (Figma 44:11686): ☰ 메뉴 · MY · 우주(홈). */
 export function TopBar({ onNavigate }: TopBarProps) {
 	const { pathname } = useLocation();
+	const [menuOpen, setMenuOpen] = useState(false);
 
 	return (
 		<header className={styles.header}>
 			<nav className={styles.nav} aria-label="주요 메뉴">
+				<button
+					type="button"
+					className={styles.menu}
+					aria-label="메뉴"
+					aria-expanded={menuOpen}
+					onClick={() => setMenuOpen(true)}
+				>
+					<svg viewBox="0 0 36 27" aria-hidden="true">
+						<path d="M1.5 1.5h33M1.5 13.5h33M1.5 25.5h33" />
+					</svg>
+				</button>
 				<Link
 					className={styles.my}
 					to="/me"
@@ -34,6 +48,9 @@ export function TopBar({ onNavigate }: TopBarProps) {
 					</svg>
 				</Link>
 			</nav>
+			{menuOpen && (
+				<MenuPanel onClose={() => setMenuOpen(false)} onNavigate={onNavigate} />
+			)}
 		</header>
 	);
 }

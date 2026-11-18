@@ -1,0 +1,49 @@
+.screen {
+	display: grid;
+	gap: 16px;
+	padding: 0 calc(18 * var(--dp)) calc(32 * var(--dp));
+}
+
+.state {
+	padding: 2rem 1rem;
+	text-align: center;
+}
+
+.heading {
+	margin: 0;
+	font-size: calc(24 * var(--dp));
+	font-weight: 800;
+}
+
+.group {
+	display: grid;
+	gap: 12px;
+	padding: 16px;
+	border: 1.5px solid rgb(129 126 196 / 60%);
+	border-radius: 16px;
+	background: rgb(18 15 46 / 90%);
+}
+
+.group h2 {
+	margin: 0;
+	color: var(--color-lavender);
+	font-size: 14px;
+}
+
+.value {
+	margin: 0;
+	font-size: 15px;
+}
+
+.buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.note {
+	margin: 0;
+	color: #a9a6d6;
+	font-size: 12px;
+	line-height: 1.5;
+}

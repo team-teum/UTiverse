@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import styles from "./ModalDialog.module.css";
 
 interface ModalDialogProps {
-	/** card: 별 상세(Figma 341 카드), modal: 별 만들기(313 카드), confirm: 확인 창 */
-	variant: "card" | "modal" | "confirm";
+	/** card: 별 상세(Figma 341 카드), modal: 별 만들기(313 카드), confirm: 확인 창, space: 어두운 우주 모달(Figma 47:7389) */
+	variant: "card" | "modal" | "confirm" | "space";
 	labelledBy: string;
 	onDismiss?: () => void;
 	children: ReactNode;

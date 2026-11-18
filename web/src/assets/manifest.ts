@@ -14,6 +14,10 @@ export const assets = {
 	"avatar.suits": "/assets/avatar/suits.png",
 	"constellation.star": "/assets/constellation/star.svg",
 	"ui.write": "/assets/ui/write.png",
+	"icon.dice": "/assets/ui/icon-dice.svg",
+	"icon.pin": "/assets/ui/icon-pin.svg",
+	"icon.close": "/assets/ui/icon-close.svg",
+	"icon.chevron": "/assets/ui/icon-chevron.svg",
 } as const;
 
 export type AssetKey = keyof typeof assets;

@@ -1,0 +1,38 @@
+.tabs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4px;
+	margin: 0;
+	padding: 4px;
+	border: 1.5px solid rgb(129 126 196 / 70%);
+	border-radius: 999px;
+	background: var(--color-ink);
+}
+
+.tabs button {
+	min-block-size: 40px;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.tabs button[aria-pressed="true"] {
+	background: var(--color-lavender);
+	color: #0b0a1a;
+}
+
+.form {
+	display: grid;
+	gap: 14px;
+}
+
+.notice {
+	margin: 0;
+	color: #a9a6d6;
+	font-size: 12px;
+	line-height: 1.5;
+}

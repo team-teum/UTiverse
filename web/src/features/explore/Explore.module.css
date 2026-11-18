@@ -1,0 +1,312 @@
+/* Figma 47:6257 · 47:6414 · 47:6541. 좌표는 402 프레임 기준 디자인 px */
+.screen {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-block-size: 100%;
+	padding: calc(8 * var(--dp)) calc(16 * var(--dp)) calc(20 * var(--dp));
+	box-sizing: border-box;
+}
+
+/* 토글: #070811, 테두리 rgba(129,126,196,.7), 안쪽 6, 둥글기 999 */
+.toggle {
+	display: flex;
+	gap: 4px;
+	margin: 0;
+	padding: 6px;
+	border: 1.5px solid rgb(129 126 196 / 70%);
+	border-radius: 999px;
+	background: var(--color-ink);
+}
+
+.option {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	min-block-size: 44px;
+	padding: 8px calc(20 * var(--dp)) 8px calc(18 * var(--dp));
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: #fff;
+	font: inherit;
+	font-size: calc(15 * var(--dp));
+	font-weight: 700;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.option[aria-pressed="true"] {
+	background: var(--color-lavender);
+	color: #0b0a1a;
+}
+
+.icon {
+	inline-size: 20px;
+	block-size: 20px;
+}
+
+/* 아이콘 색을 선택 상태에 맞춘다 (원본: 주사위 흰색, 핀 짙은 남색) */
+.option[aria-pressed="false"] .icon {
+	filter: brightness(0) invert(1);
+}
+
+.option[aria-pressed="true"] .icon {
+	filter: brightness(0);
+}
+
+.body {
+	display: grid;
+	flex: 1;
+	align-content: center;
+	inline-size: 100%;
+	animation: fade 200ms ease-out;
+}
+
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.body {
+		animation: none;
+	}
+}
+
+.note {
+	margin: calc(8 * var(--dp)) 0 0;
+	color: var(--color-lavender-light);
+	font-size: 0.75rem;
+	text-align: center;
+}
+
+/* ── 랜덤 ── */
+.random {
+	display: grid;
+	justify-items: center;
+	gap: calc(36 * var(--dp));
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(2, calc(150 * var(--dp)));
+	gap: calc(16 * var(--dp));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.card {
+	display: grid;
+	justify-items: center;
+	gap: 4px;
+	block-size: 100%;
+	box-sizing: border-box;
+	padding: calc(10 * var(--dp)) calc(10 * var(--dp)) calc(12 * var(--dp));
+	border: 1.5px solid rgb(129 126 196 / 60%);
+	border-radius: 10px;
+	background: rgb(18 15 46 / 86%);
+	color: #fff;
+	text-decoration: none;
+}
+
+.card:active {
+	transform: scale(0.98);
+}
+
+.cardShip {
+	inline-size: calc(46 * var(--dp));
+	block-size: calc(90 * var(--dp));
+}
+
+.cardName {
+	font-size: calc(15 * var(--dp));
+	font-weight: 700;
+}
+
+.cardStar {
+	display: -webkit-box;
+	inline-size: 100%;
+	overflow: hidden;
+	color: var(--color-lavender-light);
+	font-size: calc(12 * var(--dp));
+	line-height: 1.4;
+	text-align: center;
+	word-break: keep-all;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+}
+
+/* Figma: 노란 원 134, 되돌리기 화살표 */
+.refresh {
+	display: grid;
+	place-items: center;
+	inline-size: max(64px, calc(107 * var(--dp)));
+	block-size: max(64px, calc(107 * var(--dp)));
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--color-accent-yellow);
+	cursor: pointer;
+}
+
+.refresh svg {
+	inline-size: 56%;
+	block-size: 56%;
+	fill: none;
+	stroke: #000;
+	stroke-width: 4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.refresh:active {
+	transform: rotate(-30deg);
+}
+
+/* ── 주변: 위치 없음 (47:6414 카드) ── */
+.nearbyEmpty {
+	display: grid;
+	place-items: center;
+}
+
+.needCard {
+	display: grid;
+	gap: calc(14 * var(--dp));
+	box-sizing: border-box;
+	inline-size: calc(360 * var(--dp));
+	padding: calc(22 * var(--dp)) calc(20 * var(--dp));
+	border: 1.5px solid rgb(129 126 196 / 60%);
+	border-radius: 20px;
+	background: rgb(18 15 46 / 96%);
+	text-align: center;
+}
+
+.needTitle {
+	margin: 0;
+	font-size: calc(16 * var(--dp));
+	font-weight: 700;
+}
+
+.needText {
+	margin: 0;
+	color: var(--color-lavender-light);
+	font-size: calc(13 * var(--dp));
+	line-height: 1.6;
+	word-break: keep-all;
+}
+
+.needActions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+
+.needActions button {
+	padding-inline: 8px;
+	font-size: calc(14 * var(--dp));
+	word-break: keep-all;
+}
+
+/* ── 주변: 궤도 (47:6541) ── */
+.nearby {
+	display: grid;
+	justify-items: center;
+	gap: calc(16 * var(--dp));
+}
+
+.orbits {
+	position: relative;
+	inline-size: calc(370 * var(--dp));
+	block-size: calc(400 * var(--dp));
+}
+
+.ring {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	inline-size: calc(var(--r) * 2 * var(--dp));
+	block-size: calc(var(--r) * 2 * var(--dp));
+	border: 1px solid rgb(255 255 255 / 55%);
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.ringLabel {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-start: 50%;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: rgb(11 7 20 / 80%);
+	color: var(--color-lavender-light);
+	font-size: calc(11 * var(--dp));
+	white-space: nowrap;
+	transform: translate(-50%, -50%);
+}
+
+.center {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	display: grid;
+	justify-items: center;
+	transform: translate(-50%, -50%);
+}
+
+.centerShip {
+	inline-size: calc(34 * var(--dp));
+	block-size: calc(66 * var(--dp));
+}
+
+.centerLabel {
+	font-size: calc(12 * var(--dp));
+	font-weight: 700;
+}
+
+.orbitShips {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.orbitShip {
+	position: absolute;
+	inset-block-start: calc(50% + var(--y) * var(--dp));
+	inset-inline-start: calc(50% + var(--x) * var(--dp));
+	transform: translate(-50%, -50%);
+}
+
+.orbitShip a {
+	display: grid;
+	justify-items: center;
+	min-inline-size: 44px;
+	color: #fff;
+	text-decoration: none;
+}
+
+.orbitShipArt {
+	inline-size: calc(24 * var(--dp));
+	block-size: calc(47 * var(--dp));
+	filter: drop-shadow(0 0 6px rgb(190 154 250 / 60%));
+}
+
+.orbitName {
+	padding: 0 6px;
+	border: 1px solid rgb(129 126 196 / 60%);
+	border-radius: 999px;
+	background: rgb(18 15 46 / 90%);
+	font-size: calc(11 * var(--dp));
+	white-space: nowrap;
+}
+
+.nearbyFoot {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	color: var(--color-lavender-light);
+	font-size: calc(12 * var(--dp));
+}

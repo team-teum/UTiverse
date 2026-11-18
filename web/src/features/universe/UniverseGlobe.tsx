@@ -146,14 +146,11 @@ export function UniverseGlobe({
 		}
 	}
 
-	function visitRandomNeighbor() {
+	function openExplore() {
 		if (zoomRef.current) return;
-		const profile = profiles[Math.floor(Math.random() * profiles.length)];
-		if (!profile) return;
-		const link = findStarLink(globeRef.current, profile.id);
-		if (!link || !startVisitFlight(profile, link, "telescope")) {
-			goToShip(profile, "telescope");
-		}
+		// 돌아오면 같은 방향과 「탐색하기」 버튼 초점을 되살린다.
+		rememberView(entryKey, { rotation, trigger: "telescope" });
+		navigate("/explore");
 	}
 
 	function goToShip(profile: Profile, trigger: VisitTrigger) {
@@ -393,18 +390,19 @@ export function UniverseGlobe({
 				<br />
 				이름을 누르면 우주선으로 이동해요.
 			</p>
+			{/* Figma 50:6604 「탐색하기」: 노란 원 + 쌍안경 → 랜덤/주변 탐색 */}
 			<button
 				type="button"
 				ref={telescopeRef}
 				className={styles.telescope}
 				aria-disabled={flight !== null}
-				onClick={visitRandomNeighbor}
+				onClick={openExplore}
 			>
 				<svg
 					viewBox="0 0 24 24"
 					fill="none"
 					stroke="currentColor"
-					strokeWidth="1.6"
+					strokeWidth="2"
 					strokeLinecap="round"
 					strokeLinejoin="round"
 					aria-hidden="true"
@@ -413,7 +411,7 @@ export function UniverseGlobe({
 					<circle cx="18.5" cy="16" r="3.75" />
 					<path d="M2 14.5 5.3 6a2 2 0 0 1 3.95.5V16m5.5 0V6.5A2 2 0 0 1 18.7 6l3.3 8.5M9.25 8h5.5" />
 				</svg>
-				랜덤 방문
+				탐색하기
 			</button>
 			<p className="sr-only" role="status">
 				{announcement}

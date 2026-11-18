@@ -1,0 +1,131 @@
+.screen {
+	display: grid;
+	gap: 14px;
+	padding: 0 calc(20 * var(--dp)) calc(32 * var(--dp));
+}
+
+.state {
+	display: grid;
+	gap: 12px;
+	justify-items: center;
+	padding: 2rem 1rem;
+	text-align: center;
+}
+
+.back {
+	justify-self: start;
+	min-block-size: 36px;
+	color: var(--color-lavender-light);
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.cover {
+	min-block-size: calc(220 * var(--dp));
+}
+
+.title {
+	margin: 0;
+	font-size: calc(23 * var(--dp));
+	font-weight: 800;
+	line-height: 1.3;
+	word-break: keep-all;
+}
+
+.host {
+	margin: -6px 0 0;
+	color: rgb(255 255 255 / 70%);
+	font-size: 13px;
+}
+
+.facts {
+	display: grid;
+	gap: 10px;
+}
+
+.fact {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	font-size: 14px;
+	line-height: 1.4;
+}
+
+.cal,
+.pin {
+	display: grid;
+	flex: none;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	border: 1px solid rgb(255 255 255 / 25%);
+	border-radius: 10px;
+}
+
+.cal {
+	grid-template-rows: auto 1fr;
+	overflow: hidden;
+	font-size: 10px;
+}
+
+.cal span {
+	inline-size: 100%;
+	background: rgb(255 255 255 / 15%);
+	text-align: center;
+}
+
+.cal strong {
+	font-size: 17px;
+}
+
+.pin svg {
+	inline-size: 22px;
+	block-size: 22px;
+	fill: none;
+	stroke: #fff;
+	stroke-width: 1.8;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.about {
+	display: grid;
+	gap: 8px;
+	padding: 16px;
+	border: 1px solid rgb(255 255 255 / 12%);
+	border-radius: 14px;
+	background: rgb(30 30 38 / 92%);
+}
+
+.about h2 {
+	margin: 0;
+	color: rgb(255 255 255 / 70%);
+	font-size: 13px;
+}
+
+.about p {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.7;
+	word-break: keep-all;
+}
+
+.tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	color: var(--color-lavender);
+	font-size: 13px;
+	list-style: none;
+}
+
+.about .example {
+	color: #ffd479;
+	font-size: 13px;
+}

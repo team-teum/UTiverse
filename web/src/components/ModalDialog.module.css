@@ -80,3 +80,15 @@
 	border-radius: 12px;
 	background: var(--color-sheet);
 }
+
+/* 어두운 우주 모달: Figma 「Modal / 내 위치 등록」(47:7389) 336 폭, #120F2E 96%, 테두리 rgba(129,126,196,.6), 둥글기 20 */
+.space .panel {
+	gap: calc(18 * var(--dp));
+	inline-size: calc(336 * var(--dp));
+	padding: calc(30 * var(--dp)) calc(28 * var(--dp)) calc(28 * var(--dp));
+	border: 1.5px solid rgb(129 126 196 / 60%);
+	border-radius: 20px;
+	background: rgb(18 15 46 / 96%);
+	color: #fff;
+	backdrop-filter: blur(8px);
+}

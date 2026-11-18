@@ -1,0 +1,55 @@
+.title {
+	margin: 0;
+	font-size: 1.0625rem;
+}
+
+.reasons {
+	display: grid;
+	gap: 0.25rem;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.reason {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+	min-block-size: 44px;
+	font-size: 0.9375rem;
+}
+
+.reason input {
+	inline-size: 1.125rem;
+	block-size: 1.125rem;
+	accent-color: #6b4fd8;
+}
+
+.note {
+	margin: 0;
+	color: #555;
+	font-size: 0.8125rem;
+}
+
+.actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-end;
+}
+
+.submit {
+	min-block-size: 44px;
+	padding: 0 1rem;
+	border: 0;
+	border-radius: 10px;
+	background: #c4253f;
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.submit:disabled {
+	opacity: 0.4;
+	cursor: default;
+}

@@ -8,6 +8,7 @@ import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatStarDate } from "../../lib/dateFormat";
 import { CommentSection } from "./CommentSection";
 import { ReactionBar } from "./ReactionBar";
+import { ReportDialog } from "./ReportDialog";
 import styles from "./StarDetailDialog.module.css";
 
 interface StarDetailDialogProps {
@@ -33,6 +34,10 @@ export function StarDetailDialog({
 	const [menuOpen, setMenuOpen] = useState(false);
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
+	const [reporting, setReporting] = useState<{ commentId?: string } | null>(
+		null,
+	);
+	const [reported, setReported] = useState<string | null>(null);
 	const { blocker, skipNext } = useDiscardGuard(draft.trim().length > 0);
 
 	const isMine = star?.profileId === myProfileId;
@@ -63,7 +68,7 @@ export function StarDetailDialog({
 						)}
 					</h2>
 					<div className={styles.headerActions}>
-						{isMine && (
+						{star && (
 							<div className={styles.menuWrap}>
 								<button
 									type="button"
@@ -76,16 +81,29 @@ export function StarDetailDialog({
 								</button>
 								{menuOpen && (
 									<div className={styles.menu}>
-										<button
-											type="button"
-											className={styles.menuItem}
-											onClick={() => {
-												setMenuOpen(false);
-												setConfirmDelete(true);
-											}}
-										>
-											삭제하기
-										</button>
+										{isMine ? (
+											<button
+												type="button"
+												className={styles.menuItem}
+												onClick={() => {
+													setMenuOpen(false);
+													setConfirmDelete(true);
+												}}
+											>
+												삭제하기
+											</button>
+										) : (
+											<button
+												type="button"
+												className={styles.menuItem}
+												onClick={() => {
+													setMenuOpen(false);
+													setReporting({});
+												}}
+											>
+												신고하기
+											</button>
+										)}
 									</div>
 								)}
 							</div>
@@ -115,18 +133,44 @@ export function StarDetailDialog({
 									{deleteError}
 								</p>
 							)}
+							{reported && (
+								<p className={styles.muted} role="status">
+									{reported}
+								</p>
+							)}
 							<ReactionBar starId={star.id} />
 							<CommentSection
 								starId={star.id}
 								myProfileId={myProfileId}
 								draft={draft}
 								onDraftChange={setDraft}
+								onReport={(commentId) => setReporting({ commentId })}
 							/>
 						</>
 					)}
 				</div>
 			</ModalDialog>
 
+			{reporting && (
+				<ReportDialog
+					what={reporting.commentId ? "댓글" : "별"}
+					onCancel={() => setReporting(null)}
+					onSubmit={async (reason) => {
+						const target = reporting.commentId
+							? { commentId: reporting.commentId }
+							: { starId };
+						setReporting(null);
+						try {
+							await repo.report(target, reason);
+							setReported(
+								"신고가 접수됐어요. (테스트 모드라 실제로 전달되지는 않아요)",
+							);
+						} catch {
+							setReported("신고하지 못했어요. 다시 시도해 주세요.");
+						}
+					}}
+				/>
+			)}
 			{confirmDelete && (
 				<ConfirmDialog
 					message="이 별을 지울까요?"

@@ -12,6 +12,8 @@ interface CommentSectionProps {
 	myProfileId: string;
 	draft: string;
 	onDraftChange: (draft: string) => void;
+	/** 남의 댓글 신고 */
+	onReport?: (commentId: string) => void;
 }
 
 /** 댓글 목록(시간순, 대댓글 없음)과 입력 칸. 입력 중인 글은 부모가 들고 있다(닫기 확인용). */
@@ -20,6 +22,7 @@ export function CommentSection({
 	myProfileId,
 	draft,
 	onDraftChange,
+	onReport,
 }: CommentSectionProps) {
 	const headingId = useId();
 	const counterId = useId();
@@ -99,7 +102,7 @@ export function CommentSection({
 								<time dateTime={comment.createdAt}>
 									{formatRelative(comment.createdAt)}
 								</time>
-								{comment.author.id === myProfileId && (
+								{comment.author.id === myProfileId ? (
 									<button
 										type="button"
 										className={styles.delete}
@@ -107,6 +110,17 @@ export function CommentSection({
 									>
 										삭제
 									</button>
+								) : (
+									onReport && (
+										<button
+											type="button"
+											className={styles.delete}
+											aria-label={`${comment.author.nickname}님의 댓글 신고`}
+											onClick={() => onReport(comment.id)}
+										>
+											신고
+										</button>
+									)
 								)}
 							</p>
 							<p className={styles.body}>{comment.body}</p>

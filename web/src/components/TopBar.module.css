@@ -13,6 +13,7 @@
 	block-size: 100%;
 }
 
+.menu,
 .my,
 .home {
 	position: absolute;
@@ -57,4 +58,20 @@
 	stroke-width: 4;
 	stroke-linecap: round;
 	filter: drop-shadow(0 4px 4px rgb(0 0 0 / 25%));
+}
+
+/* ☰ (17, 22) 36×27 */
+.menu {
+	inset-inline-start: calc(35 * var(--dp) - 22px);
+	inset-block-start: calc(35.5 * var(--dp) - 22px);
+	z-index: 3;
+}
+
+.menu svg {
+	inline-size: calc(36 * var(--dp));
+	block-size: calc(27 * var(--dp));
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 3;
+	stroke-linecap: round;
 }

@@ -1,0 +1,126 @@
+.layer {
+	position: fixed;
+	inset: 0;
+	box-sizing: border-box;
+	inline-size: min(100vw, calc(100dvh * 402 / 874));
+	block-size: 100dvh;
+	max-inline-size: none;
+	max-block-size: none;
+	margin: 0 auto;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #fff;
+}
+
+@media (width < 48rem) {
+	.layer {
+		inline-size: 100%;
+	}
+}
+
+.layer::backdrop {
+	background: transparent;
+}
+
+.backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgb(0 0 0 / 50%);
+	animation: fade 180ms ease-out;
+}
+
+/* Figma: 0~197, #868AFF */
+.panel {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-start: 0;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	inline-size: calc(210 * var(--dp));
+	padding: calc(14 * var(--dp)) calc(14 * var(--dp))
+		calc(24 * var(--dp) + env(safe-area-inset-bottom, 0px));
+	padding-block-start: calc(14 * var(--dp) + env(safe-area-inset-top, 0px));
+	background: var(--color-menu);
+	box-shadow: 4px 0 24px rgb(0 0 0 / 35%);
+	animation: slide 220ms ease-out;
+}
+
+.close {
+	display: grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	margin: calc(-1 * var(--dp)) 0 0 calc(-1 * var(--dp));
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #fff;
+	cursor: pointer;
+}
+
+.close svg {
+	inline-size: calc(36 * var(--dp));
+	block-size: calc(27 * var(--dp));
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+
+/* Figma: 캘린더/설정/북마크 흰 29, 줄 간격 촘촘 */
+.list {
+	display: grid;
+	gap: calc(6 * var(--dp));
+	margin: calc(22 * var(--dp)) 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.item {
+	display: grid;
+	padding: calc(6 * var(--dp)) 0;
+	color: #fff;
+	font-size: calc(29 * var(--dp));
+	font-weight: 500;
+	line-height: 1.15;
+	text-decoration: none;
+}
+
+.item[aria-current="page"] {
+	text-decoration: underline;
+	text-underline-offset: 6px;
+}
+
+.hint {
+	font-size: calc(12 * var(--dp));
+	font-weight: 400;
+	color: rgb(255 255 255 / 78%);
+}
+
+.foot {
+	margin: auto 0 0;
+	color: rgb(255 255 255 / 80%);
+	font-size: calc(11 * var(--dp));
+	line-height: 1.5;
+}
+
+@keyframes slide {
+	from {
+		transform: translateX(-100%);
+	}
+}
+
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.panel,
+	.backdrop {
+		animation: none;
+	}
+}

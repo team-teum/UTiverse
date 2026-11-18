@@ -17,28 +17,31 @@
 	inline-size: 100%;
 }
 
+/* Figma 50:6604: 지름 107 노란 원(#FFF159), 쌍안경 + 「탐색하기」 */
 .telescope {
-	justify-self: end;
+	justify-self: center;
 	display: grid;
 	place-content: center;
 	justify-items: center;
-	gap: 0.125rem;
+	gap: calc(4 * var(--dp));
 	box-sizing: border-box;
-	inline-size: max(44px, 4rem);
-	min-block-size: max(44px, 4rem);
-	margin-block-start: 0.75rem;
-	padding: 0.25rem;
-	border: 1px solid color-mix(in srgb, var(--color-lavender) 46%, transparent);
+	inline-size: max(64px, calc(107 * var(--dp)));
+	block-size: max(64px, calc(107 * var(--dp)));
+	margin-block-start: calc(16 * var(--dp));
+	padding: 0;
+	border: 0;
 	border-radius: 50%;
-	background: color-mix(in srgb, var(--color-panel) 70%, transparent);
-	color: var(--color-lavender-light);
-	font-size: 0.75rem;
+	background: var(--color-accent-yellow);
+	color: #000;
+	font-size: calc(14 * var(--dp));
+	font-weight: 500;
 	cursor: pointer;
+	box-shadow: 0 0 24px rgb(255 241 89 / 25%);
 }
 
 .telescope svg {
-	inline-size: 1.25rem;
-	block-size: 1.25rem;
+	inline-size: calc(52 * var(--dp));
+	block-size: calc(52 * var(--dp));
 }
 
 .telescope:focus-visible {
@@ -47,12 +50,12 @@
 
 @media (hover: hover) {
 	.telescope:hover:not([aria-disabled="true"]) {
-		border-color: var(--color-lavender);
+		filter: brightness(1.05);
 	}
 }
 
 .telescope:active:not([aria-disabled="true"]) {
-	background: var(--color-panel);
+	transform: scale(0.96);
 }
 
 .telescope[aria-disabled="true"] {
