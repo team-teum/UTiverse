@@ -16,11 +16,11 @@ export function addMonths(month: string, delta: number): string {
 	return `${year}-${String((index % 12) + 1).padStart(2, "0")}`;
 }
 
-/** 월요일 시작 달력 칸. 앞쪽 빈칸은 null */
+/** 일요일 시작 달력 칸 (Figma 캘린더). 앞쪽 빈칸은 null */
 export function monthCells(month: string): Array<string | null> {
 	const [y, m] = month.split("-").map(Number);
 	const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(); // 0=일
-	const lead = (first + 6) % 7;
+	const lead = first;
 	const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
 	const cells: Array<string | null> = Array.from({ length: lead }, () => null);
 	for (let d = 1; d <= days; d += 1) {

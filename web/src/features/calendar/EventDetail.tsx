@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { repo } from "../../api/repository";
-import ui from "../../components/SpaceUi.module.css";
+import { AssetImage } from "../../components/AssetImage";
+import ui from "../../components/Cosmic.module.css";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatDay } from "./calendarDates";
 import styles from "./EventDetail.module.css";
-import { EventThumb } from "./EventThumb";
+import { EVENT_ICON, kindOf, tagTone } from "./eventLook";
 
-/** 행사 상세 (레퍼런스 Figma 51:7019): 표지 · 제목 · 일시 · 장소 · 주최 · 설명 · 링크 · 북마크 */
+/** 행사 상세 (캘린더와 같은 우주 도트 화면): 표지 · 제목 · 일시 · 장소 · 주최 · 설명 · 링크 · 책갈피 */
 export function EventDetail() {
 	const { eventId = "" } = useParams();
 	const { data: event, error } = useRepositoryData(`event:${eventId}`, () =>
@@ -18,13 +19,13 @@ export function EventDetail() {
 	);
 	const [busy, setBusy] = useState(false);
 
-	if (error) return <p className={styles.state}>행사를 불러오지 못했어요.</p>;
-	if (event === undefined) return <p className={styles.state}>불러오는 중…</p>;
+	if (error) return <p className={ui.empty}>행사를 불러오지 못했어요.</p>;
+	if (event === undefined) return <p className={ui.empty}>불러오는 중…</p>;
 	if (event === null) {
 		return (
-			<div className={styles.state}>
-				<p>없는 행사예요.</p>
-				<Link to="/calendar" className={ui.secondary}>
+			<div className={ui.page}>
+				<p className={ui.empty}>없는 행사예요.</p>
+				<Link to="/calendar" className={ui.cta}>
 					캘린더로 가기
 				</Link>
 			</div>
@@ -34,46 +35,59 @@ export function EventDetail() {
 	const [y, m, d] = event.date.split("-").map(Number);
 
 	return (
-		<article className={styles.screen} aria-labelledby="event-title">
-			<Link to="/calendar" className={styles.back}>
+		<article className={ui.page} aria-labelledby="event-title">
+			<AssetImage
+				assetKey="deco.sparkle"
+				alt=""
+				className={`${ui.deco} ${styles.sparkle}`}
+			/>
+			<Link to="/calendar" className={`${ui.pill} ${styles.back}`}>
 				← 캘린더
 			</Link>
-			<EventThumb event={event} large className={styles.cover} />
-			<h1 id="event-title" className={styles.title}>
+
+			<div className={`${ui.panel} ${styles.cover}`}>
+				<AssetImage
+					assetKey={EVENT_ICON[kindOf(event)]}
+					alt=""
+					className={styles.icon}
+				/>
+				<div className={styles.date} aria-hidden="true">
+					<span>{m}월</span>
+					<strong>{d}</strong>
+				</div>
+			</div>
+
+			<h1 id="event-title" className={ui.title}>
 				{event.title}
 				{event.isExample && <span className={ui.badge}>예시</span>}
 			</h1>
-			<p className={styles.host}>{event.host}</p>
+			<p className={ui.tags}>
+				{event.tags.map((tag, i) => (
+					<span key={tag} className={`${ui.tag} ${ui[tagTone(i)]}`}>
+						{tag}
+					</span>
+				))}
+			</p>
 
-			<div className={styles.facts}>
-				<div className={styles.fact}>
-					<span className={styles.cal} aria-hidden="true">
-						<span>{m}월</span>
-						<strong>{d}</strong>
-					</span>
-					<span>
-						<strong>
-							{y}년 {formatDay(event.date)}
-						</strong>
-						<br />
-						{event.time ?? "종일"}
-					</span>
-				</div>
-				<div className={styles.fact}>
-					<span className={styles.pin} aria-hidden="true">
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
-							<circle cx="12" cy="9.5" r="2.5" />
-						</svg>
-					</span>
-					<span>{event.place}</span>
-				</div>
+			<div className={`${ui.panel} ${styles.facts}`}>
+				<p>
+					<span className={styles.label}>언제</span>
+					{y}년 {formatDay(event.date)} · {event.time ?? "종일"}
+				</p>
+				<p>
+					<span className={styles.label}>어디서</span>
+					{event.place}
+				</p>
+				<p>
+					<span className={styles.label}>여는 곳</span>
+					{event.host}
+				</p>
 			</div>
 
 			<div className={styles.actions}>
 				<button
 					type="button"
-					className={saved ? ui.secondary : ui.primary}
+					className={saved ? ui.pill : ui.cta}
 					aria-pressed={saved ?? false}
 					disabled={busy}
 					onClick={async () => {
@@ -82,11 +96,11 @@ export function EventDetail() {
 						setBusy(false);
 					}}
 				>
-					{saved ? "★ 북마크했어요" : "☆ 북마크"}
+					{saved ? "★ 책갈피했어요" : "☆ 책갈피"}
 				</button>
 				{event.link && (
 					<a
-						className={ui.ghost}
+						className={ui.pill}
 						href={event.link.url}
 						target="_blank"
 						rel="noopener noreferrer"
@@ -96,18 +110,18 @@ export function EventDetail() {
 				)}
 			</div>
 
-			<section className={styles.about} aria-labelledby="about-heading">
-				<h2 id="about-heading">행사 소개</h2>
+			<section
+				className={`${ui.panel} ${styles.about}`}
+				aria-labelledby="about-heading"
+			>
+				<h2 id="about-heading" className={ui.panelTitle}>
+					행사 소개
+				</h2>
 				<p>{event.description}</p>
-				<ul className={styles.tags}>
-					{event.tags.map((tag) => (
-						<li key={tag}>#{tag}</li>
-					))}
-				</ul>
 				{event.isExample && (
 					<p className={styles.example}>
-						이 행사는 실제 일정이 확인되지 않은 예시예요. 참여 전에 주최 측
-						공지를 꼭 확인해 주세요.
+						실제 일정이 확인되지 않은 예시예요. 참여 전에 주최 측 공지를 꼭
+						확인해 주세요.
 					</p>
 				)}
 			</section>

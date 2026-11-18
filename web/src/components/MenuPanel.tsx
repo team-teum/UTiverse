@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
+import { AssetImage } from "./AssetImage";
 import styles from "./MenuPanel.module.css";
 
 interface MenuPanelProps {
@@ -96,6 +97,11 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 						</li>
 					))}
 				</ul>
+				<AssetImage
+					assetKey="deco.planet"
+					alt=""
+					className={styles.planetDeco}
+				/>
 				<p className={styles.foot}>
 					유T버스 · 테스트 모드
 					<br />

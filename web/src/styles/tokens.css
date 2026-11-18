@@ -23,5 +23,5 @@
 	/* Use system fonts until licensed self-hosted font files are supplied. */
 	--font-body: "Noto Sans KR", system-ui, sans-serif;
 	--font-latin: "Inter", system-ui, sans-serif;
-	--font-pixel: "Bitcount", monospace;
+	--font-pixel: "Galmuri11", var(--font-body);
 }

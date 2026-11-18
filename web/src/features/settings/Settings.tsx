@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
+import { AssetImage } from "../../components/AssetImage";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import cosmic from "../../components/Cosmic.module.css";
 import ui from "../../components/SpaceUi.module.css";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
@@ -48,12 +50,24 @@ export function Settings() {
 	}
 
 	return (
-		<section className={styles.screen} aria-labelledby="settings-heading">
-			<h1 id="settings-heading" className={styles.heading}>
-				설정
-			</h1>
+		<section className={cosmic.page} aria-labelledby="settings-heading">
+			<AssetImage
+				assetKey="deco.planet"
+				alt=""
+				className={`${cosmic.deco} ${styles.planet}`}
+			/>
+			<header className={cosmic.head}>
+				<AssetImage assetKey="deco.ufo" alt="" className={cosmic.headIcon} />
+				<h1 id="settings-heading" className={cosmic.title}>
+					설정
+				</h1>
+				<p className={cosmic.subtitle}>내 우주선 관리실</p>
+			</header>
 
-			<section className={styles.group} aria-labelledby="profile-heading">
+			<section
+				className={`${cosmic.panel} ${styles.group}`}
+				aria-labelledby="profile-heading"
+			>
 				<h2 id="profile-heading">프로필</h2>
 				<label className={ui.label}>
 					닉네임
@@ -89,7 +103,10 @@ export function Settings() {
 				</button>
 			</section>
 
-			<section className={styles.group} aria-labelledby="location-heading">
+			<section
+				className={`${cosmic.panel} ${styles.group}`}
+				aria-labelledby="location-heading"
+			>
 				<h2 id="location-heading">내 위치</h2>
 				<p className={styles.value}>
 					{location
@@ -134,7 +151,10 @@ export function Settings() {
 				</div>
 			</section>
 
-			<section className={styles.group} aria-labelledby="etc-heading">
+			<section
+				className={`${cosmic.panel} ${styles.group}`}
+				aria-labelledby="etc-heading"
+			>
 				<h2 id="etc-heading">계정 · 안내</h2>
 				<p className={styles.value}>
 					{session

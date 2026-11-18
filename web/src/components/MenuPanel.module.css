@@ -75,8 +75,9 @@
 .brand {
 	margin: calc(22 * var(--dp)) 0 calc(14 * var(--dp)) calc(4 * var(--dp));
 	color: var(--color-lavender);
-	font-family: var(--font-latin);
-	font-size: calc(13 * var(--dp));
+	font-family: var(--font-pixel);
+	font-size: calc(15 * var(--dp));
+	text-shadow: 0 0 10px rgb(190 154 250 / 60%);
 	font-weight: 700;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
@@ -139,6 +140,7 @@
 }
 
 .label {
+	font-family: var(--font-pixel);
 	font-size: calc(18 * var(--dp));
 	font-weight: 700;
 	line-height: 1.2;
@@ -176,4 +178,14 @@
 	.backdrop {
 		animation: none;
 	}
+}
+
+.planetDeco {
+	position: absolute;
+	inset-block-end: calc(70 * var(--dp));
+	inset-inline-end: calc(-24 * var(--dp));
+	inline-size: calc(86 * var(--dp));
+	image-rendering: pixelated;
+	opacity: 0.9;
+	pointer-events: none;
 }

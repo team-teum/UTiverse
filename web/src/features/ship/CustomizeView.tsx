@@ -85,23 +85,25 @@ export function CustomizeView({
 			</div>
 
 			<div className={styles.card}>
-				<fieldset className={styles.tabs}>
-					<legend className="sr-only">종류</legend>
-					{tabs.map((item) => (
-						<button
-							key={item.id}
-							type="button"
-							aria-pressed={item.id === tab.id}
-							className={styles.tab}
-							onClick={() => {
-								setTabId((prev) => ({ ...prev, [mode]: item.id }));
-								setCategoryKey(null);
-							}}
-						>
-							{item.label}
-						</button>
-					))}
-				</fieldset>
+				{tabs.length > 1 && (
+					<fieldset className={styles.tabs}>
+						<legend className="sr-only">종류</legend>
+						{tabs.map((item) => (
+							<button
+								key={item.id}
+								type="button"
+								aria-pressed={item.id === tab.id}
+								className={styles.tab}
+								onClick={() => {
+									setTabId((prev) => ({ ...prev, [mode]: item.id }));
+									setCategoryKey(null);
+								}}
+							>
+								{item.label}
+							</button>
+						))}
+					</fieldset>
+				)}
 
 				{tab.categories.length > 1 && (
 					<fieldset className={styles.chips}>
@@ -120,7 +122,10 @@ export function CustomizeView({
 					</fieldset>
 				)}
 
-				<ul className={styles.items} aria-label={`${category.label} 고르기`}>
+				<ul
+					className={`${styles.items} ${category.key === "avatar" ? styles.avatarGrid : ""}`}
+					aria-label={`${category.label} 고르기`}
+				>
 					{category.options.map((option) => {
 						const selected = look[category.key] === option.id;
 						const preview = { ...look, [category.key]: option.id };
@@ -180,7 +185,13 @@ export function CustomizeView({
 											</span>
 										)}
 									</span>
-									<span className={styles.label}>{option.label}</span>
+									<span
+										className={
+											category.key === "avatar" ? "sr-only" : styles.label
+										}
+									>
+										{option.label}
+									</span>
 								</button>
 							</li>
 						);
