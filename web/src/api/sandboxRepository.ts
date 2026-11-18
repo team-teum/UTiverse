@@ -57,7 +57,8 @@ let comments: StoredComment[] = [];
 let reactions: StoredReaction[] = [];
 /** 새 테스터가 새로고침하면 다시 false가 되어 튜토리얼을 처음부터 본다 */
 let tutorialDone = false;
-let swipeHintPending = false;
+// MY에 처음 들어가면 한 번 "위로 스와이프해봐!" (새로고침하면 다시)
+let swipeHintPending = true;
 
 function daysAgo(days: number, order: number): string {
 	// 같은 날 여러 개면 순서대로 몇 분씩 띄운다.

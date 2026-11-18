@@ -71,11 +71,10 @@
 }
 
 .ship {
+	position: relative;
 	display: flex;
 	justify-content: center;
-	margin-block-start: calc(30 * var(--dp));
-	/* Figma 우주선 x=69 (가운데보다 6.5 오른쪽) */
-	padding-inline-start: calc(13 * var(--dp));
+	margin-block-start: calc(8 * var(--dp));
 }
 
 .shipButton {
@@ -86,36 +85,46 @@
 	cursor: pointer;
 }
 
-.customizeTip {
-	margin: 0.75rem 1rem 0;
-	color: var(--color-lavender-light);
-	font-size: 0.875rem;
-	text-align: center;
-}
-
-/* Figma 「위로 스와이프해서 우주선꾸미기」 흰 20 + ∧∧ (Vector 122·123) */
+/* Figma 「위로 스와이프해서 우주선꾸미기」 흰 글자 + ∧ (Vector 122). 꾸미기 쪽에선 ∨ 만 */
 .swipeHint {
 	display: grid;
 	justify-items: center;
-	gap: calc(-2 * var(--dp));
-	margin: calc(12 * var(--dp)) auto 0;
-	padding: 0 calc(12 * var(--dp));
+	align-content: center;
+	gap: calc(4 * var(--dp));
+	inline-size: 100%;
+	min-block-size: calc(48 * var(--dp));
+	padding: 0;
 	border: 0;
 	background: transparent;
 	color: #fff;
-	font-size: calc(20 * var(--dp));
+	font-size: calc(17 * var(--dp));
 	cursor: pointer;
 }
 
-.swipeHint span {
-	margin-block-end: calc(6 * var(--dp));
-}
-
 .swipeHint svg {
-	inline-size: calc(142 * var(--dp));
-	block-size: calc(15 * var(--dp));
+	inline-size: calc(110 * var(--dp));
+	block-size: calc(12 * var(--dp));
 	overflow: visible;
 	fill: none;
 	stroke: var(--color-star-line);
 	stroke-width: 3;
+}
+
+/* MY: 별자리 ↔ 꾸미기를 한 페이지 스크롤로 오간다. 두 지점에 딱 멈춘다 */
+.scroller {
+	block-size: 100%;
+	min-block-size: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	scroll-snap-type: y mandatory;
+	padding-block-end: 0;
+}
+
+.snapStart {
+	scroll-snap-align: start;
+}
+
+.customize {
+	scroll-snap-align: end;
+	padding-block-end: calc(16 * var(--dp));
 }

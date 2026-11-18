@@ -3,59 +3,6 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	min-block-size: 100%;
-	padding-block-end: calc(16 * var(--dp));
-}
-
-/* 맨 위 ∨∨ (Figma Vector 124·125, 142×15 두 줄) */
-.back {
-	display: grid;
-	gap: calc(-2 * var(--dp));
-	min-block-size: 44px;
-	padding: calc(4 * var(--dp)) calc(16 * var(--dp));
-	border: 0;
-	background: transparent;
-	cursor: pointer;
-}
-
-.back svg {
-	inline-size: calc(142 * var(--dp));
-	block-size: calc(15 * var(--dp));
-	overflow: visible;
-	fill: none;
-	stroke: var(--color-star-line);
-	stroke-width: 3;
-}
-
-.stage {
-	display: grid;
-	place-items: center;
-	inline-size: 100%;
-	min-block-size: calc(312 * var(--dp));
-	touch-action: pan-x;
-}
-
-/* 128×104 픽셀 단면을 2.8배 */
-.room {
-	inline-size: calc(358 * var(--dp));
-	block-size: calc(291 * var(--dp));
-}
-
-/* Figma 「캐릭터 확대샷」 Rectangle 49·54 (359×313) 자리 */
-.closeup {
-	display: grid;
-	place-items: center;
-	inline-size: calc(359 * var(--dp));
-	block-size: calc(300 * var(--dp));
-	border-radius: 10px;
-	background:
-		radial-gradient(circle at 50% 60%, rgb(255 214 214 / 25%), transparent 60%),
-		#15152b;
-}
-
-.character {
-	inline-size: calc(192 * var(--dp));
-	block-size: calc(288 * var(--dp));
 }
 
 /* 패널: 368 폭, #120F2E, 테두리 rgba(129,126,196,.6), 둥글기 10 */
@@ -199,13 +146,43 @@
 }
 
 .thumb {
+	position: relative;
+	display: grid;
+	place-items: center;
 	inline-size: calc(68 * var(--dp));
 	block-size: calc(67 * var(--dp));
-	padding: 3px;
+	padding: 4px;
 	background: #d9d9d9;
-	object-fit: contain;
 	outline: 3px solid transparent;
 	outline-offset: 1px;
+}
+
+.thumbArt {
+	inline-size: 100%;
+	block-size: 100%;
+}
+
+.item:disabled {
+	cursor: default;
+}
+
+.item:disabled .thumbArt {
+	opacity: 0.35;
+	filter: grayscale(1);
+}
+
+.lock {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+}
+
+.lock svg {
+	inline-size: 40%;
+	fill: none;
+	stroke: #3b2f52;
+	stroke-width: 2;
 }
 
 .item[aria-pressed="true"] .thumb {
