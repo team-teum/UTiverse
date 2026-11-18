@@ -1,7 +1,8 @@
-// 우주선 겉모습 도트 (69 × 98). 원래 시안의 픽셀 로켓 구성(파란 몸통 · 주황 앞코 · 빨간 날개 · 둥근 창)을
-// 더 촘촘한 도트와 3단 명암으로 다시 그린 원본 그림. 창문에 캐릭터 얼굴이 빼꼼 보인다.
+// 우주선 도트 (72 × 142). 겉모습과 단면이 같은 실루엣·같은 크기라서,
+// MY에서 스크롤하면 같은 자리의 우주선이 겉모습 ↔ 2층짜리 방 단면으로 바뀐다.
+// 원래 시안의 구성(파란 몸통 · 주황 앞코 · 빨간 날개 · 둥근 창)을 짙은 외곽선 + 3단 명암으로 그린 원본 그림.
 
-import { drawCharacter } from "./character";
+import { CHARACTER_SIZE, drawCharacter } from "./character";
 import {
 	box,
 	type Ctx,
@@ -14,9 +15,19 @@ import {
 } from "./grid";
 import type { Look } from "./look";
 
-export const SHIP_SIZE = { width: 69, height: 98 } as const;
+export const SHIP_SIZE = { width: 72, height: 142 } as const;
 
 const OUT = "#1e1a3a";
+const CX = 36;
+
+// 몸통 (바깥) · 안쪽 방
+const BODY = { x0: 12, x1: 60, y0: 26, y1: 118 };
+const IN = { x0: 16, x1: 56, top: 31 };
+/** 위층 바닥 윗면 · 아래층 바닥 윗면 */
+const FLOOR1 = 72;
+const FLOOR2 = 113;
+/** 큰 창(겉) = 위층 캐릭터 얼굴 자리 */
+const WINDOW = { x: CX, y: 47, r: 12 };
 
 export interface HullColors {
 	hl: string;
@@ -77,30 +88,22 @@ export const FLAG_COLORS: Record<string, string[]> = {
 	rainbow: ["#e40303", "#ff8c00", "#ffed00", "#008026", "#004dff", "#750787"],
 };
 
-const CX = 34;
-
-/** 몸통: 위아래가 둥근 캡슐 (x 15~53, y 22~78) */
 function bodySpans(): Span[] {
 	const out: Span[] = [];
-	for (let y = 22; y <= 78; y += 1) {
-		const fromTop = y - 22;
-		const fromBottom = 78 - y;
-		const inset =
-			fromTop < 4
-				? [4, 2, 1, 0][fromTop]
-				: fromBottom < 3
-					? [3, 1, 0][fromBottom]
-					: 0;
-		out.push([y, 15 + inset, 53 - inset]);
+	for (let y = BODY.y0; y <= BODY.y1; y += 1) {
+		const t = y - BODY.y0;
+		const b = BODY.y1 - y;
+		const inset = t < 3 ? [3, 1, 0][t] : b < 4 ? [4, 2, 1, 0][b] : 0;
+		out.push([y, BODY.x0 + inset, BODY.x1 - inset]);
 	}
 	return out;
 }
 
 function noseSpans(): Span[] {
 	const out: Span[] = [];
-	for (let y = 2; y <= 24; y += 1) {
-		const t = (y - 2) / 22;
-		const half = Math.round(1 + t ** 0.8 * 18);
+	for (let y = 2; y <= 28; y += 1) {
+		const t = (y - 2) / 26;
+		const half = Math.round(1 + t ** 0.85 * 22);
 		out.push([y, CX - half, CX + half]);
 	}
 	return out;
@@ -108,89 +111,58 @@ function noseSpans(): Span[] {
 
 function finSpans(side: -1 | 1): Span[] {
 	const out: Span[] = [];
-	for (let y = 54; y <= 84; y += 1) {
-		const t = (y - 54) / 30;
-		const reach = Math.round(2 + t * 13);
-		const edge = side < 0 ? 16 : 52;
-		if (side < 0) out.push([y, edge - reach, edge]);
-		else out.push([y, edge, edge + reach]);
+	for (let y = 74; y <= 122; y += 1) {
+		const t = (y - 74) / 48;
+		const reach = Math.round(1 + t * 10);
+		if (side < 0) out.push([y, BODY.x0 - reach, BODY.x0]);
+		else out.push([y, BODY.x1, BODY.x1 + reach]);
 	}
 	return out;
 }
 
-export function drawShip(ctx: Ctx, look: Look) {
-	const hull = HULLS[look.hull] ?? HULLS.sky;
+/** 겉모습과 단면에 공통: 불꽃 · 날개 · 엔진 · 앞코 */
+function drawFrame(ctx: Ctx, hull: HullColors) {
+	drawFlame(ctx, CX - 8, 123, 12);
+	drawFlame(ctx, CX + 8, 123, 12);
+	drawFlame(ctx, CX, 123, 17);
 
-	// 불꽃 (뒤)
-	drawFlame(ctx, 26, 84, 11);
-	drawFlame(ctx, 42, 84, 11);
-	drawFlame(ctx, 34, 84, 15);
-
-	// 날개
 	for (const side of [-1, 1] as const) {
-		shape(ctx, finSpans(side), 0, 0, hull.fin[1], OUT);
-		const edge = side < 0 ? 16 : 52;
+		const fin = finSpans(side);
+		shape(ctx, fin, 0, 0, hull.fin[1], OUT);
 		paint(
 			ctx,
-			finSpans(side)
-				.filter(([y]) => y > 76)
-				.map(([y, a, b]) => [y, a, b] as const),
+			fin.filter(([y]) => y > 112),
 			0,
 			0,
 			hull.fin[2],
 		);
 		paint(
 			ctx,
-			box(side < 0 ? edge - 4 : edge + 1, 62, 3, 1),
+			fin
+				.filter(([y]) => y > 80 && y < 86)
+				.map(([y, a, b]): Span => (side < 0 ? [y, a, a + 1] : [y, b - 1, b])),
 			0,
 			0,
 			hull.fin[0],
 		);
 	}
 
-	// 엔진
 	shape(
 		ctx,
-		[...box(22, 78, 25, 4), ...box(24, 82, 21, 2)],
+		[...box(22, 118, 29, 4), ...box(24, 122, 25, 2)],
 		0,
 		0,
 		"#8d92ad",
 		OUT,
 	);
-	paint(ctx, box(22, 78, 25, 1), 0, 0, "#c2c6d8");
-	paint(ctx, box(40, 79, 7, 3), 0, 0, "#6b7090");
+	paint(ctx, box(22, 118, 29, 1), 0, 0, "#c2c6d8");
+	paint(ctx, box(43, 119, 8, 3), 0, 0, "#6b7090");
 
-	// 몸통 (3단 명암 + 세로 반사광)
-	const body = bodySpans();
-	shape(ctx, body, 0, 0, hull.base, OUT);
-	paint(
-		ctx,
-		body.map(([y, , b]) => [y, Math.max(43, b - 10), b] as const),
-		0,
-		0,
-		hull.shade,
-	);
-	paint(
-		ctx,
-		body.map(([y, , b]) => [y, Math.max(49, b - 3), b] as const),
-		0,
-		0,
-		hull.deep,
-	);
-	paint(ctx, box(19, 27, 2, 44), 0, 0, hull.hl);
-	paint(ctx, box(22, 30, 1, 30), 0, 0, hull.hl);
-	// 이음선 + 리벳
-	for (const sy of [30, 71]) {
-		paint(ctx, [[sy, 16, 52]], 0, 0, hull.deep);
-		for (let rx = 18; rx <= 50; rx += 4) px(ctx, rx, sy + 2, hull.hl);
-	}
-
-	// 앞코
 	const nose = noseSpans();
 	shape(ctx, nose, 0, 0, hull.nose[1], OUT);
 	paint(
 		ctx,
-		nose.map(([y, , b]) => [y, Math.max(CX + 3, b - 6), b] as const),
+		nose.map(([y, , b]) => [y, Math.max(CX + 3, b - 7), b] as const),
 		0,
 		0,
 		hull.nose[2],
@@ -198,81 +170,12 @@ export function drawShip(ctx: Ctx, look: Look) {
 	paint(
 		ctx,
 		nose
-			.filter(([y]) => y > 5 && y < 21)
+			.filter(([y]) => y > 6 && y < 25)
 			.map(([y, a]) => [y, a + 2, a + 3] as const),
 		0,
 		0,
 		hull.nose[0],
 	);
-	paint(ctx, box(16, 23, 38, 1), 0, 0, OUT);
-	paint(ctx, box(17, 24, 36, 1), 0, 0, hull.deep);
-
-	// 깃발
-	const flag = FLAG_COLORS[look.flag];
-	if (flag) {
-		px(ctx, CX, -2 + 2, OUT, 1, 3);
-		const h = flag.length >= 5 ? flag.length : flag.length * 2;
-		const rows = Math.max(1, Math.floor(h / flag.length));
-		px(ctx, CX + 1, 0, OUT, 12, h + 2);
-		flag.forEach((c, i) => {
-			px(ctx, CX + 2, 1 + i * rows, c, 10, rows);
-		});
-	}
-
-	// 큰 창문: 주황 테두리 고리 + 리벳, 안에 캐릭터 얼굴
-	const wy = 44;
-	const outer = ellipse(CX, wy, 12, 12);
-	const glass = ellipse(CX, wy, 8, 8);
-	shape(ctx, outer, 0, 0, hull.nose[1], OUT);
-	paint(
-		ctx,
-		ring(outer, ellipse(CX, wy, 10, 10)).filter(([y]) => y > wy + 4),
-		0,
-		0,
-		hull.nose[2],
-	);
-	paint(
-		ctx,
-		ring(outer, ellipse(CX, wy, 10, 10)).filter(([y]) => y < wy - 6),
-		0,
-		0,
-		hull.nose[0],
-	);
-	shape(ctx, glass, 0, 0, "#24306a", "#3a2a40");
-	paint(ctx, ellipse(CX, wy - 2, 6, 5), 0, 0, "#2e3d82");
-	ctx.save();
-	ctx.beginPath();
-	ctx.arc(CX + 0.5, wy + 0.5, 8.6, 0, Math.PI * 2);
-	ctx.clip();
-	// 머리만 창 아래쪽에서 쏙 올라온 모습 (얼굴 위쪽이 창 가운데에 오게)
-	drawCharacter(ctx, look, CX - 12, wy - 18);
-	ctx.restore();
-	paint(
-		ctx,
-		[
-			[wy - 6, CX - 4, CX - 2],
-			[wy - 5, CX - 5, CX - 5],
-			[wy - 4, CX - 6, CX - 6],
-		],
-		0,
-		0,
-		"#ffffffcc",
-	);
-	for (const a of [0, 1, 2, 3, 4, 5, 6, 7]) {
-		const ang = (a * Math.PI) / 4 + Math.PI / 8;
-		px(
-			ctx,
-			Math.round(CX + Math.cos(ang) * 10.6),
-			Math.round(wy + Math.sin(ang) * 10.6),
-			hull.nose[0],
-		);
-	}
-
-	// 작은 창
-	const sw = ellipse(CX, 62, 4, 4);
-	shape(ctx, sw, 0, 0, hull.nose[1], OUT);
-	shape(ctx, ellipse(CX, 62, 2, 2), 0, 0, "#24306a", null);
-	px(ctx, CX - 1, 61, "#ffffffaa");
 }
 
 function drawFlame(ctx: Ctx, cx: number, top: number, length: number) {
@@ -296,4 +199,485 @@ function drawFlame(ctx: Ctx, cx: number, top: number, length: number) {
 		"#ffd166",
 	);
 	paint(ctx, inner, 0, 0, "#fff6d6");
+}
+
+/** 위층에 선 캐릭터 칸의 왼쪽 위 (발끝이 위층 바닥에 닿게) */
+const CHAR_AT = {
+	x: CX - CHARACTER_SIZE.width / 2,
+	y: FLOOR1 - CHARACTER_SIZE.height + 1,
+};
+
+// ─────────────────────────── 겉모습 ───────────────────────────
+
+/** 우주선 겉모습. 큰 창에 위층의 캐릭터 얼굴이 빼꼼 보인다. */
+export function drawShip(ctx: Ctx, look: Look) {
+	const hull = HULLS[look.hull] ?? HULLS.sky;
+	drawFrame(ctx, hull);
+
+	const body = bodySpans();
+	shape(ctx, body, 0, 0, hull.base, OUT);
+	paint(
+		ctx,
+		body.map(([y, , b]) => [y, b - 11, b] as const),
+		0,
+		0,
+		hull.shade,
+	);
+	paint(
+		ctx,
+		body.map(([y, , b]) => [y, b - 3, b] as const),
+		0,
+		0,
+		hull.deep,
+	);
+	paint(ctx, box(16, 31, 2, 80), 0, 0, hull.hl);
+	paint(ctx, box(19, 34, 1, 50), 0, 0, hull.hl);
+	for (const sy of [32, FLOOR1 + 1, 112]) {
+		paint(ctx, [[sy, BODY.x0 + 1, BODY.x1 - 1]], 0, 0, hull.deep);
+		for (let rx = 15; rx <= 57; rx += 4) px(ctx, rx, sy + 2, hull.hl);
+	}
+	paint(ctx, box(13, 27, 47, 1), 0, 0, OUT);
+
+	// 큰 창 (주황 테두리 고리 + 리벳), 안에 캐릭터 얼굴
+	const { x, y, r } = WINDOW;
+	const outer = ellipse(x, y, r, r);
+	shape(ctx, outer, 0, 0, hull.nose[1], OUT);
+	paint(
+		ctx,
+		ring(outer, ellipse(x, y, r - 2, r - 2)).filter(([yy]) => yy > y + 5),
+		0,
+		0,
+		hull.nose[2],
+	);
+	paint(
+		ctx,
+		ring(outer, ellipse(x, y, r - 2, r - 2)).filter(([yy]) => yy < y - 7),
+		0,
+		0,
+		hull.nose[0],
+	);
+	shape(ctx, ellipse(x, y, r - 4, r - 4), 0, 0, "#24306a", "#3a2a40");
+	paint(ctx, ellipse(x, y - 2, r - 6, r - 7), 0, 0, "#2e3d82");
+	ctx.save();
+	ctx.beginPath();
+	ctx.arc(x + 0.5, y + 0.5, r - 3.4, 0, Math.PI * 2);
+	ctx.clip();
+	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y);
+	ctx.restore();
+	paint(
+		ctx,
+		[
+			[y - 6, x - 4, x - 2],
+			[y - 5, x - 5, x - 5],
+			[y - 4, x - 6, x - 6],
+		],
+		0,
+		0,
+		"#ffffffcc",
+	);
+	for (let a = 0; a < 8; a += 1) {
+		const ang = (a * Math.PI) / 4 + Math.PI / 8;
+		px(
+			ctx,
+			Math.round(x + Math.cos(ang) * (r - 1.4)),
+			Math.round(y + Math.sin(ang) * (r - 1.4)),
+			hull.nose[0],
+		);
+	}
+
+	// 아래층 작은 창
+	shape(ctx, ellipse(CX, 92, 5, 5), 0, 0, hull.nose[1], OUT);
+	shape(ctx, ellipse(CX, 92, 3, 3), 0, 0, "#24306a", null);
+	px(ctx, CX - 1, 91, "#ffffffaa");
+}
+
+// ─────────────────────────── 단면 (2층 방) ───────────────────────────
+
+/** 같은 우주선을 잘라 본 단면: 위층은 캐릭터와 창, 아래층은 침실·책상 */
+export function drawCutaway(ctx: Ctx, look: Look) {
+	const hull = HULLS[look.hull] ?? HULLS.sky;
+	drawFrame(ctx, hull);
+
+	// 외벽 (두께 3~4) + 바닥 판
+	const body = bodySpans();
+	shape(ctx, body, 0, 0, hull.base, OUT);
+	paint(
+		ctx,
+		body.map(([y, , b]) => [y, b - 2, b] as const),
+		0,
+		0,
+		hull.deep,
+	);
+	paint(
+		ctx,
+		body.map(([y, a]) => [y, a + 1, a + 1] as const),
+		0,
+		0,
+		hull.hl,
+	);
+	paint(ctx, box(13, 27, 47, 1), 0, 0, OUT);
+
+	const room = (top: number, floor: number) => {
+		paint(
+			ctx,
+			box(IN.x0 - 1, top - 1, IN.x1 - IN.x0 + 3, floor - top + 4),
+			0,
+			0,
+			OUT,
+		);
+		drawWallpaper(
+			ctx,
+			look.wallpaper,
+			IN.x0,
+			top,
+			IN.x1 - IN.x0 + 1,
+			floor - top,
+		);
+		drawFloor(ctx, look.floor, IN.x0, floor, IN.x1 - IN.x0 + 1);
+	};
+	room(IN.top, FLOOR1);
+	room(FLOOR1 + 4, FLOOR2);
+
+	// 위층: 창 · 깃발 · 벽 장식 · 조명 · 캐릭터
+	const { x, y } = WINDOW;
+	shape(ctx, ellipse(x, y - 4, 8, 8), 0, 0, hull.nose[1], OUT);
+	paint(
+		ctx,
+		ellipse(x, y - 4, 8, 8).filter(([yy]) => yy > y),
+		0,
+		0,
+		hull.nose[2],
+	);
+	shape(ctx, ellipse(x, y - 4, 6, 6), 0, 0, "#1d2552", "#3a2a40");
+	for (const [sx, sy] of [
+		[-3, -3],
+		[2, -4],
+		[4, 1],
+		[-4, 2],
+	]) {
+		px(ctx, x + sx, y - 4 + sy, "#fff6c9");
+	}
+	drawWallFlag(ctx, look.flag);
+	drawWallDecor(ctx, look.wallDecor);
+	drawLight(ctx, look.light);
+	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y);
+
+	// 아래층: 침대 · 책상 · 의자 · 식물
+	drawPlant(ctx, look);
+	drawBed(ctx, look.bed);
+	drawDesk(ctx, look.desk);
+	drawSeat(ctx, look.seat);
+
+	// 따뜻한 빛
+	if (look.light !== "none") {
+		ctx.save();
+		ctx.globalCompositeOperation = "lighter";
+		const gx = look.light === "lamp" ? IN.x1 - 4 : CX;
+		const gy = look.light === "lamp" ? FLOOR1 - 16 : IN.top + 3;
+		const g = ctx.createRadialGradient(gx, gy, 1, gx, gy, 34);
+		g.addColorStop(0, "rgba(255, 196, 120, 0.32)");
+		g.addColorStop(1, "rgba(255, 196, 120, 0)");
+		ctx.fillStyle = g;
+		ctx.fillRect(IN.x0, IN.top, IN.x1 - IN.x0 + 1, FLOOR1 - IN.top);
+		ctx.restore();
+	}
+}
+
+function drawWallpaper(
+	ctx: Ctx,
+	kind: string,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+) {
+	paint(ctx, box(x, y, w, h), 0, 0, "#f6eedd");
+	if (kind === "stripe") {
+		for (let i = 0; i < w; i += 6)
+			paint(ctx, box(x + i, y, 2, h), 0, 0, "#e7d9f2");
+	} else if (kind === "stars") {
+		paint(ctx, box(x, y, w, h), 0, 0, "#e3e8f8");
+		for (let j = 4; j < h - 2; j += 9) {
+			for (let i = (j % 2) * 5 + 2; i < w - 2; i += 10) {
+				paint(
+					ctx,
+					[
+						[y + j - 1, x + i, x + i],
+						[y + j, x + i - 1, x + i + 1],
+						[y + j + 1, x + i, x + i],
+					],
+					0,
+					0,
+					"#f2c94c",
+				);
+			}
+		}
+	} else if (kind === "check") {
+		paint(ctx, box(x, y, w, h), 0, 0, "#fbe3e3");
+		for (let i = 0; i < w; i += 6)
+			paint(ctx, box(x + i, y, 1, h), 0, 0, "#f5cccc");
+		for (let j = 0; j < h; j += 6)
+			paint(ctx, box(x, y + j, w, 1), 0, 0, "#f5cccc");
+	}
+	paint(ctx, box(x, y + h - 1, w, 1), 0, 0, "#d9c7a8");
+}
+
+function drawFloor(ctx: Ctx, kind: string, x: number, y: number, w: number) {
+	if (kind === "tile") {
+		paint(ctx, box(x, y, w, 3), 0, 0, "#d7dce6");
+		for (let i = 0; i < w; i += 5)
+			paint(ctx, box(x + i, y, 1, 3), 0, 0, "#b9c0cf");
+	} else {
+		paint(ctx, box(x, y, w, 3), 0, 0, "#c9945f");
+		paint(ctx, box(x, y + 2, w, 1), 0, 0, "#a87445");
+		for (let i = 4; i < w; i += 11)
+			paint(ctx, box(x + i, y, 1, 2), 0, 0, "#a87445");
+		if (kind === "rug") {
+			paint(ctx, box(x + 8, y - 1, w - 16, 2), 0, 0, "#c7b6ef");
+			paint(ctx, box(x + 9, y - 1, w - 18, 1), 0, 0, "#ddd2f7");
+		}
+	}
+}
+
+function drawWallFlag(ctx: Ctx, flag: string) {
+	const colors = FLAG_COLORS[flag];
+	if (!colors) return;
+	const x = IN.x0 + 1;
+	const y = IN.top + 6;
+	const rows = colors.length >= 5 ? 2 : 3;
+	paint(ctx, box(x - 1, y - 1, 1, rows * colors.length + 4), 0, 0, "#8a5a3c");
+	shape(ctx, box(x, y, 9, rows * colors.length), 0, 0, colors[0], OUT);
+	colors.forEach((c, i) => {
+		paint(ctx, box(x, y + i * rows, 9, rows), 0, 0, c);
+	});
+}
+
+function drawWallDecor(ctx: Ctx, kind: string) {
+	const x = IN.x1 - 9;
+	const y = IN.top + 6;
+	if (kind === "poster") {
+		shape(ctx, box(x, y, 8, 11), 0, 0, "#ffe08a", OUT);
+		shape(ctx, ellipse(x + 4, y + 4, 2, 2), 0, 0, "#f2895c", null);
+		paint(ctx, box(x + 1, y + 8, 6, 1), 0, 0, "#7c6fd6");
+	} else if (kind === "frames") {
+		shape(ctx, box(x, y, 6, 5), 0, 0, "#a8d8f0", OUT);
+		shape(ctx, box(x + 2, y + 7, 6, 6), 0, 0, "#f5b8c8", OUT);
+	} else if (kind === "clock") {
+		shape(ctx, ellipse(x + 4, y + 5, 4, 4), 0, 0, "#ffffff", OUT);
+		paint(ctx, box(x + 4, y + 2, 1, 3), 0, 0, OUT);
+		paint(ctx, box(x + 4, y + 5, 2, 1), 0, 0, "#e46a6a");
+	}
+}
+
+function drawLight(ctx: Ctx, kind: string) {
+	if (kind === "lamp") {
+		const x = IN.x1 - 4;
+		paint(ctx, box(x, FLOOR1 - 17, 1, 17), 0, 0, "#5d5470");
+		shape(ctx, box(x - 2, FLOOR1 - 1, 5, 1), 0, 0, "#5d5470", OUT);
+		shape(
+			ctx,
+			[
+				[FLOOR1 - 22, x - 2, x + 1],
+				[FLOOR1 - 21, x - 3, x + 2],
+				[FLOOR1 - 20, x - 4, x + 3],
+				[FLOOR1 - 19, x - 4, x + 3],
+			],
+			0,
+			0,
+			"#ffd98a",
+			OUT,
+		);
+		paint(
+			ctx,
+			[
+				[FLOOR1 - 20, x + 1, x + 3],
+				[FLOOR1 - 19, x + 1, x + 3],
+			],
+			0,
+			0,
+			"#f2b85a",
+		);
+	} else if (kind === "string") {
+		const colors = ["#ff8fa3", "#ffd166", "#8ce0c3", "#9fb7ff"];
+		const w = IN.x1 - IN.x0;
+		for (let i = 0; i <= w; i += 1) {
+			const sag = Math.round(Math.sin((i / w) * Math.PI * 2) * 1.5) + 2;
+			px(ctx, IN.x0 + i, IN.top + sag, "#5d5470");
+			if (i % 6 === 3) {
+				px(
+					ctx,
+					IN.x0 + i,
+					IN.top + sag + 1,
+					colors[Math.floor(i / 6) % 4],
+					2,
+					2,
+				);
+				px(ctx, IN.x0 + i, IN.top + sag + 1, "#ffffff");
+			}
+		}
+	}
+}
+
+// 아래층 가구 (안쪽 x 16~56, 바닥 윗면 FLOOR2)
+function drawBed(ctx: Ctx, kind: string) {
+	if (kind === "none") return;
+	const x = IN.x0;
+	const F = FLOOR2;
+	shape(
+		ctx,
+		[[F - 13, x, x + 2], ...box(x, F - 12, 3, 12)],
+		0,
+		0,
+		"#a0775a",
+		OUT,
+	);
+	shape(ctx, box(x + 3, F - 6, 18, 4), 0, 0, "#8a6248", OUT);
+	shape(ctx, box(x + 19, F - 2, 2, 2), 0, 0, "#8a6248", OUT);
+	shape(ctx, box(x + 3, F - 8, 18, 2), 0, 0, "#ffffff", OUT);
+	if (kind === "single") {
+		shape(
+			ctx,
+			[[F - 11, x + 4, x + 8], ...box(x + 3, F - 10, 7, 2)],
+			0,
+			0,
+			"#eee9f8",
+			OUT,
+		);
+		shape(ctx, box(x + 10, F - 9, 11, 3), 0, 0, "#7fb0f0", OUT);
+		paint(ctx, box(x + 10, F - 9, 11, 1), 0, 0, "#a9cdfa");
+	} else {
+		shape(
+			ctx,
+			[[F - 12, x + 4, x + 9], ...box(x + 3, F - 11, 8, 3)],
+			0,
+			0,
+			"#fff3f6",
+			OUT,
+		);
+		shape(
+			ctx,
+			[[F - 10, x + 9, x + 20], ...box(x + 8, F - 9, 13, 4)],
+			0,
+			0,
+			"#f2a7c3",
+			OUT,
+		);
+		for (let i = 0; i < 11; i += 3) px(ctx, x + 10 + i, F - 8, "#ffffff");
+	}
+}
+
+function drawDesk(ctx: Ctx, kind: string) {
+	if (kind === "none") return;
+	const x = IN.x1 - 13;
+	const F = FLOOR2;
+	shape(ctx, box(x + 1, F - 8, 1, 8), 0, 0, "#8a6248", OUT);
+	shape(ctx, box(x + 11, F - 8, 1, 8), 0, 0, "#8a6248", OUT);
+	shape(ctx, box(x, F - 10, 14, 2), 0, 0, "#c99a6b", OUT);
+	paint(ctx, box(x, F - 10, 14, 1), 0, 0, "#e3b98a");
+	if (kind === "laptop") {
+		shape(ctx, box(x + 2, F - 16, 8, 5), 0, 0, "#c9ccdc", OUT);
+		paint(ctx, box(x + 3, F - 15, 6, 3), 0, 0, "#9fd8f2");
+		shape(ctx, box(x + 11, F - 13, 2, 2), 0, 0, "#f2895c", OUT);
+	} else {
+		shape(ctx, box(x + 2, F - 13, 2, 2), 0, 0, "#e46a6a", OUT);
+		shape(ctx, box(x + 4, F - 14, 2, 3), 0, 0, "#6db3f2", OUT);
+		shape(ctx, box(x + 6, F - 13, 2, 2), 0, 0, "#ffd166", OUT);
+		shape(ctx, box(x + 9, F - 12, 4, 1), 0, 0, "#9fd8b4", OUT);
+	}
+}
+
+function drawSeat(ctx: Ctx, kind: string) {
+	const x = IN.x0 + 23;
+	const F = FLOOR2;
+	if (kind === "beanbag") {
+		shape(
+			ctx,
+			[[F - 6, x + 2, x + 6], ...box(x, F - 5, 9, 5)],
+			0,
+			0,
+			"#ffb3c7",
+			OUT,
+		);
+		paint(ctx, [[F - 5, x + 1, x + 3]], 0, 0, "#ffd6e2");
+		paint(ctx, box(x + 6, F - 3, 3, 3), 0, 0, "#e88fa8");
+	} else if (kind === "cushion") {
+		shape(ctx, box(x, F - 2, 8, 2), 0, 0, "#ffd166", OUT);
+		paint(ctx, box(x, F - 1, 8, 1), 0, 0, "#e8b23c");
+	}
+}
+
+function drawPlant(ctx: Ctx, look: Look) {
+	if (look.plant === "pot") {
+		const onDesk = look.desk !== "none";
+		const x = onDesk ? IN.x1 - 4 : IN.x1 - 6;
+		const base = onDesk ? FLOOR2 - 11 : FLOOR2;
+		for (const [lx, ly, w, h] of [
+			[x - 2, base - 11, 2, 6],
+			[x, base - 13, 2, 8],
+			[x + 2, base - 10, 2, 5],
+		] as const) {
+			shape(ctx, box(lx, ly, w, h), 0, 0, "#3f9a63", OUT);
+			px(ctx, lx, ly + 1, "#6fcf8f", 1, h - 2);
+		}
+		shape(ctx, box(x - 1, base - 5, 5, 5), 0, 0, "#e0835a", OUT);
+		paint(ctx, box(x + 2, base - 5, 2, 5), 0, 0, "#bd6443");
+	} else if (look.plant === "hanging") {
+		const x = IN.x0 + 26;
+		const top = FLOOR1 + 4;
+		paint(ctx, box(x + 2, top, 1, 4), 0, 0, "#5d5470");
+		for (let i = 0; i < 3; i += 1)
+			shape(
+				ctx,
+				box(x - 1 + i * 3, top + 7, 1, 3 + (i % 2) * 3),
+				0,
+				0,
+				"#3f9a63",
+				OUT,
+			);
+		shape(ctx, box(x, top + 4, 5, 3), 0, 0, "#e0835a", OUT);
+	}
+}
+
+// ─────────────────────────── 아이템 칸 그림 ───────────────────────────
+
+/**
+ * 꾸미기 아이템 칸에 들어갈 그림: 그 아이템 하나만 우주선 좌표에 그린다.
+ * (빈 칸 둘레를 잘라 가운데에 맞추는 일은 화면 쪽에서 한다)
+ */
+export function drawShipItem(ctx: Ctx, key: keyof Look, look: Look) {
+	switch (key) {
+		case "hull":
+			drawShip(ctx, look);
+			break;
+		case "wallpaper":
+			drawWallpaper(ctx, look.wallpaper, IN.x0, IN.top, 24, 24);
+			break;
+		case "floor":
+			drawFloor(ctx, look.floor, IN.x0, FLOOR1, 24);
+			paint(ctx, box(IN.x0, FLOOR1 + 3, 24, 3), 0, 0, "#a87445");
+			break;
+		case "bed":
+			drawBed(ctx, look.bed);
+			break;
+		case "desk":
+			drawDesk(ctx, look.desk);
+			break;
+		case "seat":
+			drawSeat(ctx, look.seat);
+			break;
+		case "plant":
+			drawPlant(ctx, { ...look, desk: "none" });
+			break;
+		case "light":
+			drawLight(ctx, look.light);
+			break;
+		case "wallDecor":
+			drawWallDecor(ctx, look.wallDecor);
+			break;
+		case "flag":
+			drawWallFlag(ctx, look.flag);
+			break;
+		default:
+			break;
+	}
 }

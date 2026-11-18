@@ -1,10 +1,4 @@
-import {
-	type PointerEvent,
-	type TouchEvent,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { repo, useRepoData } from "../api";
@@ -13,114 +7,55 @@ import { type CustomizeMode, CustomizeView } from "../components/CustomizeView";
 import { ShipPage } from "../components/ShipPage";
 import styles from "./MyShip.module.css";
 
-const SWIPE = 60;
-
 /**
- * S11 내 우주선(MY) ⇄ S13·S14 꾸미기.
- * 위로 밀거나 우주선을 누르면 화면이 스르륵 올라가며 꾸미기가, 아래로 밀거나 ∨를 누르면 다시 MY가 보인다.
- * 주소: /me, /me/customize/ship, /me/customize/avatar (휴대폰 뒤로가기로도 돌아온다)
+ * S11 내 우주선(MY) + S13·S14 꾸미기를 한 페이지로.
+ * 우주선이 가운데를 지키고, 위로 스크롤하면 아래 꾸미기 패널이, 아래로 스크롤하면 위 별자리가 보인다.
+ * /me/customize/ship · /me/customize/avatar 로 들어오면 꾸미기 쪽에서 시작한다.
  */
 export function MyShip() {
 	const navigate = useNavigate();
-	const { pathname, search } = useLocation();
-	const customizing = pathname.startsWith("/me/customize");
-	const mode: CustomizeMode = pathname.endsWith("/avatar") ? "avatar" : "ship";
-	const { data: me } = useRepoData("me", () => repo.getMyProfile());
-	const [hint, setHint] = useState(false);
-	const mainRef = useRef<HTMLDivElement>(null);
-	const customizeRef = useRef<HTMLDivElement>(null);
-	const start = useRef<{ x: number; y: number; target: EventTarget } | null>(
-		null,
+	const { pathname } = useLocation();
+	const startAtCustomize = pathname.startsWith("/me/customize");
+	const [mode, setMode] = useState<CustomizeMode>(
+		pathname.endsWith("/avatar") ? "avatar" : "ship",
 	);
+	const { data: me } = useRepoData("me", () => repo.getMyProfile());
+	const { data: stars } = useRepoData(`stars:${me?.id ?? ""}`, () =>
+		me ? repo.listStars(me.id) : Promise.resolve([]),
+	);
+	const [hint, setHint] = useState(false);
 
 	useEffect(() => {
 		void repo.takeSwipeHint().then(setHint);
 	}, []);
 
-	function open() {
-		setHint(false);
-		if (!customizing) navigate(`/me/customize/${mode}`);
-	}
-
-	function back() {
-		if (!customizing) return;
-		navigate("/me", { replace: true });
-	}
-
-	function begin(x: number, y: number, target: EventTarget) {
-		start.current = { x, y, target };
-	}
-
-	function end(x: number, y: number) {
-		const from = start.current;
-		start.current = null;
-		if (!from || search.includes("star=")) return;
-		const dx = x - from.x;
-		const dy = y - from.y;
-		if (Math.abs(dy) < SWIPE || Math.abs(dy) < Math.abs(dx) * 1.5) return;
-		if (!customizing && dy < 0) {
-			const panel = mainRef.current;
-			const atBottom =
-				!panel ||
-				panel.scrollTop + panel.clientHeight >= panel.scrollHeight - 2;
-			if (atBottom) open();
-		} else if (customizing && dy > 0) {
-			const panel = customizeRef.current;
-			const onStage =
-				from.target instanceof Element &&
-				from.target.closest("[data-swipe-back]") !== null;
-			if (onStage || (panel && panel.scrollTop <= 0)) back();
-		}
-	}
+	useEffect(() => {
+		// 꾸미기 주소로 들어왔으면 /me로 정리 (스크롤 위치가 화면 상태를 대신한다)
+		if (startAtCustomize) navigate("/me", { replace: true });
+	}, [startAtCustomize, navigate]);
 
 	if (!me) return <p className="scaffold-screen">불러오는 중…</p>;
 
 	return (
-		<div
-			className={styles.pager}
-			onTouchStart={(event: TouchEvent) => {
-				const t = event.touches[0];
-				begin(t.clientX, t.clientY, event.target);
-			}}
-			onTouchEnd={(event: TouchEvent) => {
-				const t = event.changedTouches[0];
-				end(t.clientX, t.clientY);
-			}}
-			onPointerDown={(event: PointerEvent) => {
-				if (event.pointerType === "mouse")
-					begin(event.clientX, event.clientY, event.target);
-			}}
-			onPointerUp={(event: PointerEvent) => {
-				if (event.pointerType === "mouse") end(event.clientX, event.clientY);
-			}}
-		>
-			<div className={`${styles.track} ${customizing ? styles.down : ""}`}>
-				<div
-					ref={mainRef}
-					className={styles.panel}
-					inert={customizing}
-					aria-hidden={customizing || undefined}
-				>
-					<ShipPage profile={me} myProfileId={me.id} onOpenCustomize={open} />
-				</div>
-				<div
-					ref={customizeRef}
-					className={styles.panel}
-					inert={!customizing}
-					aria-hidden={!customizing || undefined}
-				>
+		<>
+			<ShipPage
+				profile={me}
+				myProfileId={me.id}
+				startAtCustomize={startAtCustomize}
+				onProgress={(p) => {
+					if (p > 0.2) setHint(false);
+				}}
+				customize={
 					<CustomizeView
 						profile={me}
 						mode={mode}
-						onModeChange={(next) =>
-							navigate(`/me/customize/${next}`, { replace: true })
-						}
-						onBack={back}
+						onModeChange={setMode}
+						starCount={stars?.length ?? 0}
 					/>
-				</div>
-			</div>
-			{hint && !customizing && <SwipeHint onClose={() => setHint(false)} />}
-		</div>
+				}
+			/>
+			{hint && <SwipeHint onClose={() => setHint(false)} />}
+		</>
 	);
 }
 
