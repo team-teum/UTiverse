@@ -285,13 +285,3 @@
 	font-size: 12px;
 	text-align: center;
 }
-
-/* 캐릭터 고르기: 5칸, 이름표 없이 얼굴만 */
-.avatarGrid {
-	grid-template-columns: repeat(5, minmax(0, 1fr));
-	gap: calc(8 * var(--dp));
-}
-
-.avatarGrid .thumb {
-	padding: 3px;
-}

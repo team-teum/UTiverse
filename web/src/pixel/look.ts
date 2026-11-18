@@ -1,12 +1,13 @@
-import { AVATAR_IDS, DEFAULT_AVATAR } from "./character";
-
 // 캐릭터·우주선 꾸미기 상태와 고를 수 있는 아이템 목록.
-// 캐릭터는 아바타 시트(pixel/character.ts, art/avatars.aseprite), 우주선·가구는 코드로 그린 도트(pixel/ship.ts).
+// 캐릭터는 도트 레이어(pixel/character.ts, art/character.aseprite), 우주선·가구는 코드로 그린 도트(pixel/ship.ts).
 // 새 아이템은 여기 목록과 그림을 함께 늘린다.
 
 export interface Look {
-	// 캐릭터 (아바타 시트의 한 명, pixel/character.ts)
-	avatar: string;
+	// 캐릭터
+	skin: string;
+	hairStyle: string;
+	hairColor: string;
+	suit: string;
 	// 우주선
 	hull: string;
 	wallpaper: string;
@@ -20,9 +21,12 @@ export interface Look {
 	flag: string;
 }
 
-/** 처음 모습: 기본 캐릭터와 빈 방 */
+/** 처음 모습: 옷·머리 없는 밍숭맹숭한 기본 캐릭터와 빈 방 */
 export const DEFAULT_LOOK: Look = {
-	avatar: DEFAULT_AVATAR,
+	skin: "base",
+	hairStyle: "none",
+	hairColor: "brown",
+	suit: "none",
 	hull: "sky",
 	wallpaper: "plain",
 	floor: "wood",
@@ -56,27 +60,70 @@ export interface Tab {
 
 const none = { id: "none", label: "비우기" };
 
-/** 처음부터 열려 있는 캐릭터 수. 그다음부터는 별을 하나 만들 때마다 여섯 명씩 열린다 */
-const FREE_AVATARS = 10;
-const PER_STAR = 6;
-
-/** 캐릭터 꾸미기 (Figma 33:15522 → 아바타 시트에서 고르기) */
+/**
+ * Figma 「내 캐릭터 꾸미기」(33:15522): 몸 / 우주복.
+ * 헤어는 짧은 머리·단발, 우주복은 기본 우주복만 처음부터 열려 있고 나머지는 별을 만들 때마다 하나씩 열린다.
+ */
 export const AVATAR_TABS: Tab[] = [
 	{
-		id: "avatar",
-		label: "캐릭터",
+		id: "body",
+		label: "헤어·피부",
 		categories: [
 			{
-				key: "avatar",
-				label: "캐릭터",
-				options: AVATAR_IDS.map((id, index) => ({
-					id,
-					label: `${index + 1}번`,
-					unlockAt:
-						index < FREE_AVATARS
-							? undefined
-							: Math.ceil((index - FREE_AVATARS + 1) / PER_STAR),
-				})),
+				key: "hairStyle",
+				label: "머리 모양",
+				options: [
+					none,
+					{ id: "hair1", label: "짧은 머리" },
+					{ id: "hair2", label: "단발" },
+					{ id: "hair3", label: "곱슬", unlockAt: 1 },
+					{ id: "hair4", label: "긴 머리", unlockAt: 2 },
+					{ id: "hair5", label: "똥머리", unlockAt: 3 },
+				],
+			},
+			{
+				key: "hairColor",
+				label: "머리 색",
+				options: [
+					{ id: "brown", label: "갈색" },
+					{ id: "black", label: "검정" },
+					{ id: "blond", label: "금발" },
+					{ id: "pink", label: "분홍" },
+					{ id: "blue", label: "하늘" },
+					{ id: "silver", label: "은발" },
+					{ id: "purple", label: "보라" },
+				],
+			},
+			{
+				key: "skin",
+				label: "피부색",
+				options: [
+					{ id: "base", label: "기본" },
+					{ id: "tone1", label: "피부 1" },
+					{ id: "tone2", label: "피부 2" },
+					{ id: "tone3", label: "피부 3" },
+					{ id: "tone4", label: "피부 4" },
+					{ id: "tone5", label: "피부 5" },
+					{ id: "mint", label: "민트" },
+				],
+			},
+		],
+	},
+	{
+		id: "suit",
+		label: "옷장",
+		categories: [
+			{
+				key: "suit",
+				label: "우주복",
+				options: [
+					none,
+					{ id: "suit1", label: "기본 우주복" },
+					{ id: "suit2", label: "후드 점퍼", unlockAt: 1 },
+					{ id: "suit3", label: "멜빵 작업복", unlockAt: 2 },
+					{ id: "suit4", label: "별무늬 잠옷", unlockAt: 3 },
+					{ id: "suit5", label: "탐험가 슈트", unlockAt: 4 },
+				],
 			},
 		],
 	},
@@ -84,12 +131,13 @@ export const AVATAR_TABS: Tab[] = [
 
 /** 별 수에 따라 지금 막 열린 아이템 이름들 (별을 만든 직후 알림용) */
 export function unlockedAt(starCount: number): string[] {
-	const count = AVATAR_TABS.flatMap((tab) =>
+	return AVATAR_TABS.flatMap((tab) =>
 		tab.categories.flatMap((category) =>
-			category.options.filter((option) => option.unlockAt === starCount),
+			category.options
+				.filter((option) => option.unlockAt === starCount)
+				.map((option) => option.label),
 		),
-	).length;
-	return count > 0 ? [`새 캐릭터 ${count}명`] : [];
+	);
 }
 
 /** Figma 「우주선 꾸미기」(33:14371) 탭: 우주선 / 가구 / 장식품 / 플래그 */

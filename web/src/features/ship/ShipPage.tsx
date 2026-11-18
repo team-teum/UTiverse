@@ -175,6 +175,17 @@ export function ShipPage({
 		);
 	}
 
+	const [peek, setPeek] = useState(false);
+	const peekTimer = useRef<number | undefined>(undefined);
+
+	function openPeek() {
+		window.clearTimeout(peekTimer.current);
+		setPeek(true);
+		peekTimer.current = window.setTimeout(() => setPeek(false), 3200);
+	}
+
+	useEffect(() => () => window.clearTimeout(peekTimer.current), []);
+
 	const headingId = `ship-heading-${profile.id}`;
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -209,7 +220,7 @@ export function ShipPage({
 						{isMine ? `${profile.nickname} (나)` : profile.nickname}
 						{profile.isExample && <span className={styles.badge}>예시</span>}
 					</h1>
-					{profile.tagline && (
+					{profile.tagline && isMine && (
 						<p className={styles.tagline}>{profile.tagline}</p>
 					)}
 				</header>
@@ -256,7 +267,28 @@ export function ShipPage({
 							<ShipView profile={profile} isMine={isMine} cutaway={progress} />
 						</button>
 					) : (
-						<ShipView profile={profile} isMine={isMine} />
+						<>
+							{/* 남의 우주선: 누르면 잠깐 안이 보이고 한 줄 소개가 말풍선으로 떴다가 다시 닫힌다 */}
+							<button
+								type="button"
+								className={styles.shipButton}
+								aria-label={`${profile.nickname}의 우주선 안 들여다보기`}
+								aria-expanded={peek}
+								onClick={openPeek}
+							>
+								<ShipView
+									profile={profile}
+									isMine={isMine}
+									cutaway={peek ? 1 : 0}
+								/>
+							</button>
+							<p
+								className={`${styles.peekBubble} ${peek ? styles.peekShow : ""}`}
+								aria-live="polite"
+							>
+								{peek ? profile.tagline || "놀러 와 줘서 고마워!" : ""}
+							</p>
+						</>
 					)}
 				</div>
 

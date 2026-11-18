@@ -163,3 +163,49 @@
 .customize[inert] {
 	opacity: 0;
 }
+
+/* 남의 우주선 들여다보기 말풍선: 우주선 아래에 잠깐 */
+.peekBubble {
+	position: absolute;
+	inset-block-start: calc(100% + 6px);
+	inset-inline-start: 50%;
+	z-index: 2;
+	box-sizing: border-box;
+	max-inline-size: calc(300 * var(--dp));
+	margin: 0;
+	padding: 10px 16px;
+	border-radius: 16px;
+	background: #fffdfd;
+	color: var(--color-ink);
+	font-size: calc(15 * var(--dp));
+	line-height: 1.5;
+	text-align: center;
+	word-break: keep-all;
+	box-shadow: 0 6px 18px rgb(0 0 0 / 35%);
+	opacity: 0;
+	transform: translate(-50%, 6px) scale(0.92);
+	transition:
+		opacity 260ms ease,
+		transform 260ms ease;
+	pointer-events: none;
+}
+
+.peekBubble::before {
+	position: absolute;
+	inset-block-start: -8px;
+	inset-inline-start: 50%;
+	border: 8px solid transparent;
+	border-block-start: 0;
+	border-block-end-color: #fffdfd;
+	content: "";
+	transform: translateX(-50%);
+}
+
+.peekShow {
+	opacity: 1;
+	transform: translate(-50%, 0) scale(1);
+}
+
+.peekBubble:empty {
+	padding: 0;
+}

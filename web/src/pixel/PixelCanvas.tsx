@@ -13,7 +13,7 @@ type Kind = "character" | "face" | "ship" | "room";
 
 const SIZES: Record<Kind, { width: number; height: number }> = {
 	character: CHARACTER_SIZE,
-	face: { width: 32, height: 26 },
+	face: { width: 28, height: 26 },
 	ship: SHIP_SIZE,
 	room: ROOM_SIZE,
 };
@@ -79,8 +79,12 @@ const ITEM_SIZE = 40;
 /** 이 카테고리에서 아이템 하나만 그린다 (꾸미기 아이템 칸용) */
 function drawItem(ctx: CanvasRenderingContext2D, key: keyof Look, look: Look) {
 	const ox = Math.round((SHIP_SIZE.width - CHARACTER_SIZE.width) / 2);
-	if (key === "avatar") drawCharacter(ctx, look, ox, 0);
-	else drawShipItem(ctx, key, look);
+	if (key === "skin") drawCharacter(ctx, look, ox, 0, { body: true });
+	else if (key === "suit") drawCharacter(ctx, look, ox, 0, { suit: true });
+	else if (key === "hairStyle" || key === "hairColor") {
+		const style = look.hairStyle === "none" ? "hair1" : look.hairStyle;
+		drawCharacter(ctx, { ...look, hairStyle: style }, ox, 0, { hair: true });
+	} else drawShipItem(ctx, key, look);
 }
 
 /**
