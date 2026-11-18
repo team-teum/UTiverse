@@ -41,15 +41,14 @@ export function Calendar() {
 		byDate.set(event.date, [...(byDate.get(event.date) ?? []), event]);
 	}
 
-	// 고른 날이 없으면: 오늘(행사가 있으면) → 이달의 첫 행사 날 → 오늘
+	// 고른 날이 없으면 이달의 행사 날짜를 사용한다. 빈 달은 날짜를 고르기 전까지 월 단위로 안내한다.
 	const focus =
 		selected ??
 		(byDate.has(today)
 			? today
 			: ((events ?? []).find((e) => e.date >= today)?.date ??
-				events?.[0]?.date ??
-				today));
-	const dayEvents = byDate.get(focus) ?? [];
+				events?.[0]?.date));
+	const dayEvents = focus ? (byDate.get(focus) ?? []) : [];
 
 	function go(delta: number) {
 		setSlide(delta > 0 ? "next" : "prev");
@@ -60,11 +59,16 @@ export function Calendar() {
 	function pick(date: string) {
 		setSelected(date);
 		requestAnimationFrame(() =>
-			listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+			listRef.current?.scrollIntoView({
+				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+					? "instant"
+					: "smooth",
+				block: "start",
+			}),
 		);
 	}
 
-	const [, fm, fd] = focus.split("-").map(Number);
+	const [, fm, fd] = focus?.split("-").map(Number) ?? [];
 
 	return (
 		<section className={ui.page} aria-labelledby="calendar-heading">
@@ -195,8 +199,14 @@ export function Calendar() {
 			>
 				<div className={styles.dayHead}>
 					<h2 id="day-heading" className={ui.panelTitle}>
-						{fm}월 {fd}일{" "}
-						<span className={ui.accent}>{weekdayOf(focus)}요일</span>
+						{focus ? (
+							<>
+								{fm}월 {fd}일{" "}
+								<span className={ui.accent}>{weekdayOf(focus)}요일</span>
+							</>
+						) : (
+							`${formatMonth(month)} 행사`
+						)}
 					</h2>
 					<span className={ui.pill}>✦ 총 {dayEvents.length}개의 행사</span>
 				</div>
@@ -210,7 +220,11 @@ export function Calendar() {
 					</p>
 				) : dayEvents.length === 0 ? (
 					<p className={ui.empty}>
-						이날은 행사가 없어요. 점이 찍힌 날을 눌러 보세요.
+						{events.length === 0
+							? focus
+								? "이날은 행사가 없어요."
+								: "이달은 행사가 없어요."
+							: "이날은 행사가 없어요. 점이 찍힌 날을 눌러 보세요."}
 					</p>
 				) : (
 					<ul className={styles.events}>

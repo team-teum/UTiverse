@@ -28,6 +28,7 @@ interface ShipPageProps {
 	profile: Profile;
 	myProfileId: string;
 	fromUniverse?: boolean;
+	fromExplore?: boolean;
 	/**
 	 * MY에서만: 우주선 아래에 붙는 꾸미기 패널. 있으면 화면 전체가 위아래로 스크롤되며
 	 * 우주선이 가운데를 지키고, 위(별자리) ↔ 아래(꾸미기)로 넘어간다.
@@ -47,6 +48,7 @@ export function ShipPage({
 	profile,
 	myProfileId,
 	fromUniverse = false,
+	fromExplore = false,
 	customize,
 	startAtCustomize,
 	onProgress,
@@ -189,9 +191,10 @@ export function ShipPage({
 	const headingId = `ship-heading-${profile.id}`;
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
+	const [focusHeading] = useState(fromUniverse || fromExplore);
 	useEffect(() => {
-		if (fromUniverse) headingRef.current?.focus();
-	}, [fromUniverse]);
+		if (focusHeading) headingRef.current?.focus();
+	}, [focusHeading]);
 
 	return (
 		<section
@@ -213,7 +216,7 @@ export function ShipPage({
 				<header className={styles.profile} inert={customize ? open : undefined}>
 					<h1
 						ref={headingRef}
-						tabIndex={fromUniverse ? -1 : undefined}
+						tabIndex={focusHeading ? -1 : undefined}
 						id={headingId}
 						className={styles.nickname}
 					>

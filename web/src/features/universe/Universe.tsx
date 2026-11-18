@@ -35,9 +35,6 @@ export function Universe() {
 					/>
 				)}
 			</div>
-			<p className={styles.note}>
-				이 우주의 이웃과 이야기는 테스트를 위해 만들었어요.
-			</p>
 		</section>
 	);
 }

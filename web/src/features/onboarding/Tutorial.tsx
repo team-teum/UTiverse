@@ -75,7 +75,7 @@ export function Tutorial() {
 
 			{askAuth && (
 				<AuthDialog
-					intro="우주선을 만들면 내 별자리와 꾸미기가 내 계정에 남아요. 지금 안 해도 둘러볼 수 있어요."
+					intro="가입하지 않아도 둘러볼 수 있어요. 테스트 계정은 새로고침하면 사라져요."
 					onDone={finish}
 					onSkip={finish}
 				/>

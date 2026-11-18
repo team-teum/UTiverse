@@ -1,8 +1,20 @@
-import { type CSSProperties, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import {
+	type CSSProperties,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import {
+	Link,
+	useLocation,
+	useNavigationType,
+	useSearchParams,
+} from "react-router-dom";
 import { repo } from "../../api/repository";
 import type {
 	DistanceTier,
+	ExploreCard,
 	MyLocation,
 	NearbyShip,
 	Profile,
@@ -18,12 +30,37 @@ import { LocationDialog } from "./LocationDialog";
 
 type Mode = "random" | "nearby";
 
+interface RandomDraw {
+	cards: Promise<ExploreCard[]>;
+	visited?: string;
+}
+
+// 뒤로 돌아오면 같은 카드를 보여 준다. 샌드박스 새로고침 때는 초기화된다.
+const randomDraws = new Map<string, RandomDraw>();
+
+function getRandomDraw(entry: string): RandomDraw {
+	const existing = randomDraws.get(entry);
+	if (existing) return existing;
+
+	const draw: RandomDraw = {
+		cards: repo.exploreRandom(4).catch((error: unknown) => {
+			if (randomDraws.get(entry) === draw) randomDraws.delete(entry);
+			throw error;
+		}),
+	};
+	randomDraws.set(entry, draw);
+	return draw;
+}
+
 /**
  * S05~S08 탐색. 토글은 주소의 mode만 바꾸고 가운데 내용만 바뀐다(prd.md 기능 C).
  * 기본: 위치가 있으면 주변, 없으면 랜덤.
  */
 export function Explore() {
 	const [params, setParams] = useSearchParams();
+	const { key, state } = useLocation();
+	const entry =
+		(state as { exploreEntry?: string } | null)?.exploreEntry ?? key;
 	const { data: location } = useRepositoryData("location", () =>
 		repo.getMyLocation(),
 	);
@@ -36,7 +73,10 @@ export function Explore() {
 				: "random";
 
 	function setMode(next: Mode) {
-		setParams({ mode: next }, { replace: true });
+		setParams(
+			{ mode: next },
+			{ replace: true, state: { exploreEntry: entry } },
+		);
 	}
 
 	return (
@@ -69,7 +109,7 @@ export function Explore() {
 
 			<div key={mode} className={styles.body}>
 				{mode === "random" ? (
-					<RandomExplore />
+					<RandomExplore key={entry} entry={entry} />
 				) : location === undefined ? (
 					<p role="status">불러오는 중…</p>
 				) : (
@@ -84,12 +124,26 @@ export function Explore() {
 }
 
 /** S05 랜덤 별 찾기 (Figma 47:6257): 2×2 카드 + 노란 새로고침 */
-function RandomExplore() {
+function RandomExplore({ entry }: { entry: string }) {
 	const [round, setRound] = useState(0);
-	const { data: cards, error } = useRepositoryData(
-		`explore:random:${round}`,
-		() => repo.exploreRandom(4),
+	const returning = useNavigationType() === "POP";
+	const restore = useRef(
+		returning ? randomDraws.get(entry)?.visited : undefined,
 	);
+	const listRef = useRef<HTMLUListElement>(null);
+	const { data: cards, error } = useRepositoryData(
+		`explore:random:${entry}:${round}`,
+		() => getRandomDraw(entry).cards,
+	);
+
+	useLayoutEffect(() => {
+		if (!cards || !restore.current) return;
+		const card = listRef.current?.querySelector<HTMLAnchorElement>(
+			`[data-ship="${CSS.escape(restore.current)}"]`,
+		);
+		restore.current = undefined;
+		card?.focus();
+	}, [cards]);
 
 	return (
 		<div className={styles.random}>
@@ -98,10 +152,32 @@ function RandomExplore() {
 			) : !cards ? (
 				<p role="status">우주선을 찾는 중…</p>
 			) : (
-				<ul className={styles.grid} aria-label="무작위로 찾은 우주선">
+				<ul
+					ref={listRef}
+					className={styles.grid}
+					aria-label="무작위로 찾은 우주선"
+				>
 					{cards.map(({ profile, latestStar }) => (
 						<li key={profile.id}>
-							<Link className={styles.card} to={`/ship/${profile.id}`}>
+							<Link
+								className={styles.card}
+								to={`/ship/${profile.id}`}
+								state={{ fromExplore: true }}
+								data-ship={profile.id}
+								onClick={(event) => {
+									if (
+										event.defaultPrevented ||
+										event.button !== 0 ||
+										event.metaKey ||
+										event.ctrlKey ||
+										event.altKey ||
+										event.shiftKey
+									)
+										return;
+									const draw = randomDraws.get(entry);
+									if (draw) draw.visited = profile.id;
+								}}
+							>
 								<PixelCanvas
 									kind="ship"
 									look={profile.look}
@@ -120,7 +196,11 @@ function RandomExplore() {
 			<button
 				type="button"
 				className={styles.refresh}
-				onClick={() => setRound(round + 1)}
+				onClick={() => {
+					restore.current = undefined;
+					randomDraws.delete(entry);
+					setRound((previous) => previous + 1);
+				}}
 			>
 				<svg viewBox="0 0 48 48" aria-hidden="true">
 					<path d="M10 24a14 14 0 1 0 4.1-9.9" />
@@ -173,6 +253,14 @@ function NearbyExplore({
 }) {
 	const [editing, setEditing] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
+	const restoreAfterSave = useRef(false);
+	const settingsRef = useRef<HTMLButtonElement>(null);
+
+	useLayoutEffect(() => {
+		if (editing || !location || !restoreAfterSave.current) return;
+		restoreAfterSave.current = false;
+		settingsRef.current?.focus();
+	}, [editing, location]);
 	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
 	const { data: ships } = useRepositoryData(
 		`explore:nearby:${location?.sido}:${location?.sigungu}`,
@@ -222,6 +310,7 @@ function NearbyExplore({
 			current={location}
 			onClose={() => setEditing(false)}
 			onSaved={() => {
+				restoreAfterSave.current = true;
 				setEditing(false);
 				setToast("내 위치를 등록했어요");
 			}}
@@ -285,6 +374,7 @@ function NearbyExplore({
 				<button
 					type="button"
 					className={ui.secondary}
+					ref={settingsRef}
 					onClick={() => setEditing(true)}
 				>
 					위치 설정

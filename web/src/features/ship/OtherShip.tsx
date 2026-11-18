@@ -12,9 +12,12 @@ import { ShipPage } from "./ShipPage";
 export function OtherShip() {
 	const { profileId = "" } = useParams();
 	const { state } = useLocation();
+	const arrival = state as {
+		fromUniverse?: boolean;
+		fromExplore?: boolean;
+	} | null;
 	const fromUniverse =
-		useNavigationType() === "PUSH" &&
-		(state as { fromUniverse?: boolean } | null)?.fromUniverse === true;
+		useNavigationType() === "PUSH" && arrival?.fromUniverse === true;
 	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
 	const { data: profile, loading } = useRepositoryData(
 		`profile:${profileId}`,
@@ -40,6 +43,7 @@ export function OtherShip() {
 			profile={profile}
 			myProfileId={me.id}
 			fromUniverse={fromUniverse}
+			fromExplore={arrival?.fromExplore === true}
 		/>
 	);
 }

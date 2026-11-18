@@ -1,4 +1,4 @@
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { ModalDialog } from "../../components/ModalDialog";
@@ -6,6 +6,8 @@ import ui from "../../components/SpaceUi.module.css";
 import styles from "./AuthDialog.module.css";
 
 type Mode = "signup" | "signin";
+type Field = "nickname" | "email" | "password";
+type FieldErrors = Partial<Record<Field, string>>;
 
 interface AuthDialogProps {
 	initialMode?: Mode;
@@ -34,12 +36,75 @@ export function AuthDialog({
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+	const formRef = useRef<HTMLFormElement>(null);
+	const pendingFocus = useRef<Field | undefined>(undefined);
 
-	async function submit(event: FormEvent) {
+	useEffect(() => {
+		const field = pendingFocus.current;
+		pendingFocus.current = undefined;
+		if (!field || !fieldErrors[field]) return;
+		const input = formRef.current?.elements.namedItem(field);
+		if (input instanceof HTMLInputElement) input.focus();
+	}, [fieldErrors]);
+
+	function changeMode(next: Mode) {
+		setMode(next);
+		setFieldErrors({});
+		setError(null);
+	}
+
+	function clearFieldError(field: Field) {
+		if (fieldErrors[field]) {
+			setFieldErrors((previous) => ({ ...previous, [field]: undefined }));
+		}
+		setError(null);
+	}
+
+	function fieldProps(field: Field) {
+		return {
+			name: field,
+			required: true,
+			"aria-invalid": fieldErrors[field] ? true : undefined,
+			"aria-describedby": fieldErrors[field]
+				? `${titleId}-${field}-error`
+				: undefined,
+		};
+	}
+
+	function fieldMessage(field: Field) {
+		return fieldErrors[field] ? (
+			<span id={`${titleId}-${field}-error`} className={ui.error}>
+				{fieldErrors[field]}
+			</span>
+		) : null;
+	}
+
+	async function submit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (busy) return;
-		setBusy(true);
 		setError(null);
+		const errors: FieldErrors = {};
+		if (mode === "signup" && !nickname.trim()) {
+			errors.nickname = "닉네임을 써 주세요.";
+		}
+		if (!email.trim()) {
+			errors.email = "이메일을 써 주세요.";
+		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+			errors.email = "이메일 형식을 확인해 주세요.";
+		}
+		if (!password) {
+			errors.password = "비밀번호를 써 주세요.";
+		} else if (mode === "signup" && password.length < 8) {
+			errors.password = "비밀번호는 8자 이상이에요.";
+		}
+		const firstInvalid = (["nickname", "email", "password"] as const).find(
+			(field) => errors[field],
+		);
+		pendingFocus.current = firstInvalid;
+		setFieldErrors(errors);
+		if (firstInvalid) return;
+		setBusy(true);
 		try {
 			if (mode === "signup") await repo.signUp({ email, password, nickname });
 			else await repo.signIn({ email, password });
@@ -72,64 +137,80 @@ export function AuthDialog({
 				<button
 					type="button"
 					aria-pressed={mode === "signup"}
-					onClick={() => {
-						setMode("signup");
-						setError(null);
-					}}
+					onClick={() => changeMode("signup")}
 				>
 					회원가입
 				</button>
 				<button
 					type="button"
 					aria-pressed={mode === "signin"}
-					onClick={() => {
-						setMode("signin");
-						setError(null);
-					}}
+					onClick={() => changeMode("signin")}
 				>
 					로그인
 				</button>
 			</fieldset>
 
-			<form className={styles.form} onSubmit={submit} noValidate>
+			<form ref={formRef} className={styles.form} onSubmit={submit} noValidate>
 				{mode === "signup" && (
+					<div>
+						<label className={ui.label}>
+							닉네임 (필수 · 다른 사람에게 보여요)
+							<input
+								className={ui.field}
+								{...fieldProps("nickname")}
+								value={nickname}
+								maxLength={12}
+								autoComplete="nickname"
+								placeholder="불리고 싶은 이름"
+								data-autofocus
+								onChange={(e) => {
+									setNickname(e.target.value);
+									clearFieldError("nickname");
+								}}
+							/>
+						</label>
+						{fieldMessage("nickname")}
+					</div>
+				)}
+				<div>
 					<label className={ui.label}>
-						닉네임 (다른 사람에게 보여요)
+						이메일 (필수 · 로그인에만 써요)
 						<input
 							className={ui.field}
-							value={nickname}
-							maxLength={12}
-							autoComplete="nickname"
-							placeholder="불리고 싶은 이름"
-							data-autofocus
-							onChange={(e) => setNickname(e.target.value)}
+							{...fieldProps("email")}
+							type="email"
+							value={email}
+							autoComplete="email"
+							inputMode="email"
+							placeholder="test@example.com"
+							onChange={(e) => {
+								setEmail(e.target.value);
+								clearFieldError("email");
+							}}
 						/>
 					</label>
-				)}
-				<label className={ui.label}>
-					이메일 (로그인에만 쓰고 보이지 않아요)
-					<input
-						className={ui.field}
-						type="email"
-						value={email}
-						autoComplete="email"
-						inputMode="email"
-						placeholder="test@example.com"
-						onChange={(e) => setEmail(e.target.value)}
-					/>
-				</label>
-				<label className={ui.label}>
-					비밀번호 (8자 이상)
-					<input
-						className={ui.field}
-						type="password"
-						value={password}
-						autoComplete={
-							mode === "signup" ? "new-password" : "current-password"
-						}
-						onChange={(e) => setPassword(e.target.value)}
-					/>
-				</label>
+					{fieldMessage("email")}
+				</div>
+				<div>
+					<label className={ui.label}>
+						비밀번호 {mode === "signup" ? "(필수 · 8자 이상)" : "(필수)"}
+						<input
+							className={ui.field}
+							{...fieldProps("password")}
+							type="password"
+							minLength={mode === "signup" ? 8 : undefined}
+							value={password}
+							autoComplete={
+								mode === "signup" ? "new-password" : "current-password"
+							}
+							onChange={(e) => {
+								setPassword(e.target.value);
+								clearFieldError("password");
+							}}
+						/>
+					</label>
+					{fieldMessage("password")}
+				</div>
 				<p className={styles.notice}>
 					테스트 모드예요. 실제 계정은 만들어지지 않고 새로고침하면 사라져요.
 					평소 쓰는 비밀번호는 넣지 마세요.

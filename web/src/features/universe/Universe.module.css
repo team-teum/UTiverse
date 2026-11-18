@@ -28,11 +28,3 @@
 	inline-size: 100%;
 	padding-block: 1rem;
 }
-
-.note {
-	margin: 0;
-	text-wrap: balance;
-	font-size: 0.75rem;
-	text-align: center;
-	color: var(--color-lavender-light);
-}
