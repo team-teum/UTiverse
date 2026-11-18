@@ -13,7 +13,6 @@
 	block-size: 100%;
 }
 
-.menu,
 .my,
 .home {
 	position: absolute;
@@ -29,21 +28,6 @@
 	cursor: pointer;
 }
 
-/* ☰ 36×27, (17, 22) */
-.menu {
-	inset-inline-start: calc(35 * var(--dp) - 22px);
-	inset-block-start: calc(35.5 * var(--dp) - 22px);
-}
-
-.menu svg {
-	inline-size: calc(36 * var(--dp));
-	block-size: calc(27 * var(--dp));
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 3;
-	stroke-linecap: round;
-}
-
 /* MY: Inter Bold 32, 자간 -2.24, (279, 18) 51×39 */
 .my {
 	inset-inline-start: calc(279 * var(--dp));
@@ -55,14 +39,6 @@
 	font-weight: 700;
 	letter-spacing: -0.07em;
 	line-height: 1;
-}
-
-.glow {
-	text-shadow:
-		0 0 4.59px #fff,
-		0 0 9.18px #fff,
-		0 0 32.13px #fff,
-		0 0 64.26px #fff;
 }
 
 /* 집 34×33, (343, 18) */
@@ -81,16 +57,4 @@
 	stroke-width: 4;
 	stroke-linecap: round;
 	filter: drop-shadow(0 4px 4px rgb(0 0 0 / 25%));
-}
-
-.notice {
-	position: absolute;
-	inset-inline-start: calc(17 * var(--dp));
-	inset-block-start: calc(60 * var(--dp));
-	margin: 0;
-	padding: 0.375rem 0.75rem;
-	border-radius: 999px;
-	background: rgb(0 0 0 / 70%);
-	font-size: 0.8125rem;
-	white-space: nowrap;
 }

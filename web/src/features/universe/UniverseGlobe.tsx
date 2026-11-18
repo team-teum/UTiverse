@@ -4,6 +4,7 @@ import {
 	type PointerEvent,
 	useEffect,
 	useId,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
@@ -34,6 +35,28 @@ const DIRECTIONS = [
 	{ key: "ArrowRight", name: "오른쪽으로", yaw: -STEP, pitch: 0 },
 ];
 
+type VisitTrigger = { profileId: string } | "telescope";
+
+interface GlobeView {
+	rotation: Rotation;
+	trigger?: VisitTrigger;
+}
+
+// 브라우저 뒤로가기는 해당 기록을, 홈 버튼은 마지막에 본 우주를 복원한다.
+const historyViews = new Map<string, GlobeView>();
+let latestView: GlobeView | undefined;
+
+function rememberView(key: string, view: GlobeView) {
+	historyViews.set(key, view);
+	latestView = view;
+}
+
+function findStarLink(globe: HTMLDivElement | null, profileId: string) {
+	return globe?.querySelector<HTMLAnchorElement>(
+		`[data-profile-id="${CSS.escape(profileId)}"]`,
+	);
+}
+
 interface Drag {
 	pointerId: number;
 	x: number;
@@ -43,15 +66,29 @@ interface Drag {
 }
 
 /** 실제 구면 좌표를 투영한다. 점 하나 = 프로필 하나, 뒤쪽 점은 앞에 올 때만 선택된다. */
-export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
+export function UniverseGlobe({
+	entryKey,
+	profiles,
+	resumeView,
+}: {
+	entryKey: string;
+	profiles: Profile[];
+	resumeView: boolean;
+}) {
 	const helpId = useId();
 	const navigate = useNavigate();
 	const globeRef = useRef<HTMLDivElement>(null);
 	const zoomRef = useRef<Animation | null>(null);
 	const handleRef = useRef<HTMLButtonElement>(null);
+	const telescopeRef = useRef<HTMLButtonElement>(null);
 	const dragRef = useRef<Drag | null>(null);
 	const suppressClick = useRef(false);
-	const [rotation, setRotation] = useState<Rotation>({ yaw: 0, pitch: 0 });
+	const [origin] = useState(
+		() => historyViews.get(entryKey) ?? (resumeView ? latestView : undefined),
+	);
+	const [rotation, setRotation] = useState<Rotation>(
+		origin?.rotation ?? { yaw: 0, pitch: 0 },
+	);
 	const [dragging, setDragging] = useState(false);
 	const [flight, setFlight] = useState<{
 		x: number;
@@ -61,6 +98,21 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 	const [announcement, setAnnouncement] = useState("");
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
+
+	useLayoutEffect(() => {
+		if (!origin?.trigger) return;
+		const target =
+			origin.trigger === "telescope"
+				? telescopeRef.current
+				: findStarLink(globeRef.current, origin.trigger.profileId);
+		const control = target?.tabIndex === 0 ? target : handleRef.current;
+		control?.focus({ preventScroll: true });
+	}, [origin]);
+
+	useLayoutEffect(() => {
+		const trigger = rotation === origin?.rotation ? origin.trigger : undefined;
+		rememberView(entryKey, { rotation, trigger });
+	}, [entryKey, origin, rotation]);
 
 	function handleVisitClick(
 		event: MouseEvent<HTMLAnchorElement>,
@@ -86,22 +138,34 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 			return;
 		}
 
-		if (startVisitFlight(profile, event.currentTarget)) event.preventDefault();
+		const trigger = { profileId: profile.id };
+		if (startVisitFlight(profile, event.currentTarget, trigger)) {
+			event.preventDefault();
+		} else {
+			rememberView(entryKey, { rotation, trigger });
+		}
 	}
 
 	function visitRandomNeighbor() {
 		if (zoomRef.current) return;
 		const profile = profiles[Math.floor(Math.random() * profiles.length)];
 		if (!profile) return;
-		const link = globeRef.current?.querySelector(
-			`[data-profile-id="${CSS.escape(profile.id)}"]`,
-		);
-		if (!link || !startVisitFlight(profile, link)) {
-			navigate(`/ship/${profile.id}`, { state: VISIT_STATE });
+		const link = findStarLink(globeRef.current, profile.id);
+		if (!link || !startVisitFlight(profile, link, "telescope")) {
+			goToShip(profile, "telescope");
 		}
 	}
 
-	function startVisitFlight(profile: Profile, target: Element) {
+	function goToShip(profile: Profile, trigger: VisitTrigger) {
+		rememberView(entryKey, { rotation, trigger });
+		navigate(`/ship/${profile.id}`, { state: VISIT_STATE });
+	}
+
+	function startVisitFlight(
+		profile: Profile,
+		target: Element,
+		trigger: VisitTrigger,
+	) {
 		const globe = globeRef.current;
 		if (
 			!globe?.animate ||
@@ -146,7 +210,7 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 		setFlight({ ...origin, profileId: profile.id });
 		setAnnouncement(`${profile.nickname}의 우주선으로 이동 중이에요.`);
 		void zoom.finished.then(
-			() => navigate(`/ship/${profile.id}`, { state: VISIT_STATE }),
+			() => goToShip(profile, trigger),
 			() => {
 				if (zoomRef.current !== zoom || !globe.isConnected) return;
 				zoomRef.current = null;
@@ -331,6 +395,7 @@ export function UniverseGlobe({ profiles }: { profiles: Profile[] }) {
 			</p>
 			<button
 				type="button"
+				ref={telescopeRef}
 				className={styles.telescope}
 				aria-disabled={flight !== null}
 				onClick={visitRandomNeighbor}

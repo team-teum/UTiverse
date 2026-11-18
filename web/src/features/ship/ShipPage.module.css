@@ -86,6 +86,13 @@
 	cursor: pointer;
 }
 
+.customizeTip {
+	margin: 0.75rem 1rem 0;
+	color: var(--color-lavender-light);
+	font-size: 0.875rem;
+	text-align: center;
+}
+
 /* Figma 「위로 스와이프해서 우주선꾸미기」 흰 20 + ∧∧ (Vector 122·123) */
 .swipeHint {
 	display: grid;

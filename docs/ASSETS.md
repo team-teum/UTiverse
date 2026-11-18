@@ -52,8 +52,8 @@ Figma 링크는 「1109 화면 목업 구성」 파일의 해당 노드다. `has
 | 키 | 파일 경로 | 쓰이는 곳 | 임시 에셋 출처 (Figma) | 표시 크기·비율 | 상태 | 메모 |
 |---|---|---|---|---|---|---|
 | `character.tini` | `web/public/assets/character/tini.png` | S02 튜토리얼, S11 MY 첫 진입 | 「요정」 [70:6846](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6846) · hash `11d199ba` | 132~215 · 1:1 | 임시 | 투명 배경. 표정·포즈가 여러 개면 `tini-hello.png`, `tini-talk.png`, `tini-happy.png`로 추가 (키 `character.tiniHello` 등 — 개발자에게 알려 주기) |
-| `ui.speechBubble` | `web/public/assets/ui/speech-bubble.png` | S02 "안녕!", S11 "위로 스와이프해봐!" 말풍선 | image 51 [70:6844](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6844) · hash `dbbbc18b` | 125×125 · 1:1 | 임시 | **글자 없는 빈 말풍선**이어야 함(글자는 코드). 꼬리 방향: 오른쪽 아래 |
-| `ui.pointer` | `web/public/assets/ui/pointer.png` | S02 "MY를 눌러봐" 지시봉 | 「지시봉」 [70:7014](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-7014) · hash `21f895d3` | 57×71 | 임시 | 손가락 끝이 이미지 **왼쪽 위**를 가리키는 방향 유지 |
+| `ui.speechBubble` | `web/public/assets/ui/speech-bubble.png` | 기존 S02 "안녕!" 말풍선 시안(현재 미사용) | image 51 [70:6844](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-6844) · hash `dbbbc18b` | 125×125 · 1:1 | 임시 | **글자 없는 빈 말풍선**이어야 함(글자는 코드). 꼬리 방향: 오른쪽 아래 |
+| `ui.pointer` | `web/public/assets/ui/pointer.png` | 기존 S02 MY 안내 시안(현재 미사용) | 「지시봉」 [70:7014](https://www.figma.com/design/aje3Gr9X9WnOsbhpabuHKB/?node-id=70-7014) · hash `21f895d3` | 57×71 | 임시 | 손가락 끝이 이미지 **왼쪽 위**를 가리키는 방향 유지 |
 
 ### 3.3 우주선 · 아바타 (사용자별)
 

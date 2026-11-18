@@ -19,7 +19,9 @@ export function TitleScene({ dimmed = false }: { dimmed?: boolean }) {
 				fetchPriority={dimmed ? undefined : "high"}
 			/>
 			<AssetImage assetKey="brand.logo" alt="" className={styles.logo} />
-			<AssetImage assetKey="brand.tapToStart" alt="" className={styles.tap} />
+			{!dimmed && (
+				<AssetImage assetKey="brand.tapToStart" alt="" className={styles.tap} />
+			)}
 		</div>
 	);
 }

@@ -5,10 +5,8 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
-import { AssetImage } from "../../components/AssetImage";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
@@ -35,7 +33,9 @@ export function MyShip() {
 	);
 
 	useEffect(() => {
-		void repo.takeSwipeHint().then(setHint);
+		void repo.takeSwipeHint().then((show) => {
+			if (show) setHint(true);
+		});
 	}, []);
 
 	function open() {
@@ -87,6 +87,9 @@ export function MyShip() {
 				const t = event.changedTouches[0];
 				end(t.clientX, t.clientY);
 			}}
+			onTouchCancel={() => {
+				start.current = null;
+			}}
 			onPointerDown={(event: PointerEvent) => {
 				if (event.pointerType === "mouse")
 					begin(event.clientX, event.clientY, event.target);
@@ -102,7 +105,12 @@ export function MyShip() {
 					inert={customizing}
 					aria-hidden={customizing || undefined}
 				>
-					<ShipPage profile={me} myProfileId={me.id} onOpenCustomize={open} />
+					<ShipPage
+						profile={me}
+						myProfileId={me.id}
+						onOpenCustomize={open}
+						showCustomizeHint={hint}
+					/>
 				</div>
 				<div
 					ref={customizeRef}
@@ -120,36 +128,6 @@ export function MyShip() {
 					/>
 				</div>
 			</div>
-			{hint && !customizing && <SwipeHint onClose={() => setHint(false)} />}
 		</div>
-	);
-}
-
-/** 튜토리얼에서 MY로 들어왔을 때 한 번: 티니가 "위로 스와이프해봐!" (Figma 70:7022) */
-function SwipeHint({ onClose }: { onClose: () => void }) {
-	const root = document.getElementById("overlay-root");
-	if (!root) return null;
-	return createPortal(
-		<button
-			type="button"
-			className={styles.hint}
-			onClick={onClose}
-			aria-label="안내 닫기: 위로 스와이프해봐!"
-		>
-			<span className={styles.hintBubble}>
-				<AssetImage
-					assetKey="ui.speechBubble"
-					alt=""
-					className={styles.hintBubbleImage}
-				/>
-				<span className={styles.hintText}>위로 스와이프해봐!</span>
-			</span>
-			<AssetImage
-				assetKey="character.tiniTalk"
-				alt=""
-				className={styles.hintTini}
-			/>
-		</button>,
-		root,
 	);
 }

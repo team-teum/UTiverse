@@ -17,6 +17,7 @@ interface ShipPageProps {
 	fromUniverse?: boolean;
 	/** MY에서만: 우주선을 누르거나 위로 밀면 꾸미기 화면으로 */
 	onOpenCustomize?: () => void;
+	showCustomizeHint?: boolean;
 }
 
 /**
@@ -28,6 +29,7 @@ export function ShipPage({
 	myProfileId,
 	fromUniverse = false,
 	onOpenCustomize,
+	showCustomizeHint,
 }: ShipPageProps) {
 	const isMine = profile.id === myProfileId;
 	const navigate = useNavigate();
@@ -132,6 +134,11 @@ export function ShipPage({
 				)}
 			</div>
 
+			{showCustomizeHint && (
+				<p className={styles.customizeTip}>
+					위로 밀어서 꾸미기를 열 수도 있어요.
+				</p>
+			)}
 			{onOpenCustomize && (
 				<button
 					type="button"

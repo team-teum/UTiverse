@@ -1,9 +1,13 @@
+import { useLocation } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import styles from "./Universe.module.css";
 import { UniverseGlobe } from "./UniverseGlobe";
 
 export function Universe() {
+	const { key, state } = useLocation();
+	const resumeView =
+		(state as { resumeUniverse?: boolean } | null)?.resumeUniverse === true;
 	const { data: profiles, error } = useRepositoryData("profiles:others", () =>
 		repo.listOtherProfiles(),
 	);
@@ -23,7 +27,12 @@ export function Universe() {
 				) : profiles.length === 0 ? (
 					<p>아직 둘러볼 우주선이 없어요.</p>
 				) : (
-					<UniverseGlobe profiles={profiles} />
+					<UniverseGlobe
+						key={key}
+						entryKey={key}
+						profiles={profiles}
+						resumeView={resumeView}
+					/>
 				)}
 			</div>
 			<p className={styles.note}>
