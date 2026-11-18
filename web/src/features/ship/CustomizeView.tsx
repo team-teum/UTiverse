@@ -187,8 +187,9 @@ export function CustomizeView({
 					})}
 				</ul>
 				<p className={styles.foot}>
+					{category.options.length > 4 ? "옆으로 넘겨 보기 → · " : ""}
 					{nextUnlock
-						? `별을 ${nextUnlock - starCount}개 더 만들면 새 아이템이 열려요`
+						? `별 ${nextUnlock - starCount}개 더 만들면 새 아이템`
 						: "모든 아이템을 열었어요!"}
 				</p>
 			</div>
