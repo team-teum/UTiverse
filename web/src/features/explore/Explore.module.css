@@ -92,53 +92,119 @@
 
 .grid {
 	display: grid;
-	grid-template-columns: repeat(2, calc(150 * var(--dp)));
-	gap: calc(16 * var(--dp));
+	grid-template-columns: repeat(2, calc(160 * var(--dp)));
+	gap: calc(28 * var(--dp)) calc(18 * var(--dp));
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
+/* 네모 카드 없이 우주에 멈춰 선 우주선: 위에 한줄 말풍선, 아래 이름표 */
 .card {
 	display: grid;
 	justify-items: center;
-	gap: 4px;
+	align-content: end;
+	gap: calc(6 * var(--dp));
 	block-size: 100%;
-	box-sizing: border-box;
-	padding: calc(10 * var(--dp)) calc(10 * var(--dp)) calc(12 * var(--dp));
-	border: 1.5px solid rgb(129 126 196 / 60%);
-	border-radius: 10px;
-	background: rgb(18 15 46 / 86%);
 	color: #fff;
 	text-decoration: none;
+	-webkit-tap-highlight-color: transparent;
 }
 
-.card:active {
-	transform: scale(0.98);
+.card:focus-visible {
+	outline: 2px solid var(--color-lavender);
+	outline-offset: 4px;
+	border-radius: 12px;
 }
 
 .cardShip {
 	inline-size: calc(46 * var(--dp));
 	block-size: calc(90 * var(--dp));
+	filter: drop-shadow(0 0 8px rgb(190 154 250 / 45%));
+	animation: boing 2.6s ease-in-out infinite;
+	animation-delay: var(--bob-delay, 0s);
+}
+
+.card:active .cardShip {
+	transform: scale(0.94);
+	animation-play-state: paused;
+}
+
+/* 띠용띠용: 살짝 튀어 올랐다가 출렁이며 제자리로 */
+@keyframes boing {
+	0%,
+	100% {
+		translate: 0 0;
+	}
+	12% {
+		translate: 0 calc(-7 * var(--dp));
+	}
+	24% {
+		translate: 0 calc(3 * var(--dp));
+	}
+	36% {
+		translate: 0 calc(-4 * var(--dp));
+	}
+	48% {
+		translate: 0 calc(1.5 * var(--dp));
+	}
+	60% {
+		translate: 0 calc(-1.5 * var(--dp));
+	}
+	72% {
+		translate: 0 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cardShip {
+		animation: none;
+	}
 }
 
 .cardName {
-	font-size: calc(15 * var(--dp));
+	padding: 1px 10px;
+	border: 1px solid rgb(129 126 196 / 60%);
+	border-radius: 999px;
+	background: rgb(18 15 46 / 80%);
+	font-size: calc(14 * var(--dp));
 	font-weight: 700;
 }
 
+/* 한줄 소개 말풍선 (꼬리가 아래 우주선을 가리킨다) */
 .cardStar {
-	display: -webkit-box;
+	position: relative;
+	box-sizing: border-box;
 	inline-size: 100%;
-	overflow: hidden;
-	color: var(--color-lavender-light);
+	margin-block-end: calc(6 * var(--dp));
+	padding: calc(7 * var(--dp)) calc(10 * var(--dp));
+	border-radius: 14px;
+	background: #fffdfd;
+	box-shadow: 0 4px 14px rgb(0 0 0 / 35%);
+	color: var(--color-ink);
 	font-size: calc(12 * var(--dp));
 	line-height: 1.4;
 	text-align: center;
 	word-break: keep-all;
+}
+
+.cardStar > span {
+	display: -webkit-box;
+	overflow: hidden;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
 	line-clamp: 2;
+}
+
+.cardStar::after {
+	position: absolute;
+	inset-block-start: 100%;
+	inset-inline-start: 50%;
+	border: 7px solid transparent;
+	border-block-end: 0;
+	border-block-start-color: #fffdfd;
+	content: "";
+	transform: translateX(-50%);
 }
 
 /* 다시 뽑기: 홈 「탐색하기」와 같은 반투명 흰 버블 스티커 */

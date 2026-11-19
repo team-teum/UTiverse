@@ -178,6 +178,9 @@ function RandomExplore({ entry }: { entry: string }) {
 									if (draw) draw.visited = profile.id;
 								}}
 							>
+								<span className={styles.cardStar}>
+									<span>{latestStar ?? "아직 작성한 별이 없어요"}</span>
+								</span>
 								<PixelCanvas
 									kind="ship"
 									look={profile.look}
@@ -185,9 +188,6 @@ function RandomExplore({ entry }: { entry: string }) {
 									className={styles.cardShip}
 								/>
 								<span className={styles.cardName}>{profile.nickname}</span>
-								<span className={styles.cardStar}>
-									{latestStar ?? "아직 작성한 별이 없어요"}
-								</span>
 							</Link>
 						</li>
 					))}
