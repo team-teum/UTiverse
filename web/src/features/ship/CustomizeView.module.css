@@ -303,3 +303,36 @@
 	font-size: 12px;
 	text-align: center;
 }
+
+/* 휴대폰: 화면 비율과 상관없이 좌우 16px만 띄우고 화면 아래까지 채운다 */
+@media (width < 48rem) {
+	.view {
+		box-sizing: border-box;
+		grid-template-rows: auto 1fr;
+		inline-size: auto;
+		min-block-size: 100%;
+		margin-inline: 16px;
+	}
+
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 12px;
+	}
+
+	.items {
+		flex: 1;
+		grid-auto-columns: min(calc((100% - 3 * 8px) / 4.4), 104px);
+		align-content: center;
+		gap: 8px;
+		margin-inline: -12px;
+		padding-inline: 12px;
+		scroll-padding-inline: 12px;
+	}
+
+	.mode,
+	.tab {
+		font-size: 15px;
+	}
+}

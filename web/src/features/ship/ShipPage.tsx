@@ -95,10 +95,15 @@ export function ShipPage({
 			const hint = hintRef.current;
 			if (!section || !ship || !hint) return;
 			const pad = Number.parseFloat(getComputedStyle(section).paddingTop) || 0;
-			const shipTop = ship.offsetTop;
-			setOffset(Math.max(0, shipTop - pad));
+			const shift = Math.max(0, ship.offsetTop - pad);
+			setOffset(shift);
+			// 꾸미기 장에서 패널이 화면 아래 끝까지 오도록 (사이 간격까지 빼고)
+			// 넘긴 뒤 우주선 윗변은 화면 위에서 pad 두 개만큼 아래에 온다 (stack 안쪽 기준 offsetTop)
+			const panelTop = panelRef.current
+				? panelRef.current.offsetTop
+				: hint.offsetTop + hint.offsetHeight;
 			setPanelHeight(
-				section.clientHeight - pad - ship.offsetHeight - hint.offsetHeight,
+				section.clientHeight - 2 * pad - (panelTop - ship.offsetTop),
 			);
 		};
 		measure();

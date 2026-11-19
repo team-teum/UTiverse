@@ -252,3 +252,9 @@
 	stroke-linecap: round;
 	stroke-linejoin: round;
 }
+
+@media (width < 48rem) {
+	.customize {
+		padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px));
+	}
+}

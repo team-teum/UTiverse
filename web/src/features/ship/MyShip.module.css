@@ -102,3 +102,11 @@
 	gap: 0.5rem;
 	justify-content: flex-end;
 }
+
+/* 휴대폰: 꾸미기 패널과 같은 좌우 16px */
+@media (width < 48rem) {
+	.actions {
+		inline-size: auto;
+		margin-inline: 16px;
+	}
+}
