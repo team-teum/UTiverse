@@ -96,7 +96,14 @@ export function EventDetail() {
 						setBusy(false);
 					}}
 				>
-					{saved ? "★ 책갈피했어요" : "☆ 책갈피"}
+					<svg
+						viewBox="0 0 35 52"
+						aria-hidden="true"
+						className={`${ui.markIcon} ${saved ? ui.markOn : ""}`}
+					>
+						<path d="M0 0h35v52L17.5 38.8 0 52z" />
+					</svg>
+					{saved ? "책갈피했어요" : "책갈피"}
 				</button>
 				{event.link && (
 					<a

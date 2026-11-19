@@ -272,14 +272,15 @@
 }
 
 /* 책갈피 리본 (Figma 책갈피 108:1062) */
+/* 책갈피: 꺼지면 속이 빈 테두리, 켜지면 분홍으로 채워진다 */
 .ribbon {
 	position: absolute;
-	inset-block-start: 10px;
-	inset-inline-end: 10px;
+	inset-block-start: 4px;
+	inset-inline-end: 4px;
 	display: grid;
 	place-items: center;
-	inline-size: 32px;
-	block-size: 36px;
+	inline-size: 44px;
+	block-size: 48px;
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -289,14 +290,53 @@
 .ribbon svg {
 	inline-size: 22px;
 	block-size: 30px;
-	fill: #e9dcff;
+	overflow: visible;
+	fill: transparent;
+	stroke: #e9dcff;
+	stroke-width: 2;
+	stroke-linejoin: round;
 	filter: drop-shadow(0 2px 3px rgb(0 0 0 / 40%));
+	transition:
+		fill 180ms ease,
+		stroke 180ms ease,
+		transform 180ms ease;
+}
+
+.ribbon svg path {
+	vector-effect: non-scaling-stroke;
 }
 
 .ribbon[aria-pressed="true"] svg {
-	fill: #5b2cff;
-	stroke: #b48cff;
-	stroke-width: 1;
+	fill: #ff9ec0;
+	stroke: #ffd0e0;
+	filter: drop-shadow(0 0 6px rgb(255 158 192 / 60%))
+		drop-shadow(0 2px 3px rgb(0 0 0 / 40%));
+}
+
+.ribbon:active svg {
+	transform: scale(0.88);
+}
+
+/* 상세 화면 버튼 안의 작은 책갈피 */
+.markIcon {
+	inline-size: 12px;
+	block-size: 17px;
+	margin-inline-end: 6px;
+	overflow: visible;
+	vertical-align: -3px;
+	fill: transparent;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linejoin: round;
+}
+
+.markIcon path {
+	vector-effect: non-scaling-stroke;
+}
+
+.markOn {
+	fill: #ff9ec0;
+	stroke: #ff9ec0;
 }
 
 .badge {
