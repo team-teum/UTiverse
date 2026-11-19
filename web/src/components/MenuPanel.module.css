@@ -48,6 +48,7 @@
 		linear-gradient(180deg, #1b1745 0%, #110e2b 100%);
 	box-shadow: 8px 0 32px rgb(0 0 0 / 45%);
 	animation: slide 220ms ease-out;
+	outline: none;
 }
 
 .close {

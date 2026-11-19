@@ -37,12 +37,16 @@ const ITEMS = [
  */
 export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 	const dialogRef = useRef<HTMLDialogElement>(null);
+	const panelRef = useRef<HTMLElement>(null);
 	const { pathname } = useLocation();
 
 	useLayoutEffect(() => {
 		const dialog = dialogRef.current;
 		if (!dialog) return;
 		dialog.showModal();
+		// 열자마자 첫 버튼(☰)에 초점이 가면 노란 초점 테두리가 보여서, 패널 자체에 초점을 둔다.
+		// 키보드로는 Tab으로 항목을 그대로 오갈 수 있다.
+		panelRef.current?.focus({ preventScroll: true });
 		return () => dialog.close();
 	}, []);
 
@@ -60,7 +64,12 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 			}}
 		>
 			<div className={styles.backdrop} aria-hidden="true" onClick={onClose} />
-			<nav className={styles.panel} aria-label="메뉴">
+			<nav
+				ref={panelRef}
+				className={styles.panel}
+				aria-label="메뉴"
+				tabIndex={-1}
+			>
 				<button
 					type="button"
 					className={styles.close}
