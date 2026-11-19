@@ -166,3 +166,30 @@
 	text-decoration: underline;
 	cursor: pointer;
 }
+
+.authHint {
+	margin: 0;
+	color: #6b5fa8;
+	font-size: 0.75rem;
+}
+
+/* 별자리 가지를 눌러 들어온 댓글: 잠깐 하늘색으로 빛난다 */
+.focused {
+	border-radius: 8px;
+	animation: focus-glow 2.4s ease-out;
+}
+
+@keyframes focus-glow {
+	0%,
+	40% {
+		background: rgb(143 224 255 / 35%);
+		box-shadow: 0 0 0 4px rgb(143 224 255 / 35%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.focused {
+		animation: none;
+		background: rgb(143 224 255 / 20%);
+	}
+}

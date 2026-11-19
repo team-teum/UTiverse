@@ -21,6 +21,10 @@ interface Branch {
 	fromY: number;
 	byOwner: boolean;
 	depth: number;
+	/** 이 댓글이 달린 별 */
+	star: Star;
+	author: string;
+	body: string;
 }
 
 const BRANCH_LENGTH = [30, 22, 18];
@@ -35,6 +39,7 @@ function growBranches(
 	origin: readonly [number, number],
 	comments: Comment[],
 	ownerId: string,
+	star: Star,
 ): Branch[] {
 	const out: Branch[] = [];
 	const cx = BOX.width / 2;
@@ -66,6 +71,9 @@ function growBranches(
 				fromY: from[1],
 				byOwner: child.author.id === ownerId,
 				depth,
+				star,
+				author: child.author.nickname,
+				body: child.body,
 			});
 			grow(child.id, [x, y], a, depth + 1);
 		});
@@ -108,7 +116,8 @@ interface ConstellationProps {
 	stars: Star[];
 	page: number;
 	onPageChange: (page: number) => void;
-	onSelect: (star: Star) => void;
+	/** 별(글)이나 가지(댓글)를 누르면. 댓글이면 commentId가 함께 온다 */
+	onSelect: (star: Star, commentId?: string) => void;
 	highlightId?: string | null;
 	/** MY에서만: 별자리 끝에 붙는 별 만들기 버튼 */
 	writeButton?: ReactNode;
@@ -179,6 +188,7 @@ export function Constellation({
 			points[index],
 			(allComments ?? []).filter((c) => c.starId === star.id),
 			profileId,
+			star,
 		),
 	);
 
@@ -290,6 +300,26 @@ export function Constellation({
 								</li>
 							);
 						})}
+					</ul>
+					{/* 가지(댓글) 별도 누를 수 있다: 그 별의 상세가 열리고 댓글로 이동 */}
+					<ul className={styles.list}>
+						{branches.map((branch) => (
+							<li
+								key={`b-${branch.id}`}
+								className={styles.item}
+								style={{
+									left: `${(branch.x / BOX.width) * 100}%`,
+									top: `${(branch.y / BOX.height) * 100}%`,
+								}}
+							>
+								<button
+									type="button"
+									className={`${styles.leafButton} ${branch.depth > 0 ? styles.leafSmall : ""}`}
+									aria-label={`${branch.author}의 댓글: ${branch.body.slice(0, 20)}`}
+									onClick={() => onSelect(branch.star, branch.id)}
+								/>
+							</li>
+						))}
 					</ul>
 					{writeButton && <div className={styles.write}>{writeButton}</div>}
 				</div>

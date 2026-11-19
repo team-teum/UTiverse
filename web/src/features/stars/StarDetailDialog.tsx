@@ -13,6 +13,8 @@ import styles from "./StarDetailDialog.module.css";
 
 interface StarDetailDialogProps {
 	starId: string;
+	/** 별자리 가지(댓글)를 눌러 열었으면 그 댓글로 이동 */
+	focusCommentId?: string | null;
 	myProfileId: string;
 	/** 창을 닫는 이동(뒤로가기 또는 ?star 제거) */
 	onClose: () => void;
@@ -22,6 +24,7 @@ interface StarDetailDialogProps {
 /** S10 별 상세 (Figma 「(남의) 별 눌렀을 때」 54:6841): 날짜·본문·반응·댓글. `?star=:starId`로 열린다. */
 export function StarDetailDialog({
 	starId,
+	focusCommentId = null,
 	myProfileId,
 	onClose,
 	onDeleted,
@@ -142,6 +145,7 @@ export function StarDetailDialog({
 							<CommentSection
 								starId={star.id}
 								ownerId={star.profileId}
+								focusCommentId={focusCommentId}
 								myProfileId={myProfileId}
 								draft={draft}
 								onDraftChange={setDraft}

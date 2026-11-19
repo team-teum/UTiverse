@@ -188,3 +188,28 @@
 .dot {
 	opacity: 0.35;
 }
+
+/* 가지(댓글) 별의 누르는 자리: 그림은 SVG, 버튼은 투명한 28px 원 */
+.leafButton {
+	display: block;
+	inline-size: 24px;
+	block-size: 24px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	cursor: pointer;
+}
+
+.leafSmall {
+	inline-size: 20px;
+	block-size: 20px;
+}
+
+.leafButton:focus-visible {
+	outline: 2px solid #8fe0ff;
+}
+
+.leafButton:active {
+	background: rgb(143 224 255 / 25%);
+}

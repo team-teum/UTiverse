@@ -1,14 +1,17 @@
-import { type FormEvent, useId, useRef, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { repo } from "../../api/repository";
 import { COMMENT_MAX_CHARS, type Comment } from "../../api/types";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatRelative } from "../../lib/dateFormat";
 import { countChars, lengthError } from "../../lib/postText";
+import { AuthDialog } from "../auth/AuthDialog";
 import styles from "./CommentSection.module.css";
 
 interface CommentSectionProps {
 	starId: string;
+	/** 이 댓글로 스크롤하고 잠깐 강조 */
+	focusCommentId?: string | null;
 	/** 별 주인 (점 색: 주인 분홍 · 다른 사람 하늘) */
 	ownerId: string;
 	myProfileId: string;
@@ -25,6 +28,7 @@ interface CommentSectionProps {
 export function CommentSection({
 	starId,
 	ownerId,
+	focusCommentId = null,
 	myProfileId,
 	draft,
 	onDraftChange,
@@ -44,6 +48,19 @@ export function CommentSection({
 	const [deleting, setDeleting] = useState<Comment | null>(null);
 	const [deleteError, setDeleteError] = useState<string | null>(null);
 	const [replyTo, setReplyTo] = useState<Comment | null>(null);
+	// 댓글은 회원가입·로그인한 사람만 (샌드박스도 같은 흐름). 가입하면 쓰던 댓글을 그대로 등록한다.
+	const { data: session } = useRepositoryData("session", () =>
+		repo.getSession(),
+	);
+	const [needAuth, setNeedAuth] = useState(false);
+	const hasComments = Boolean(comments?.length);
+
+	useEffect(() => {
+		if (!focusCommentId || !hasComments) return;
+		document
+			.getElementById(`comment-${focusCommentId}`)
+			?.scrollIntoView({ block: "center", behavior: "smooth" });
+	}, [focusCommentId, hasComments]);
 
 	const length = countChars(draft);
 
@@ -61,6 +78,14 @@ export function CommentSection({
 			inputRef.current?.focus();
 			return;
 		}
+		if (!(await repo.getSession())) {
+			setNeedAuth(true);
+			return;
+		}
+		await submitNow();
+	}
+
+	async function submitNow() {
 		setSubmitting(true);
 		setSubmitError(null);
 		try {
@@ -92,7 +117,8 @@ export function CommentSection({
 		return (
 			<li
 				key={comment.id}
-				className={`${styles.item} ${depth > 0 ? styles.reply : ""}`}
+				id={`comment-${comment.id}`}
+				className={`${styles.item} ${depth > 0 ? styles.reply : ""} ${comment.id === focusCommentId ? styles.focused : ""}`}
 			>
 				<p className={styles.meta}>
 					<span
@@ -230,9 +256,14 @@ export function CommentSection({
 						{length}/{COMMENT_MAX_CHARS}
 					</span>
 					<button type="submit" className="button-plain" disabled={submitting}>
-						{submitting ? "등록 중…" : "등록"}
+						{submitting ? "등록 중…" : session ? "등록" : "가입하고 등록"}
 					</button>
 				</div>
+				{session === null && (
+					<p className={styles.authHint}>
+						댓글은 회원가입(또는 로그인)을 하면 남길 수 있어요.
+					</p>
+				)}
 				{validationError && (
 					<p id={validationId} className="error-text" role="alert">
 						{validationError}
@@ -244,6 +275,16 @@ export function CommentSection({
 					</p>
 				)}
 			</form>
+			{needAuth && (
+				<AuthDialog
+					intro="댓글을 남기려면 회원가입이 필요해요. 쓰던 댓글은 그대로 남아 있어요."
+					onDone={() => {
+						setNeedAuth(false);
+						void submitNow();
+					}}
+					onSkip={() => setNeedAuth(false)}
+				/>
+			)}
 
 			{deleting && (
 				<ConfirmDialog

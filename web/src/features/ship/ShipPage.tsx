@@ -179,8 +179,11 @@ export function ShipPage({
 	const [toast, setToast] = useState<string | null>(null);
 	const clearToast = useCallback(() => setToast(null), []);
 
-	function openStar(star: Star) {
-		setSearchParams({ star: star.id }, { state: { sheet: true } });
+	function openStar(star: Star, commentId?: string) {
+		setSearchParams(
+			commentId ? { star: star.id, comment: commentId } : { star: star.id },
+			{ state: { sheet: true } },
+		);
 	}
 
 	function closeStar() {
@@ -392,6 +395,7 @@ export function ShipPage({
 				<StarDetailDialog
 					key={openStarId}
 					starId={openStarId}
+					focusCommentId={searchParams.get("comment")}
 					myProfileId={myProfileId}
 					onClose={closeStar}
 					onDeleted={() => {
