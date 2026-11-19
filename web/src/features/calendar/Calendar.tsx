@@ -86,9 +86,8 @@ export function Calendar() {
 			<header className={ui.head}>
 				<AssetImage assetKey="deco.calendar" alt="" className={ui.headIcon} />
 				<h1 id="calendar-heading" className={ui.title}>
-					우주 속 행사 캘린더
+					행사 캘린더
 				</h1>
-				<p className={ui.subtitle}>당신은 유일한 하나가 아니에요</p>
 			</header>
 
 			<div className={ui.panel}>
