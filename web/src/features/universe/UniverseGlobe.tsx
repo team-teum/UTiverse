@@ -104,6 +104,26 @@ export function UniverseGlobe({
 	const [focusInside, setFocusInside] = useState(false);
 	const lastDragEnd = useRef(Number.NEGATIVE_INFINITY);
 
+	// 키보드로 별(링크)을 고르는 중이면 자동 회전을 멈춘다
+	useEffect(() => {
+		const update = () => {
+			const active = document.activeElement;
+			setFocusInside(
+				Boolean(
+					active &&
+						active !== handleRef.current &&
+						globeRef.current?.contains(active),
+				),
+			);
+		};
+		document.addEventListener("focusin", update);
+		document.addEventListener("focusout", update);
+		return () => {
+			document.removeEventListener("focusin", update);
+			document.removeEventListener("focusout", update);
+		};
+	}, []);
+
 	// 가만히 두면 천천히 돈다 (끌고 있을 때·끈 직후 3초·키보드로 고르는 중·움직임 줄이기 설정이면 멈춤)
 	useEffect(() => {
 		if (
@@ -329,11 +349,6 @@ export function UniverseGlobe({
 					onPointerUp={endDrag}
 					onPointerCancel={cancelDrag}
 					onLostPointerCapture={cancelDrag}
-					onFocus={(event) => {
-						if ((event.target as Element) !== handleRef.current)
-							setFocusInside(true);
-					}}
-					onBlur={() => setFocusInside(false)}
 				>
 					<button
 						ref={handleRef}
@@ -424,7 +439,7 @@ export function UniverseGlobe({
 				<div className={styles.swipeHint} aria-hidden="true">
 					<span className={styles.swipeTrack}>
 						<span className={styles.swipeFinger}>
-							<svg viewBox="0 0 24 24">
+							<svg viewBox="0 0 24 24" aria-hidden="true">
 								<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-4-2L4.6 15a1.5 1.5 0 0 1 2.2-2L9 15" />
 							</svg>
 						</span>
