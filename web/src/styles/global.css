@@ -33,8 +33,17 @@ body {
 }
 
 :where(button, a, input, textarea, select):focus-visible {
-	outline: 3px solid var(--color-accent-yellow);
-	outline-offset: -4px;
+	outline: none;
+}
+
+/* 길 바뀔 때 포커스를 받는 영역(main 등)에 브라우저 기본 파란 테두리가 뜨지 않게 */
+[tabindex="-1"]:focus {
+	outline: none;
+}
+
+/* 모바일에서 누를 때 생기는 파란 하이라이트 끄기 */
+html {
+	-webkit-tap-highlight-color: transparent;
 }
 
 :where(h1) {

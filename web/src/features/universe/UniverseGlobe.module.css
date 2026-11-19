@@ -250,8 +250,8 @@
 	position: relative;
 	display: grid;
 	place-items: center;
-	inline-size: 44px;
-	block-size: 44px;
+	inline-size: 56px;
+	block-size: 56px;
 	border-radius: 50%;
 	color: #fff;
 	text-decoration: none;
@@ -270,8 +270,8 @@
 .dot {
 	display: grid;
 	place-items: center;
-	inline-size: 16px;
-	block-size: 16px;
+	inline-size: 21px;
+	block-size: 21px;
 	color: var(--universe-white);
 	filter: drop-shadow(0 0 5px var(--universe-pink));
 	transform: scale(var(--star-scale));
@@ -296,7 +296,7 @@
 
 .name {
 	position: absolute;
-	inset-block-start: 36px;
+	inset-block-start: 44px;
 	inset-inline-start: 50%;
 	box-sizing: border-box;
 	inline-size: max-content;

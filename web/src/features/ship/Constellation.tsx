@@ -88,7 +88,7 @@ const BOX = { width: 281.5, height: 136 };
 /** 연필 버튼 중심 (Figma 「작성 아이콘」 37:12214, 별자리 기준) */
 const WRITE_CENTER: readonly [number, number] = [292, 91];
 /** 선이 별에 닿지 않게 비우는 길이 (Figma 선 끝과 별 중심 사이 거리) */
-const STAR_GAP = 16.5;
+const STAR_GAP = 20;
 const WRITE_GAP = 30;
 
 function segment(
@@ -257,7 +257,7 @@ export function Constellation({
 							);
 						})}
 						{branches.map((branch) => {
-							const size = branch.depth === 0 ? 12 : 9;
+							const size = branch.depth === 0 ? 15 : 11;
 							return (
 								<path
 									key={`s-${branch.id}`}

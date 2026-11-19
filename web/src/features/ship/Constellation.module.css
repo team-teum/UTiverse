@@ -53,8 +53,8 @@
 .star {
 	display: grid;
 	place-items: center;
-	inline-size: max(44px, calc(34 * var(--dp)));
-	block-size: max(44px, calc(34 * var(--dp)));
+	inline-size: max(54px, calc(50 * var(--dp)));
+	block-size: max(54px, calc(50 * var(--dp)));
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
@@ -63,8 +63,8 @@
 }
 
 .starImage {
-	inline-size: calc(25 * var(--dp));
-	block-size: calc(24 * var(--dp));
+	inline-size: calc(32 * var(--dp));
+	block-size: calc(31 * var(--dp));
 }
 
 /* 별 주인의 글 = 분홍 별 (트랜스젠더 프라이드의 분홍) */
@@ -192,8 +192,8 @@
 /* 가지(댓글) 별의 누르는 자리: 그림은 SVG, 버튼은 투명한 28px 원 */
 .leafButton {
 	display: block;
-	inline-size: 24px;
-	block-size: 24px;
+	inline-size: 34px;
+	block-size: 34px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
@@ -202,12 +202,8 @@
 }
 
 .leafSmall {
-	inline-size: 20px;
-	block-size: 20px;
-}
-
-.leafButton:focus-visible {
-	outline: 2px solid #8fe0ff;
+	inline-size: 28px;
+	block-size: 28px;
 }
 
 .leafButton:active {
