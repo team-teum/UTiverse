@@ -120,6 +120,7 @@ Figma의 캘린더 이미지([49:6666](https://www.figma.com/design/aje3Gr9X9WnO
   - 도트 장식 (2026-11-19): `deco.calendar`·`deco.chat`·`deco.film`·`deco.note`·`deco.rocket`·`deco.ufo`·`deco.planet` ← 같은 파일 「캘린더」(105:852) 이미지에서 잘라 어두운 배경을 투명하게. `deco.sparkle` ← Sparkling Pixel 시트. 제목 글꼴은 갈무리11 Bold(`public/fonts`, SIL OFL 1.1).
   - **우주선·방·가구 = 코드로 그린 도트.** `web/src/pixel/ship.ts` (72×142, 겉모습과 2층 방 단면이 같은 실루엣). 외벽 색만 겉모습에 보이고, 플래그·가구·장식은 안(단면)에만 보인다.
   - 아이콘 (2026-11-19): `icon.dice`·`icon.pin`(Figma 52:12888 토글), `icon.close`(26:436), `icon.chevron`(26:1257) ← Figma SVG 그대로. 행사 이미지는 아직 없어 `EventThumb`가 태그 색으로 표지를 그린다(실제 포스터가 오면 `event.<id>` 키로 추가).
+  - 앱 배경 (2026-11-19): `public/assets/bg/nebula.webp`(402×874 성운, 코드로 생성) + `stars.png`(160×160 도트 별 타일). `AppFrame.module.css`의 `.frame` 배경에서 직접 쓴다.
   - `bg.space`는 아직 없다. 셰이더 채우기 노드(44:11686)에 상단 아이콘이 함께 들어 있어 배경만 따로 내보낼 수 없다. 디자이너가 아이콘 없는 배경 프레임을 만들어 주면 넣는다.
   - `public/assets/`는 Biome 검사에서 제외했다(디자이너 파일을 고치지 않기 위해).
 

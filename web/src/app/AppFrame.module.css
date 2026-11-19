@@ -16,7 +16,11 @@
 	/* 너비·높이 모두 기준이 되어 --dp가 둘 중 작은 쪽에 맞춰진다 (tokens.css) */
 	container-type: size;
 	isolation: isolate;
-	background: var(--color-space);
+	/* 은은한 성운 + 자잘한 도트 별 (public/assets/bg, 코드로 만든 그림) */
+	background:
+		url("/assets/bg/stars.png") repeat 0 0 / 160px 160px,
+		url("/assets/bg/nebula.webp") center / cover no-repeat,
+		var(--color-space);
 }
 
 @supports (height: 100dvh) {
