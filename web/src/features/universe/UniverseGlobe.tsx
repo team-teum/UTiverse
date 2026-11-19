@@ -11,6 +11,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import type { Profile } from "../../api/types";
 import {
+	NO_ROTATION,
 	projectPoint,
 	type Rotation,
 	rotateBy,
@@ -90,7 +91,7 @@ export function UniverseGlobe({
 		() => historyViews.get(entryKey) ?? (resumeView ? latestView : undefined),
 	);
 	const [rotation, setRotation] = useState<Rotation>(
-		origin?.rotation ?? { yaw: 0, pitch: 0 },
+		origin?.rotation ?? NO_ROTATION,
 	);
 	const [dragging, setDragging] = useState(false);
 	const [flight, setFlight] = useState<{
