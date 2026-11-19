@@ -205,16 +205,8 @@ export function ShipPage({
 		);
 	}
 
+	// 남의 우주선은 누를 때마다 열리고 닫힌다
 	const [peek, setPeek] = useState(false);
-	const peekTimer = useRef<number | undefined>(undefined);
-
-	function openPeek() {
-		window.clearTimeout(peekTimer.current);
-		setPeek(true);
-		peekTimer.current = window.setTimeout(() => setPeek(false), 3200);
-	}
-
-	useEffect(() => () => window.clearTimeout(peekTimer.current), []);
 
 	const headingId = `ship-heading-${profile.id}`;
 	const headingRef = useRef<HTMLHeadingElement>(null);
@@ -296,7 +288,10 @@ export function ShipPage({
 					)}
 				</div>
 
-				<div ref={shipRef} className={styles.ship}>
+				<div
+					ref={shipRef}
+					className={`${styles.ship} ${progress > 0 ? styles.shipSmall : ""}`}
+				>
 					{customize ? (
 						<button
 							type="button"
@@ -310,13 +305,13 @@ export function ShipPage({
 						</button>
 					) : (
 						<>
-							{/* 남의 우주선: 누르면 잠깐 안이 보이고 한 줄 소개가 말풍선으로 떴다가 다시 닫힌다 */}
+							{/* 남의 우주선: 누르면 안이 보이며 한 줄 소개 말풍선이 뜨고, 다시 누르면 닫힌다 */}
 							<button
 								type="button"
 								className={styles.shipButton}
-								aria-label={`${profile.nickname}의 우주선 안 들여다보기`}
+								aria-label={`${profile.nickname}의 우주선 ${peek ? "닫기" : "열어 보기"}`}
 								aria-expanded={peek}
-								onClick={openPeek}
+								onClick={() => setPeek((open) => !open)}
 							>
 								<ShipView
 									profile={profile}

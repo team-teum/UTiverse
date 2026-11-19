@@ -102,6 +102,24 @@
 	margin-block-start: calc(8 * var(--dp));
 }
 
+/* 개인 페이지 첫 화면에선 우주선을 크게, MY 꾸미기로 넘어가면 원래 크기로 줄어든다.
+   (자리 계산은 원래 크기 기준이라 아래쪽을 붙박고 위로만 키운다) */
+.ship > .shipButton {
+	transform: scale(1.3);
+	transform-origin: 50% 100%;
+	transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shipSmall > .shipButton {
+	transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ship > .shipButton {
+		transition-duration: 1ms;
+	}
+}
+
 .shipButton {
 	display: block;
 	padding: 0;
