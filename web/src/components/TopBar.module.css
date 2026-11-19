@@ -29,9 +29,9 @@
 	cursor: pointer;
 }
 
-/* MY: Inter Bold 32, 자간 -2.24, (279, 18) 51×39 */
+/* MY: Inter Bold 32, 자간 -2.24, (279, 18) 51×39 → 오른쪽 끝에서 72 (화면 너비가 비율과 달라도 끝에 붙게) */
 .my {
-	inset-inline-start: calc(279 * var(--dp));
+	inset-inline-end: calc(72 * var(--dp));
 	inset-block-start: calc(18 * var(--dp));
 	min-inline-size: calc(51 * var(--dp));
 	block-size: calc(39 * var(--dp));
@@ -42,9 +42,9 @@
 	line-height: 1;
 }
 
-/* 집 34×33, (343, 18) */
+/* 집 34×33, (343, 18) → 오른쪽 끝에서 25 */
 .home {
-	inset-inline-start: calc(343 * var(--dp));
+	inset-inline-end: calc(25 * var(--dp));
 	inset-block-start: calc(18 * var(--dp));
 	min-inline-size: calc(34 * var(--dp));
 }

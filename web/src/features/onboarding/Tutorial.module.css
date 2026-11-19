@@ -20,28 +20,28 @@
 
 /* 티니 위치·크기: 장면마다 다름 */
 .hello .tini {
-	inset-inline-start: calc(213 * var(--dp));
+	inset-inline-start: calc(50% + 12 * var(--dp));
 	inset-block-start: calc(var(--dialog-y) - 100 * var(--dp));
 	inline-size: calc(215 * var(--dp));
 	block-size: calc(215 * var(--dp));
 }
 
 .intro .tini {
-	inset-inline-start: calc(130 * var(--dp));
+	inset-inline-start: calc(50% + -71 * var(--dp));
 	inset-block-start: calc(var(--dialog-y) - 116 * var(--dp));
 	inline-size: calc(168 * var(--dp));
 	block-size: calc(168 * var(--dp));
 }
 
 .custom .tini {
-	inset-inline-start: calc(122 * var(--dp));
+	inset-inline-start: calc(50% + -79 * var(--dp));
 	inset-block-start: calc(var(--dialog-y) - 125 * var(--dp));
 	inline-size: calc(132 * var(--dp));
 	block-size: calc(132 * var(--dp));
 }
 
 .explore .tini {
-	inset-inline-start: calc(111 * var(--dp));
+	inset-inline-start: calc(50% + -90 * var(--dp));
 	inset-block-start: calc(var(--dialog-y) - 149 * var(--dp));
 	inline-size: calc(198 * var(--dp));
 	block-size: calc(198 * var(--dp));
