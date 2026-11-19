@@ -99,7 +99,7 @@ export function UniverseGlobe({
 		profileId: string;
 	} | null>(null);
 	const [announcement, setAnnouncement] = useState("");
-	// 「밀어서 돌리기」 안내: 이번 방문에 한 번 돌려 보면 사라진다
+	// 손가락 안내(튜토리얼 격): 한 번 돌려 보면 다시 나오지 않는다 (샌드박스는 새로고침하면 처음부터)
 	const [showSwipeHint, setShowSwipeHint] = useState(!swipedOnce);
 	const [focusInside, setFocusInside] = useState(false);
 	const lastDragEnd = useRef(Number.NEGATIVE_INFINITY);
@@ -350,6 +350,16 @@ export function UniverseGlobe({
 					onPointerCancel={cancelDrag}
 					onLostPointerCapture={cancelDrag}
 				>
+					{/* 처음 한 번: 구 위에서 손가락이 좌우로 밀어 보인다. 한 번 돌리면 다시 나오지 않는다 */}
+					{showSwipeHint && !flight && (
+						<span className={styles.swipeHint} aria-hidden="true">
+							<span className={styles.swipeFinger}>
+								<svg viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-4-2L4.6 15a1.5 1.5 0 0 1 2.2-2L9 15" />
+								</svg>
+							</span>
+						</span>
+					)}
 					<button
 						ref={handleRef}
 						type="button"
@@ -435,18 +445,6 @@ export function UniverseGlobe({
 					</div>
 				)}
 			</div>
-			{showSwipeHint && !flight && (
-				<div className={styles.swipeHint} aria-hidden="true">
-					<span className={styles.swipeTrack}>
-						<span className={styles.swipeFinger}>
-							<svg viewBox="0 0 24 24" aria-hidden="true">
-								<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-4-2L4.6 15a1.5 1.5 0 0 1 2.2-2L9 15" />
-							</svg>
-						</span>
-						<span className={styles.swipeText}>밀어서 우주 돌리기</span>
-					</span>
-				</div>
-			)}
 			<p className={styles.help}>
 				드래그해서 둘러보세요.
 				<br />
