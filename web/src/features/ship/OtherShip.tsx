@@ -1,6 +1,7 @@
 import {
 	Link,
 	useLocation,
+	useNavigate,
 	useNavigationType,
 	useParams,
 } from "react-router-dom";
@@ -11,6 +12,7 @@ import { ShipPage } from "./ShipPage";
 /** S09 남의 우주선 (/ship/:profileId) */
 export function OtherShip() {
 	const { profileId = "" } = useParams();
+	const navigate = useNavigate();
 	const { state } = useLocation();
 	const arrival = state as {
 		fromUniverse?: boolean;
@@ -44,6 +46,12 @@ export function OtherShip() {
 			myProfileId={me.id}
 			fromUniverse={fromUniverse}
 			fromExplore={arrival?.fromExplore === true}
+			onBack={() => {
+				// 앱 안에서 왔으면 그 화면으로, 링크로 바로 들어왔으면 우주로
+				const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+				if (idx > 0) navigate(-1);
+				else navigate("/universe");
+			}}
 		/>
 	);
 }

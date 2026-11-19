@@ -57,6 +57,7 @@
 }
 
 .profile {
+	position: relative;
 	min-block-size: calc(41 * var(--dp));
 	padding-inline: calc(24 * var(--dp));
 	text-align: center;
@@ -197,4 +198,39 @@
 
 .peekBubble:empty {
 	padding: 0;
+}
+
+.hintSlot {
+	display: grid;
+	min-block-size: calc(48 * var(--dp));
+}
+
+/* 남의 우주선: 닉네임 왼쪽 「← 뒤로」 */
+.backButton {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: calc(14 * var(--dp));
+	display: inline-flex;
+	gap: 2px;
+	align-items: center;
+	min-block-size: 40px;
+	padding: 0 12px 0 8px;
+	border: 1.5px solid rgb(129 126 196 / 65%);
+	border-radius: 999px;
+	background: rgb(16 12 44 / 85%);
+	color: #fff;
+	font: inherit;
+	font-size: 13px;
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+.backButton svg {
+	inline-size: 16px;
+	block-size: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
 }

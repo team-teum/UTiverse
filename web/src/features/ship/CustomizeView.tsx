@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { repo } from "../../api/repository";
-import type { Profile } from "../../api/types";
 import { AVATAR_TABS, type Look, SHIP_TABS } from "../../pixel/look";
 import { ItemPixel } from "../../pixel/PixelCanvas";
 import styles from "./CustomizeView.module.css";
@@ -8,7 +6,10 @@ import styles from "./CustomizeView.module.css";
 export type CustomizeMode = "ship" | "avatar";
 
 interface CustomizeViewProps {
-	profile: Profile;
+	/** 지금 미리 보고 있는 모습 (저장 전 초안 포함) */
+	look: Look;
+	/** 아이템을 고르면 초안에만 담는다. 저장은 MY의 「저장하기」 */
+	onPick: (patch: Partial<Look>) => void;
 	mode: CustomizeMode;
 	onModeChange: (mode: CustomizeMode) => void;
 	/** 내가 만든 별 수: 잠긴 아이템을 여는 조건 */
@@ -27,10 +28,11 @@ const MODES = [
 /**
  * S13 우주선 꾸미기 · S14 캐릭터 꾸미기 (Figma 33:14371 · 33:15522 구성).
  * 꾸미기 게임처럼: 인테리어/드레스룸 → 종류 탭 → 카테고리 칩 → 아이템 카드.
- * 고르면 바로 적용(샌드박스: 메모리). 잠긴 아이템은 별을 만들면 하나씩 열린다.
+ * 고르면 우주선에 바로 미리 보이고, 「저장하기」를 눌러야 저장된다. 잠긴 아이템은 별을 만들면 하나씩 열린다.
  */
 export function CustomizeView({
-	profile,
+	look,
+	onPick,
 	mode,
 	onModeChange,
 	starCount,
@@ -45,7 +47,6 @@ export function CustomizeView({
 	const category =
 		tab.categories.find((item) => item.key === categoryKey) ??
 		tab.categories[0];
-	const look = profile.look;
 
 	const allOptions = [...SHIP_TABS, ...AVATAR_TABS].flatMap((t) =>
 		t.categories.flatMap((c) => c.options),
@@ -141,9 +142,7 @@ export function CustomizeView({
 											? `${option.label}: 별 ${option.unlockAt}개를 모으면 열려요`
 											: option.label
 									}
-									onClick={() =>
-										void repo.updateMyLook({ [category.key]: option.id })
-									}
+									onClick={() => onPick({ [category.key]: option.id })}
 								>
 									<span className={styles.thumb}>
 										{option.id === "none" ? (

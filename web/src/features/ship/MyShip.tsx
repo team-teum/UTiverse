@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
+import { ModalDialog } from "../../components/ModalDialog";
+import { Toast } from "../../components/Toast";
+import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import type { Look } from "../../pixel/look";
 import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
 import { ShipPage } from "./ShipPage";
@@ -25,6 +29,20 @@ export function MyShip() {
 		me ? repo.listStars(me.id) : Promise.resolve([]),
 	);
 	const [hint, setHint] = useState(false);
+	// 꾸미기 초안: 고른 아이템은 여기 모았다가 「저장하기」에서 한 번에 저장
+	const [draft, setDraft] = useState<Partial<Look>>({});
+	const [closeSignal, setCloseSignal] = useState(0);
+	const [askLeave, setAskLeave] = useState(false);
+	const [saving, setSaving] = useState(false);
+	const [toast, setToast] = useState<string | null>(null);
+	const dirty =
+		me !== undefined &&
+		Object.entries(draft).some(
+			([key, value]) => me.look[key as keyof Look] !== value,
+		);
+
+	// 저장 안 한 꾸미기가 있는데 다른 화면으로 가려 하면 물어본다
+	const { blocker } = useDiscardGuard(dirty);
 
 	useEffect(() => {
 		void repo.takeSwipeHint().then((show) => {
@@ -45,18 +63,68 @@ export function MyShip() {
 
 	if (!me) return <p className="scaffold-screen">불러오는 중…</p>;
 
+	const previewLook: Look = { ...me.look, ...draft };
+	const preview = { ...me, look: previewLook };
+
+	async function save(thenClose: boolean) {
+		if (saving) return;
+		setSaving(true);
+		await repo.updateMyLook(draft);
+		setDraft({});
+		setSaving(false);
+		setAskLeave(false);
+		setToast("꾸민 모습을 저장했어요");
+		if (thenClose) setCloseSignal((n) => n + 1);
+	}
+
+	function discardAndClose() {
+		setDraft({});
+		setAskLeave(false);
+		setCloseSignal((n) => n + 1);
+	}
+
+	function back() {
+		if (dirty) setAskLeave(true);
+		else setCloseSignal((n) => n + 1);
+	}
+
 	return (
 		<>
 			<ShipPage
-				profile={me}
+				profile={preview}
 				myProfileId={me.id}
 				startAtCustomize={startAtCustomize}
 				onProgress={(p) => {
 					if (p > 0.2) setHint(false);
 				}}
+				closeSignal={closeSignal}
+				beforeClose={() => {
+					if (!dirty) return true;
+					setAskLeave(true);
+					return false;
+				}}
+				customizeActions={
+					<div className={styles.actions}>
+						<button type="button" className={styles.back} onClick={back}>
+							← 돌아가기
+						</button>
+						<span className={styles.state} aria-live="polite">
+							{dirty ? "저장 안 됨" : "저장됨 ✓"}
+						</span>
+						<button
+							type="button"
+							className={styles.save}
+							disabled={!dirty || saving}
+							onClick={() => void save(false)}
+						>
+							저장하기
+						</button>
+					</div>
+				}
 				customize={
 					<CustomizeView
-						profile={me}
+						look={previewLook}
+						onPick={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
 						mode={mode}
 						onModeChange={setMode}
 						starCount={stars?.length ?? 0}
@@ -64,6 +132,28 @@ export function MyShip() {
 				}
 			/>
 			{hint && <SwipeHint />}
+			{blocker.state === "blocked" && (
+				<LeaveDialog
+					onKeep={() => blocker.reset()}
+					onDiscard={() => {
+						setDraft({});
+						blocker.proceed();
+					}}
+					onSave={async () => {
+						await repo.updateMyLook(draft);
+						setDraft({});
+						blocker.proceed();
+					}}
+				/>
+			)}
+			{askLeave && (
+				<LeaveDialog
+					onKeep={() => setAskLeave(false)}
+					onDiscard={discardAndClose}
+					onSave={() => void save(true)}
+				/>
+			)}
+			<Toast message={toast} onDone={() => setToast(null)} />
 		</>
 	);
 }
@@ -92,5 +182,42 @@ function SwipeHint() {
 			/>
 		</div>,
 		root,
+	);
+}
+
+/** 저장하지 않은 꾸미기가 있을 때 돌아가기: 저장하고 나가기 / 저장 안 하고 나가기 / 계속 꾸미기 */
+function LeaveDialog({
+	onKeep,
+	onDiscard,
+	onSave,
+}: {
+	onKeep: () => void;
+	onDiscard: () => void;
+	onSave: () => void;
+}) {
+	const id = useId();
+	return (
+		<ModalDialog variant="confirm" labelledBy={id} onDismiss={onKeep}>
+			<p id={id} className={styles.leaveTitle}>
+				꾸민 모습을 저장할까요?
+			</p>
+			<p className={styles.leaveText}>저장하지 않으면 바꾼 내용이 사라져요.</p>
+			<div className={styles.leaveActions}>
+				<button type="button" className="button-secondary" onClick={onKeep}>
+					계속 꾸미기
+				</button>
+				<button type="button" className="button-secondary" onClick={onDiscard}>
+					저장 안 함
+				</button>
+				<button
+					type="button"
+					className={styles.save}
+					onClick={onSave}
+					data-autofocus
+				>
+					저장하기
+				</button>
+			</div>
+		</ModalDialog>
 	);
 }

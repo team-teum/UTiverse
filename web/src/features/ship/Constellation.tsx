@@ -163,7 +163,8 @@ export function Constellation({
 	if (
 		writeButton &&
 		isLastPage &&
-		visible.length > 0 &&
+		// 별이 하나뿐이면 선을 긋지 않는다
+		visible.length > 1 &&
 		visible.length < STARS_PER_PAGE
 	) {
 		lines.push(

@@ -38,6 +38,14 @@ interface ShipPageProps {
 	startAtCustomize?: boolean;
 	/** 꾸미기 쪽으로 넘어간 비율이 바뀔 때 (0 = 별자리, 1 = 꾸미기) */
 	onProgress?: (progress: number) => void;
+	/** 꾸미기 장에서 우주선 아래에 보일 저장·돌아가기 버튼 */
+	customizeActions?: ReactNode;
+	/** 별자리 장으로 돌아가기 전에 물어볼 게 있으면 false (저장 안 한 꾸미기) */
+	beforeClose?: () => boolean;
+	/** 값이 바뀌면 별자리 장으로 돌아간다 (저장 뒤 등) */
+	closeSignal?: number;
+	/** 남의 우주선: 왼쪽 위 「← 뒤로」 */
+	onBack?: () => void;
 }
 
 /**
@@ -52,11 +60,15 @@ export function ShipPage({
 	customize,
 	startAtCustomize,
 	onProgress,
+	customizeActions,
+	beforeClose,
+	closeSignal = 0,
+	onBack,
 }: ShipPageProps) {
 	// MY: 별자리 화면 ⇄ 꾸미기 화면 두 장. 위/아래로 밀면 중간에 멈추지 않고 한 장씩 넘어간다.
 	const sectionRef = useRef<HTMLElement>(null);
 	const shipRef = useRef<HTMLDivElement>(null);
-	const hintRef = useRef<HTMLButtonElement>(null);
+	const hintRef = useRef<HTMLDivElement>(null);
 	const panelRef = useRef<HTMLDivElement>(null);
 	const [open, setOpen] = useState(Boolean(customize && startAtCustomize));
 	const [offset, setOffset] = useState(0);
@@ -95,7 +107,20 @@ export function ShipPage({
 		return () => observer.disconnect();
 	}, [customize]);
 
+	const beforeCloseRef = useRef(beforeClose);
+	beforeCloseRef.current = beforeClose;
+
+	useEffect(() => {
+		if (closeSignal > 0) {
+			setOpen(false);
+			panelRef.current?.scrollTo({ top: 0 });
+		}
+	}, [closeSignal]);
+
 	function turn(next: boolean) {
+		if (open && !next && beforeCloseRef.current && !beforeCloseRef.current()) {
+			return;
+		}
 		setOpen(next);
 		if (!next) panelRef.current?.scrollTo({ top: 0 });
 	}
@@ -214,6 +239,18 @@ export function ShipPage({
 				}
 			>
 				<header className={styles.profile} inert={customize ? open : undefined}>
+					{onBack && (
+						<button
+							type="button"
+							className={styles.backButton}
+							onClick={onBack}
+						>
+							<svg viewBox="0 0 24 24" aria-hidden="true">
+								<path d="m15 5-7 7 7 7" />
+							</svg>
+							뒤로
+						</button>
+					)}
 					<h1
 						ref={headingRef}
 						tabIndex={focusHeading ? -1 : undefined}
@@ -296,34 +333,43 @@ export function ShipPage({
 
 				{customize && (
 					<>
-						{/* 우주선과 패널 사이 한 칸: 위에선 "위로 스와이프", 꾸미기에선 "∨ 별자리로" */}
-						<button
-							ref={hintRef}
-							type="button"
-							className={styles.swipeHint}
-							aria-label={
-								open ? "별자리로 돌아가기" : "위로 스와이프해서 우주선 꾸미기"
-							}
-							onClick={() => turn(!open)}
-						>
-							{open ? (
-								<>
-									<svg viewBox="0 0 142 18.5" aria-hidden="true">
-										<path d="M.3 1.5 70.3 17 141.8 1.5" />
-									</svg>
-									<span aria-hidden="true" className={styles.hintSmall}>
-										아래로 밀면 별자리
-									</span>
-								</>
+						{/* 우주선과 패널 사이 한 칸: 위에선 "위로 스와이프", 꾸미기에선 저장·돌아가기 */}
+						<div ref={hintRef} className={styles.hintSlot}>
+							{open && customizeActions ? (
+								customizeActions
 							) : (
-								<>
-									<span aria-hidden="true">위로 스와이프해서 우주선꾸미기</span>
-									<svg viewBox="0 0 142 18.5" aria-hidden="true">
-										<path d="M.3 17 70.3 1.5 141.8 17" />
-									</svg>
-								</>
+								<button
+									type="button"
+									className={styles.swipeHint}
+									aria-label={
+										open
+											? "별자리로 돌아가기"
+											: "위로 스와이프해서 우주선 꾸미기"
+									}
+									onClick={() => turn(!open)}
+								>
+									{open ? (
+										<>
+											<svg viewBox="0 0 142 18.5" aria-hidden="true">
+												<path d="M.3 1.5 70.3 17 141.8 1.5" />
+											</svg>
+											<span aria-hidden="true" className={styles.hintSmall}>
+												아래로 밀면 별자리
+											</span>
+										</>
+									) : (
+										<>
+											<span aria-hidden="true">
+												위로 스와이프해서 우주선꾸미기
+											</span>
+											<svg viewBox="0 0 142 18.5" aria-hidden="true">
+												<path d="M.3 17 70.3 1.5 141.8 17" />
+											</svg>
+										</>
+									)}
+								</button>
 							)}
-						</button>
+						</div>
 						<div
 							ref={panelRef}
 							className={styles.customize}

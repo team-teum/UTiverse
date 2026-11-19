@@ -39,3 +39,66 @@
 	text-align: center;
 	word-break: keep-all;
 }
+
+/* 꾸미기 장: 우주선 아래 저장·돌아가기 줄 */
+.actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: space-between;
+	inline-size: calc(370 * var(--dp));
+	margin-inline: auto;
+}
+
+.back,
+.save {
+	min-block-size: 40px;
+	padding: 0 16px;
+	border-radius: 999px;
+	font: inherit;
+	font-size: 14px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.back {
+	border: 1.5px solid rgb(129 126 196 / 70%);
+	background: var(--color-ink);
+	color: #fff;
+}
+
+.save {
+	border: 0;
+	background: var(--color-lavender);
+	color: #0b0a1a;
+	box-shadow: inset 0 -2px 0 rgb(0 0 0 / 15%);
+}
+
+.save:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.state {
+	color: #a9a6d6;
+	font-size: 12px;
+}
+
+.leaveTitle {
+	margin: 0;
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.leaveText {
+	margin: 0;
+	color: #555;
+	font-size: 0.875rem;
+}
+
+.leaveActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	justify-content: flex-end;
+}
