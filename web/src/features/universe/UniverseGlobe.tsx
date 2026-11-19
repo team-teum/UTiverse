@@ -66,6 +66,9 @@ interface Drag {
 }
 
 /** 실제 구면 좌표를 투영한다. 점 하나 = 프로필 하나, 뒤쪽 점은 앞에 올 때만 선택된다. */
+/** 이번 방문(새로고침 전)에 한 번이라도 우주를 돌렸는지 */
+let swipedOnce = false;
+
 export function UniverseGlobe({
 	entryKey,
 	profiles,
@@ -96,6 +99,35 @@ export function UniverseGlobe({
 		profileId: string;
 	} | null>(null);
 	const [announcement, setAnnouncement] = useState("");
+	// 「밀어서 돌리기」 안내: 이번 방문에 한 번 돌려 보면 사라진다
+	const [showSwipeHint, setShowSwipeHint] = useState(!swipedOnce);
+	const [focusInside, setFocusInside] = useState(false);
+	const lastDragEnd = useRef(Number.NEGATIVE_INFINITY);
+
+	// 가만히 두면 천천히 돈다 (끌고 있을 때·끈 직후 3초·키보드로 고르는 중·움직임 줄이기 설정이면 멈춤)
+	useEffect(() => {
+		if (
+			dragging ||
+			flight ||
+			focusInside ||
+			!window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+		) {
+			return;
+		}
+		let frame = 0;
+		let last = performance.now();
+		const tick = (now: number) => {
+			const dt = Math.min(now - last, 64);
+			last = now;
+			if (now - lastDragEnd.current > 3000 && !document.hidden) {
+				// 초당 약 4°
+				setRotation((current) => rotateBy(current, (dt / 1000) * 0.07, 0));
+			}
+			frame = requestAnimationFrame(tick);
+		};
+		frame = requestAnimationFrame(tick);
+		return () => cancelAnimationFrame(frame);
+	}, [dragging, flight, focusInside]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
 
@@ -256,6 +288,8 @@ export function UniverseGlobe({
 			drag.moved = true;
 			suppressClick.current = true;
 			setDragging(true);
+			swipedOnce = true;
+			setShowSwipeHint(false);
 			// 뒤쪽으로 이동하는 링크에 초점이 남지 않게 한다.
 			handleRef.current?.focus({ preventScroll: true });
 		}
@@ -270,6 +304,7 @@ export function UniverseGlobe({
 			setAnnouncement("우주를 돌렸어요.");
 		}
 		dragRef.current = null;
+		lastDragEnd.current = performance.now();
 		setDragging(false);
 	}
 
@@ -294,6 +329,11 @@ export function UniverseGlobe({
 					onPointerUp={endDrag}
 					onPointerCancel={cancelDrag}
 					onLostPointerCapture={cancelDrag}
+					onFocus={(event) => {
+						if ((event.target as Element) !== handleRef.current)
+							setFocusInside(true);
+					}}
+					onBlur={() => setFocusInside(false)}
 				>
 					<button
 						ref={handleRef}
@@ -380,6 +420,18 @@ export function UniverseGlobe({
 					</div>
 				)}
 			</div>
+			{showSwipeHint && !flight && (
+				<div className={styles.swipeHint} aria-hidden="true">
+					<span className={styles.swipeTrack}>
+						<span className={styles.swipeFinger}>
+							<svg viewBox="0 0 24 24">
+								<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-4-2L4.6 15a1.5 1.5 0 0 1 2.2-2L9 15" />
+							</svg>
+						</span>
+						<span className={styles.swipeText}>밀어서 우주 돌리기</span>
+					</span>
+				</div>
+			)}
 			<p className={styles.help}>
 				드래그해서 둘러보세요.
 				<br />
