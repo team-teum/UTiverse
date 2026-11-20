@@ -100,18 +100,28 @@ export interface Session {
 	email: string;
 }
 
+/**
+ * 반환값은 독립된 스냅샷이다. 중첩된 값까지 저장소와 참조를 공유하지 않는다.
+ * 쓰기가 거절되면 저장소 상태는 그대로이며 변경 알림도 보내지 않는다.
+ * 실패는 Promise 거절로 알린다. 오류 문구는 분기 조건으로 쓰지 않는다.
+ */
 export interface Repository {
 	getMyProfile(): Promise<Profile>;
+	/** 없는 프로필은 null */
 	getProfile(profileId: string): Promise<Profile | null>;
 	/** 나를 뺀 우주선 목록. 우주의 점 하나가 프로필 하나에 대응한다. */
 	listOtherProfiles(): Promise<Profile[]>;
 	/** 오래된 순 */
 	listStars(profileId: string): Promise<Star[]>;
+	/** 없는 별은 null */
 	getStar(starId: string): Promise<Star | null>;
+	/** 앞뒤 공백을 빼고 1~500자(코드 포인트)가 아니면 거절한다. */
 	createStar(body: string): Promise<Star>;
+	/** 없거나 내 별이 아니면 거절한다. 삭제하면 댓글과 반응도 함께 지운다. */
 	deleteStar(starId: string): Promise<void>;
 	/** 시간순 */
 	listComments(starId: string): Promise<Comment[]>;
+	/** 별이 없거나 부모 댓글이 같은 별에 없거나, 다듬은 본문이 1~200자가 아니면 거절한다. */
 	createComment(
 		starId: string,
 		body: string,
@@ -119,13 +129,14 @@ export interface Repository {
 	): Promise<Comment>;
 	/** 한 사람의 별(글)에 달린 모든 댓글·대댓글. 별자리 가지를 그린다 */
 	listConstellationComments(profileId: string): Promise<Comment[]>;
+	/** 없는 댓글은 무시하고, 남의 댓글 삭제는 거절한다. 답글은 지운 댓글의 부모 또는 별에 붙인다. */
 	deleteComment(commentId: string): Promise<void>;
 	getReactions(starId: string): Promise<ReactionSummary>;
 	toggleReaction(starId: string, type: ReactionType): Promise<void>;
 	/** 튜토리얼을 끝까지 봤거나 건너뛰었는지 (샌드박스: 메모리, 새로고침하면 초기화) */
 	isTutorialDone(): Promise<boolean>;
 	completeTutorial(): Promise<void>;
-	/** 튜토리얼에서 MY로 왔을 때 '위로 스와이프해봐!' 안내를 한 번 보여 줄지 */
+	/** 대기 중인 MY 스와이프 안내가 있으면 true를 반환하고 대기 상태를 해제한다. */
 	takeSwipeHint(): Promise<boolean>;
 	requestSwipeHint(): Promise<void>;
 	updateMyLook(patch: Partial<Look>): Promise<Profile>;
@@ -137,6 +148,7 @@ export interface Repository {
 	}): Promise<void>;
 	signIn(input: { email: string; password: string }): Promise<void>;
 	signOut(): Promise<void>;
+	/** 지정한 필드만 공백을 다듬어 저장한다. 닉네임은 1~12자, 소개는 40자 이하다. */
 	updateMyProfile(patch: {
 		nickname?: string;
 		tagline?: string;
@@ -158,8 +170,10 @@ export interface Repository {
 	listEvents(month: string): Promise<CommunityEvent[]>;
 	getEvent(eventId: string): Promise<CommunityEvent | null>;
 	listBookmarkedEvents(): Promise<CommunityEvent[]>;
+	/** 없는 행사는 false */
 	isBookmarked(eventId: string): Promise<boolean>;
+	/** 없는 행사는 거절한다. */
 	toggleBookmark(eventId: string): Promise<void>;
-	/** 데이터가 바뀌면 listener를 부른다. 반환값은 구독 해제 함수 */
+	/** 화면 데이터 변경이 반영된 뒤 listener를 부른다. 반환값은 구독 해제 함수다. */
 	subscribe(listener: () => void): () => void;
 }
