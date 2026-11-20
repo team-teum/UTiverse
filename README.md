@@ -14,7 +14,8 @@ npm run dev
 
 | 명령 | 동작 |
 |---|---|
-| `npm run dev` | 개발 서버 |
+| `npm run dev` | 샌드박스 개발 서버 |
+| `npm run dev:supabase` | 로컬 Supabase를 쓰는 개발 서버 |
 | `npm run format` | 코드 포맷팅 |
 | `npm run check` | 린팅 + 포맷팅 + 타입 검사 |
 | `npm test` | Node.js 내장 러너로 단위 테스트 |
@@ -22,30 +23,31 @@ npm run dev
 
 `main`에 push하면 코드 검사·테스트·빌드 후 Cloudflare에 자동 배포합니다.
 
-## 로컬 Supabase 권한 테스트
+## 로컬 Supabase로 개발하기
 
-웹 앱은 기본으로 샌드박스에서 실행됩니다. 로컬 DB의 계정·콘텐츠 권한을 확인하려면 Docker를 켜고 **저장소 루트**에서 실행합니다.
+Docker를 켜고 **저장소 루트**에서 로컬 DB를 시작합니다. Supabase CLI를 전역으로 설치할 필요는 없습니다.
 
 ```bash
 npx --yes supabase@3.2.0 start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
+cd web
+npm run dev:supabase
+```
+
+개발 서버는 실행 중인 로컬 DB의 공개 키를 자동으로 읽습니다. 키를 복사하거나 `.env` 파일을 만들 필요가 없습니다.
+
+`/settings`에서 테스트 이메일로 가입하고 프로필을 저장한 뒤, MY에서 같은 이름으로 꾸미기·글 작성을 하고 다른 우주선에서 같은 계정으로 댓글을 남길 수 있습니다. 새로고침 후 저장값을 확인합니다. 위치·책갈피·로그인한 계정의 튜토리얼 완료도 저장됩니다. 신고는 로컬 DB에 접수됩니다. 일반 `npm run dev`와 프로덕션 빌드는 기존 샌드박스를 사용합니다.
+
+### API 권한 테스트 및 정리
+
+로컬 DB가 떠 있을 때 **저장소 루트**에서 실행합니다.
+
+```bash
 npx --yes supabase@3.2.0 status
 # 위 출력에서 로컬 Publishable 키만 복사합니다.
 SUPABASE_LOCAL_PUBLISHABLE_KEY='<local-publishable-key>' node --test supabase/tests/auth-profiles.test.mjs
-npx --yes supabase@3.2.0 stop --project-id utiverse-auth-dev --no-backup
 ```
 
-테스트는 `127.0.0.1:54321`에만 요청하고 두 계정으로 각 권한 시나리오를 확인합니다. 마지막 명령은 이 로컬 프로젝트의 테스트 데이터만 삭제합니다. 운영 프로젝트를 연결하거나 비밀 키를 쓰지 않습니다.
-
-### 기존 가입창·설정·MY에서 시험하기
-
-로컬 Supabase를 켠 상태에서 `web/`의 개발 서버만 명시적으로 켭니다.
-
-```bash
-cd web
-VITE_SUPABASE_ACCOUNT_PREVIEW=true VITE_SUPABASE_LOCAL_PUBLISHABLE_KEY='<local-publishable-key>' npm run dev -- --host 127.0.0.1
-```
-
-`/settings`에서 테스트 이메일로 가입하고 프로필을 저장한 뒤, MY에서 같은 이름으로 꾸미기·글 작성을 하고 다른 우주선에서 같은 계정으로 댓글을 남길 수 있습니다. 새로고침 후 저장값을 확인합니다. 위치·책갈피·로그인한 계정의 튜토리얼 완료도 저장됩니다. 신고는 로컬 DB에 접수됩니다. 플래그가 없거나 프로덕션으로 빌드하면 기존 샌드박스만 사용합니다.
+API 테스트는 `127.0.0.1:54321`에만 요청합니다. 테스트 데이터까지 지워도 된다면 `npx --yes supabase@3.2.0 stop --project-id utiverse-auth-dev --no-backup`으로 정리합니다.
 
 ### 예시 이웃 데이터
 

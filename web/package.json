@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"dev": "vite",
+		"dev:supabase": "node scripts/dev-supabase.mjs",
 		"build": "tsc -b && vite build",
 		"lint": "biome lint .",
 		"typecheck": "tsc -b",
