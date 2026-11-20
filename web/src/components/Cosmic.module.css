@@ -19,6 +19,25 @@
 	position: relative;
 }
 
+@container app-frame (width >= 64rem) {
+	.page {
+		max-inline-size: 72rem;
+		margin-inline: auto;
+		gap: 1.25rem;
+		padding: 2rem clamp(2rem, 5cqi, 5rem) 3rem;
+		background: none;
+	}
+
+	.head,
+	.footer {
+		grid-column: 1 / -1;
+	}
+
+	.title {
+		font-size: clamp(1.5rem, 3cqi, 2.25rem);
+	}
+}
+
 /* 제목줄: 도트 아이콘 + 도트 제목 + 작은 부제 */
 .head {
 	display: grid;

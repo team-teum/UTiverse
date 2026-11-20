@@ -14,7 +14,7 @@
 	block-size: 100vh;
 	overflow: hidden;
 	/* 너비·높이 모두 기준이 되어 --dp가 둘 중 작은 쪽에 맞춰진다 (tokens.css) */
-	container-type: size;
+	container: app-frame / size;
 	isolation: isolate;
 	/* 은은한 성운 + 자잘한 도트 별 (public/assets/bg, 코드로 만든 그림) */
 	background:
@@ -33,6 +33,15 @@
 /* 휴대폰에서는 주소창 높이가 바뀌어도 가로 폭을 줄이지 않는다. */
 @media (width < 48rem) {
 	.frame {
+		inline-size: 100%;
+	}
+}
+
+/* 넓고 높이가 충분할 때만 각 화면이 데스크톱 배치를 쓴다. */
+@media (width >= 64rem) and (height >= 34rem) {
+	.frame {
+		--app-layer-width: 100%;
+		--dp: clamp(0.9px, calc(100cqh / 874), 1.1px);
 		inline-size: 100%;
 	}
 }
@@ -66,4 +75,10 @@
 /* MY는 안에서 두 화면을 넘기므로 바깥은 스크롤하지 않는다 */
 .pagerHost {
 	overflow: hidden;
+}
+
+@container app-frame (width >= 64rem) {
+	.pagerHost {
+		overflow: hidden auto;
+	}
 }

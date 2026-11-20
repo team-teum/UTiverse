@@ -59,18 +59,29 @@ export function Calendar() {
 
 	function pick(date: string) {
 		setSelected(date);
-		requestAnimationFrame(() =>
-			listRef.current?.scrollIntoView({
+		requestAnimationFrame(() => {
+			const list = listRef.current;
+			if (
+				!list ||
+				getComputedStyle(list).getPropertyValue("--calendar-side-by-side") ===
+					"1"
+			) {
+				return;
+			}
+			list.scrollIntoView({
 				behavior: preferredScrollBehavior(),
 				block: "start",
-			}),
-		);
+			});
+		});
 	}
 
 	const [, fm, fd] = focus?.split("-").map(Number) ?? [];
 
 	return (
-		<section className={ui.page} aria-labelledby="calendar-heading">
+		<section
+			className={`${ui.page} ${styles.calendar}`}
+			aria-labelledby="calendar-heading"
+		>
 			<AssetImage
 				assetKey="deco.planet"
 				alt=""

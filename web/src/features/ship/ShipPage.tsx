@@ -1,4 +1,5 @@
 import {
+	type CSSProperties,
 	type ReactNode,
 	type TouchEvent,
 	useCallback,
@@ -83,7 +84,10 @@ export function ShipPage({
 			!open && openedFromHint.current
 				? customizeHintRef.current
 				: shipButtonRef.current;
-		target?.focus({ preventScroll: true });
+		const focusTarget = target?.getClientRects().length
+			? target
+			: shipButtonRef.current;
+		focusTarget?.focus({ preventScroll: true });
 		if (!open) openedFromHint.current = false;
 	}, [open]);
 	const [offset, setOffset] = useState(0);
@@ -145,7 +149,14 @@ export function ShipPage({
 		if (!next) panelRef.current?.scrollTo({ top: 0 });
 	}
 
-	function onTouchStart(event: TouchEvent) {
+	function isSideBySide(element: HTMLElement) {
+		return (
+			getComputedStyle(element).getPropertyValue("--ship-side-by-side") === "1"
+		);
+	}
+
+	function onTouchStart(event: TouchEvent<HTMLElement>) {
+		if (isSideBySide(event.currentTarget)) return;
 		const panel = panelRef.current;
 		const inPanel = Boolean(panel?.contains(event.target as Node));
 		touch.current = {
@@ -165,7 +176,8 @@ export function ShipPage({
 			turn(false);
 	}
 
-	function onWheel(event: WheelEvent) {
+	function onWheel(event: WheelEvent<HTMLElement>) {
+		if (isSideBySide(event.currentTarget)) return;
 		const now = Date.now();
 		if (now - lastWheel.current < 700) return;
 		const panel = panelRef.current;
@@ -241,6 +253,7 @@ export function ShipPage({
 			ref={sectionRef}
 			className={`${styles.screen} ${customize ? styles.pager : ""} ${fromUniverse ? styles.arrival : ""}`}
 			aria-labelledby={headingId}
+			data-customizing={customize && open ? "" : undefined}
 			onTouchStart={customize ? onTouchStart : undefined}
 			onTouchEnd={customize ? onTouchEnd : undefined}
 			onWheel={customize ? onWheel : undefined}
@@ -249,7 +262,7 @@ export function ShipPage({
 				className={styles.stack}
 				style={
 					customize
-						? { transform: `translateY(${open ? -offset : 0}px)` }
+						? ({ "--pager-offset": `${open ? -offset : 0}px` } as CSSProperties)
 						: undefined
 				}
 			>
@@ -361,11 +374,7 @@ export function ShipPage({
 									type="button"
 									className={styles.swipeHint}
 									ref={customizeHintRef}
-									aria-label={
-										open
-											? "별자리로 돌아가기"
-											: "위로 스와이프해서 우주선 꾸미기"
-									}
+									aria-label={open ? "별자리로 돌아가기" : undefined}
 									onClick={() => {
 										if (!open) openedFromHint.current = true;
 										turn(!open);
@@ -382,9 +391,15 @@ export function ShipPage({
 										</>
 									) : (
 										<>
-											<span aria-hidden="true">
-												위로 스와이프해서 우주선꾸미기
+											<span className={styles.mobileHint}>
+												<span aria-hidden="true">
+													위로 스와이프해서 우주선꾸미기
+												</span>
+												<span className="sr-only">
+													위로 스와이프해서 우주선 꾸미기
+												</span>
 											</span>
+											<span className={styles.desktopHint}>우주선 꾸미기</span>
 											<svg viewBox="0 0 142 18.5" aria-hidden="true">
 												<path d="M.3 17 70.3 1.5 141.8 17" />
 											</svg>
@@ -396,7 +411,11 @@ export function ShipPage({
 						<div
 							ref={panelRef}
 							className={styles.customize}
-							style={{ blockSize: panelHeight }}
+							style={
+								panelHeight === undefined
+									? undefined
+									: ({ "--panel-height": `${panelHeight}px` } as CSSProperties)
+							}
 							inert={!open}
 						>
 							{customize}

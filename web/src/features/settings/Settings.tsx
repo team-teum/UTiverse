@@ -50,7 +50,10 @@ export function Settings() {
 	}
 
 	return (
-		<section className={cosmic.page} aria-labelledby="settings-heading">
+		<section
+			className={`${cosmic.page} ${styles.settings}`}
+			aria-labelledby="settings-heading"
+		>
 			<AssetImage
 				assetKey="deco.planet"
 				alt=""

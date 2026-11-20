@@ -50,3 +50,14 @@
 	font-size: 12px;
 	line-height: 1.5;
 }
+
+@container app-frame (width >= 64rem) {
+	.settings {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		align-items: start;
+	}
+
+	.group {
+		min-inline-size: 0;
+	}
+}

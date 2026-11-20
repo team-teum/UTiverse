@@ -128,3 +128,18 @@
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
 }
+
+@container app-frame (width >= 64rem) {
+	.screen .tini {
+		inset-inline-start: 71%;
+		inset-block: auto 50%;
+		transform: translateX(-50%);
+	}
+
+	.dialog {
+		inset-block-start: 50%;
+		inset-inline: 54% 8%;
+		max-inline-size: 32rem;
+		padding: 1.25rem;
+	}
+}

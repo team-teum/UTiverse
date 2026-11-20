@@ -416,3 +416,41 @@
 	color: var(--color-lavender-light);
 	font-size: calc(12 * var(--dp));
 }
+
+@container app-frame (width >= 64rem) {
+	.screen {
+		max-inline-size: 72rem;
+		margin-inline: auto;
+		padding: 2rem clamp(2rem, 5cqi, 5rem) 3rem;
+	}
+
+	.grid {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: clamp(1rem, 3cqi, 2.5rem);
+		inline-size: 100%;
+	}
+
+	.card {
+		min-inline-size: 0;
+	}
+
+	.cardStar {
+		font-size: 0.875rem;
+	}
+
+	.nearby,
+	.nearbyEmpty {
+		grid-template-columns: minmax(0, 1fr) minmax(17rem, 24rem);
+		gap: 2rem;
+	}
+
+	.preview {
+		position: relative;
+		inset: auto;
+	}
+
+	.nearbyFoot {
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+}

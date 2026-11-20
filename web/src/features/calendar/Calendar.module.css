@@ -12,6 +12,17 @@
 	inline-size: calc(46 * var(--dp));
 }
 
+@container app-frame (width >= 64rem) {
+	.calendar {
+		grid-template-columns: minmax(23rem, 1fr) minmax(0, 1fr);
+		align-items: start;
+	}
+
+	.calendar .dayPanel {
+		--calendar-side-by-side: 1;
+	}
+}
+
 .monthRow {
 	display: flex;
 	gap: 8px;
@@ -182,4 +193,11 @@
 	flex-wrap: wrap;
 	gap: 8px;
 	justify-content: center;
+}
+
+@container app-frame (width >= 64rem) {
+	.bookmarks .events {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
+	}
 }

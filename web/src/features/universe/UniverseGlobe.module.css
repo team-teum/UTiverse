@@ -13,8 +13,12 @@
 	color: var(--color-lavender-light);
 }
 
-.view > div {
+.stage {
 	inline-size: 100%;
+}
+
+.controls {
+	display: contents;
 }
 
 /* 「탐색하기」: 반투명 흰 버블 스티커 (볼록한 퍼피 스티커 느낌) */
@@ -374,6 +378,67 @@
 	border-color: var(--color-accent-yellow);
 	text-decoration: underline;
 	text-underline-offset: 0.18em;
+}
+
+@container app-frame (width >= 64rem) {
+	.view {
+		grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+		align-items: center;
+		gap: clamp(2rem, 4cqi, 4.5rem);
+		max-inline-size: 72rem;
+		margin-inline: auto;
+	}
+
+	.stage {
+		container-type: inline-size;
+		max-inline-size: min(36rem, 77cqh);
+	}
+
+	.globe {
+		/* 좌표와 별자리 크기는 넓어진 앱 프레임이 아니라 이 무대를 따른다. */
+		--dp: calc(100cqw / 402);
+	}
+
+	.controls {
+		z-index: 1;
+		display: grid;
+		justify-items: start;
+		justify-self: start;
+		gap: 1rem;
+	}
+
+	.help {
+		margin: 0;
+		font-size: 1rem;
+		text-align: start;
+		line-height: 1.6;
+	}
+
+	.telescope {
+		justify-self: start;
+		grid-auto-flow: column;
+		gap: 0.5rem;
+		inline-size: auto;
+		block-size: auto;
+		min-block-size: 3rem;
+		margin-block-start: 0.5rem;
+		padding-inline: 1.25rem;
+		border-width: 2px;
+		border-radius: 999px;
+		font-size: 1rem;
+		font-weight: 700;
+	}
+
+	.telescope svg {
+		inline-size: 1.5rem;
+		block-size: 1.5rem;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.swipeHint {
+			display: none;
+		}
+	}
 }
 
 @media (forced-colors: active) {

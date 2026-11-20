@@ -32,6 +32,7 @@
 
 .pager .stack {
 	flex: none;
+	transform: translateY(var(--pager-offset, 0px));
 	transition: transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
 	will-change: transform;
 }
@@ -144,6 +145,10 @@
 	cursor: pointer;
 }
 
+.desktopHint {
+	display: none;
+}
+
 .swipeHint svg {
 	inline-size: calc(110 * var(--dp));
 	block-size: calc(12 * var(--dp));
@@ -155,6 +160,7 @@
 
 .customize {
 	box-sizing: border-box;
+	block-size: var(--panel-height, auto);
 	transition: opacity 360ms ease;
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -256,5 +262,101 @@
 @media (width < 48rem) {
 	.customize {
 		padding-block-end: calc(12px + env(safe-area-inset-bottom, 0px));
+	}
+}
+
+@container app-frame (width >= 64rem) {
+	.screen {
+		max-inline-size: 72rem;
+		margin-inline: auto;
+		padding: 2rem clamp(2.5rem, 5cqi, 5rem) 4rem;
+	}
+
+	.pager {
+		--ship-side-by-side: 1;
+		block-size: auto;
+		overflow: visible;
+		touch-action: auto;
+	}
+
+	.stack,
+	.pager .stack {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-content: start;
+		align-items: center;
+		gap: 2rem clamp(2rem, 5cqi, 5rem);
+		transform: none;
+		transition: none;
+		will-change: auto;
+	}
+
+	.profile {
+		grid-column: 1 / -1;
+	}
+
+	.nickname {
+		font-size: 1.5rem;
+	}
+
+	.sky {
+		border-radius: 1rem;
+		background: radial-gradient(
+			ellipse,
+			rgb(129 126 196 / 15%),
+			transparent 70%
+		);
+	}
+
+	.screen .stack .ship {
+		margin-block: 0;
+	}
+
+	.ship > .shipButton {
+		transform-origin: center;
+	}
+
+	.mobileHint,
+	.swipeHint svg,
+	.customize[inert],
+	.pager[data-customizing] .sky {
+		display: none;
+	}
+
+	.desktopHint {
+		display: block;
+	}
+
+	.swipeHint {
+		justify-self: center;
+		inline-size: auto;
+		min-block-size: 2.75rem;
+		padding-inline: 1.25rem;
+		border: 1px solid var(--color-stroke);
+		border-radius: 999px;
+		background: var(--color-panel);
+		font-size: 0.9375rem;
+	}
+
+	.pager[data-customizing] .stack {
+		grid-template-columns: minmax(0, 1fr) minmax(24rem, 1.2fr);
+		align-items: start;
+		row-gap: 1rem;
+	}
+
+	.pager[data-customizing] .ship {
+		grid-row: 2 / span 2;
+		align-self: center;
+	}
+
+	.hintSlot,
+	.customize {
+		grid-column: 2;
+		min-inline-size: 0;
+	}
+
+	.customize {
+		block-size: auto;
+		overflow: visible;
 	}
 }

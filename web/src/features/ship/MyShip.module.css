@@ -50,6 +50,17 @@
 	margin-inline: auto;
 }
 
+@container app-frame (width >= 64rem) {
+	/* 위로 미는 모바일 안내 대신 우주선 아래에 꾸미기 버튼을 둔다. */
+	.hint.hint {
+		display: none;
+	}
+
+	.actions {
+		inline-size: 100%;
+	}
+}
+
 .back,
 .save {
 	min-block-size: 40px;

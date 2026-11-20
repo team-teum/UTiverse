@@ -338,7 +338,9 @@ export function UniverseGlobe({
 			<p id={helpId} className="sr-only">
 				방향키를 눌러 우주를 돌릴 수 있어요.
 			</p>
-			<div className={flight ? styles.flightStage : undefined}>
+			<div
+				className={`${styles.stage}${flight ? ` ${styles.flightStage}` : ""}`}
+			>
 				<div
 					ref={globeRef}
 					className={`${styles.globe} ${dragging ? styles.dragging : ""}`}
@@ -444,34 +446,36 @@ export function UniverseGlobe({
 					</div>
 				)}
 			</div>
-			<p className={styles.help}>
-				드래그해서 둘러보세요.
-				<br />
-				이름을 누르면 우주선으로 이동해요.
-			</p>
-			{/* Figma 50:6604 「탐색하기」: 노란 원 + 쌍안경 → 랜덤/주변 탐색 */}
-			<button
-				type="button"
-				ref={telescopeRef}
-				className={styles.telescope}
-				aria-disabled={flight !== null}
-				onClick={openExplore}
-			>
-				<svg
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="1.8"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					aria-hidden="true"
+			<div className={styles.controls}>
+				<p className={styles.help}>
+					드래그해서 둘러보세요.
+					<br />
+					이름을 누르면 우주선으로 이동해요.
+				</p>
+				{/* Figma 50:6604 「탐색하기」: 노란 원 + 쌍안경 → 랜덤/주변 탐색 */}
+				<button
+					type="button"
+					ref={telescopeRef}
+					className={styles.telescope}
+					aria-disabled={flight !== null}
+					onClick={openExplore}
 				>
-					<circle cx="5.5" cy="16" r="3.75" />
-					<circle cx="18.5" cy="16" r="3.75" />
-					<path d="M2 14.5 5.3 6a2 2 0 0 1 3.95.5V16m5.5 0V6.5A2 2 0 0 1 18.7 6l3.3 8.5M9.25 8h5.5" />
-				</svg>
-				탐색하기
-			</button>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.8"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						aria-hidden="true"
+					>
+						<circle cx="5.5" cy="16" r="3.75" />
+						<circle cx="18.5" cy="16" r="3.75" />
+						<path d="M2 14.5 5.3 6a2 2 0 0 1 3.95.5V16m5.5 0V6.5A2 2 0 0 1 18.7 6l3.3 8.5M9.25 8h5.5" />
+					</svg>
+					탐색하기
+				</button>
+			</div>
 			<p className="sr-only" role="status">
 				{announcement}
 			</p>

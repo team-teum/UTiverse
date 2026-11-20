@@ -2,7 +2,7 @@
 	position: fixed;
 	inset: 0;
 	box-sizing: border-box;
-	inline-size: min(100vw, calc(100dvh * 402 / 874));
+	inline-size: var(--app-layer-width, min(100vw, calc(100dvh * 402 / 874)));
 	block-size: 100dvh;
 	max-inline-size: none;
 	max-block-size: none;

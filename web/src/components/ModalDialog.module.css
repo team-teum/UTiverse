@@ -2,7 +2,7 @@
 	position: fixed;
 	inset: 0;
 	box-sizing: border-box;
-	inline-size: min(100vw, calc(100vh * 402 / 874));
+	inline-size: var(--app-layer-width, min(100vw, calc(100vh * 402 / 874)));
 	block-size: 100vh;
 	max-inline-size: none;
 	max-block-size: none;
@@ -16,7 +16,7 @@
 
 @supports (height: 100dvh) {
 	.layer {
-		inline-size: min(100vw, calc(100dvh * 402 / 874));
+		inline-size: var(--app-layer-width, min(100vw, calc(100dvh * 402 / 874)));
 		block-size: 100dvh;
 	}
 }
@@ -91,4 +91,18 @@
 	background: rgb(18 15 46 / 96%);
 	color: #fff;
 	backdrop-filter: blur(8px);
+}
+
+@container app-frame (width >= 64rem) {
+	.card .panel {
+		inline-size: min(100%, 38rem);
+	}
+
+	.modal .panel {
+		inline-size: min(100%, 32rem);
+	}
+
+	.space .panel {
+		inline-size: min(100%, 26rem);
+	}
 }

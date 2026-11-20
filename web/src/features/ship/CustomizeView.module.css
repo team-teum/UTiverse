@@ -6,6 +6,12 @@
 	margin-inline: auto;
 }
 
+@container app-frame (width >= 64rem) {
+	.view {
+		inline-size: 100%;
+	}
+}
+
 .head {
 	display: flex;
 	gap: 8px;

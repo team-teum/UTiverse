@@ -34,3 +34,14 @@
 	margin-block-start: 0.25rem;
 	color: var(--color-lavender-light);
 }
+
+@container app-frame (width >= 64rem) {
+	.notice {
+		inset-inline: 56% 8%;
+		inset-block: 50% auto;
+		padding: 1.25rem;
+		font-size: 1rem;
+		line-height: 1.6;
+		transform: translateY(-50%);
+	}
+}

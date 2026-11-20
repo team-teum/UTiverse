@@ -13,7 +13,10 @@ export function Bookmarks() {
 	);
 
 	return (
-		<section className={ui.page} aria-labelledby="bookmarks-heading">
+		<section
+			className={`${ui.page} ${styles.bookmarks}`}
+			aria-labelledby="bookmarks-heading"
+		>
 			<AssetImage
 				assetKey="deco.rocket"
 				alt=""

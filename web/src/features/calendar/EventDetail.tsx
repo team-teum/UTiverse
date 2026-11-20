@@ -35,7 +35,10 @@ export function EventDetail() {
 	const [y, m, d] = event.date.split("-").map(Number);
 
 	return (
-		<article className={ui.page} aria-labelledby="event-title">
+		<article
+			className={`${ui.page} ${styles.detail}`}
+			aria-labelledby="event-title"
+		>
 			<AssetImage
 				assetKey="deco.sparkle"
 				alt=""

@@ -28,3 +28,13 @@
 	inline-size: 100%;
 	padding-block: 1rem;
 }
+
+@container app-frame (width >= 64rem) {
+	.screen {
+		padding-inline: clamp(2.5rem, 5cqi, 6rem);
+	}
+
+	.scene > p {
+		text-align: center;
+	}
+}

@@ -32,7 +32,7 @@
 
 /* 「그림」 원형 그림 480×478.5 (가장자리 흐림 포함) */
 .art {
-	inset-inline-start: calc(50% + -238.7 * var(--dp));
+	inset-inline-start: calc(var(--scene-center-x, 50%) - 238.7 * var(--dp));
 	inset-block-start: calc(50% + -226.93 * var(--dp));
 	inline-size: calc(480.007 * var(--dp));
 	block-size: calc(478.476 * var(--dp));
@@ -40,7 +40,7 @@
 
 /* 「Text on a Path – uTiverse」: 글자 147.5×47.7 + 빛 효과 여백까지 포함한 SVG */
 .logo {
-	inset-inline-start: calc(50% + -320.98 * var(--dp));
+	inset-inline-start: calc(var(--scene-center-x, 50%) - 320.98 * var(--dp));
 	inset-block-start: calc(50% + -280.63 * var(--dp));
 	inline-size: calc(645.132 * var(--dp));
 	block-size: calc(544.921 * var(--dp));
@@ -48,8 +48,14 @@
 
 /* 「화면을 클릭해서 시작하기」: 글자 127.3×11.5 + 효과 여백 */
 .tap {
-	inset-inline-start: calc(50% + -311.5 * var(--dp));
+	inset-inline-start: calc(var(--scene-center-x, 50%) - 311.5 * var(--dp));
 	inset-block-start: calc(50% + -216.15 * var(--dp));
 	inline-size: calc(627.296 * var(--dp));
 	block-size: calc(511.535 * var(--dp));
+}
+
+@container app-frame (width >= 64rem) {
+	.scene {
+		--scene-center-x: 31%;
+	}
 }
