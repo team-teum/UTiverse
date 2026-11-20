@@ -45,7 +45,12 @@ interface GlobeView {
 	trigger?: VisitTrigger;
 }
 
-// 브라우저 뒤로가기는 해당 기록을, 홈 버튼은 마지막에 본 우주를 복원한다.
+/**
+ * 우주 기록별 시점 복원: 브라우저 뒤로·앞으로 돌아오면 해당 기록의 회전을 우선 복원한다.
+ * 기록이 없는 홈 이동은 마지막 우주 시점을 이어 본다(resumeView). 둘 다 없으면 기본 방향이다.
+ * 함께 저장한 방문 버튼이 있으면 그곳에 초점을 돌리고, 선택할 수 없으면 우주 조작 버튼에 둔다.
+ * 복원한 시점은 시작 회전을 하지 않는다. 기록은 페이지를 새로고침하면 초기화한다.
+ */
 const historyViews = new Map<string, GlobeView>();
 let latestView: GlobeView | undefined;
 

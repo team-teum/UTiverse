@@ -35,7 +35,12 @@ interface RandomDraw {
 	visited?: string;
 }
 
-// 뒤로 돌아오면 같은 카드를 보여 준다. 샌드박스 새로고침 때는 초기화된다.
+/**
+ * 탐색 기록별 뽑기 고정: 성공한 카드는 같은 탐색 기록에서 「다시 뽑기」 전까지 유지한다.
+ * 랜덤·주변 전환과 저장소 변경으로는 다시 뽑지 않는다. 새 기록은 별도로 뽑는다.
+ * 브라우저 뒤로·앞으로 돌아오면 같은 카드와 마지막으로 방문한 링크의 초점을 복원한다.
+ * 실패한 뽑기는 보관하지 않고, 페이지를 새로고침하면 모두 초기화한다.
+ */
 const randomDraws = new Map<string, RandomDraw>();
 
 function getRandomDraw(entry: string): RandomDraw {
@@ -72,6 +77,7 @@ export function Explore() {
 				? "nearby"
 				: "random";
 
+	// URL의 모드만 바꾼다. replace가 라우터 key를 바꿔도 같은 뽑기를 쓴다.
 	function setMode(next: Mode) {
 		setParams(
 			{ mode: next },
