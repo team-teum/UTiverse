@@ -8,7 +8,7 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 CI 및 웹 접근성·입력 검증 보완. 미사용 코드·기능별 디렉터리 정리 및 검증은 3.3·3.4, 초점·터치·동작 줄이기 보완은 3.6, 모바일 전체 폭·한글 줄바꿈과 데스크톱 배치는 4장 |
+| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 검사와 Node.js 단위 테스트(3.10)를 CI에서 실행. 웹 접근성·입력 검증 보완. 미사용 코드·기능별 디렉터리 정리 및 검증은 3.3·3.4, 초점·터치·동작 줄이기 보완은 3.6, 모바일 전체 폭·한글 줄바꿈과 데스크톱 배치는 4장 |
 | 로컬 테스트 샌드박스 | 일부 (글·댓글·반응·예시 우주선) | 3.2·6.1; 시작 화면에 예시 이웃 수 표시. 예시 프로필·별은 고정 UUID로 직접 링크 새로고침 지원. `web/src/api/` 공통 인터페이스 + 메모리 구현. 앱은 샌드박스 인스턴스 하나를 공유하며 반환값은 독립 스냅샷이다. 거절된 쓰기는 상태·구독에 영향을 주지 않으며 책갈피는 존재하는 행사만 가리킨다(3.7). 예시 우주선 10개·별 31개·댓글은 `web/src/api/sandboxExamples.ts`(Claude 초안, **팀 검토·승인 필요**) |
 | Supabase 스키마 · RLS · 함수 (migration) | 미착수 | 7장 |
 | 시드 데이터 | 미착수 | 7.6 |
@@ -58,9 +58,9 @@
 | 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
 | 도구 | Node.js 24 LTS (`.nvmrc`: 24.22.2), npm 11.19.1로 검증, Wrangler 4.162.0(로컬 devDependency). Supabase CLI는 실제 DB 착수 시 추가 |
 | 코드 검사 | Biome 2.6.8 (`biome init` 기본 formatter·권장 lint·import 정렬) + TypeScript strict. main push마다 GitHub Actions에서 검사 통과 후 빌드·배포 |
-| 테스트 | 저장소에 테스트 프레임워크·스모크 스크립트를 두지 않음. 필요할 때 일회성 브라우저 확인을 수행하고 기록만 남김. 실제 DB 두 계정 점검은 9장 |
+| 테스트 | Node.js 내장 러너로 저장소 계약·별자리 프리셋·우주 구면 계산을 검사(3.10). 브라우저는 일회성 확인, 실제 DB 두 계정 점검은 9장 |
 
-위 버전은 2026-11-16 기준이다. React·라우터·Vite·TypeScript·Biome·Wrangler만 현재 설치했다(3.1). 미사용 Query provider와 Vitest/Playwright 테스트 환경은 lean scaffold 결정에 따라 제거했다. Supabase JS·Query·Phosphor·Supabase CLI는 필요할 때 추가하는 후속 선택이다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
+버전은 `web/package.json`과 lockfile을 기준으로 한다. 단위 테스트는 별도 러너 패키지 없이 Node.js 내장 기능을 사용한다(3.10). Supabase JS·Query·Phosphor·Supabase CLI는 필요할 때 추가하는 후속 선택이다. 의존성은 최신 안정판을 우선 선호하되 필수로 강제하지 않는다. 위 버전은 참고용이며 구현 착수 시 Node.js LTS·엔진 및 라이브러리 간 호환성을 확인해 적합한 안정판을 선택하고 lockfile을 커밋한다. prerelease는 기본 채택하지 않으며, 최신 안정판 대신 이전 버전을 선택하면 이유를 기록한다. Node.js는 `.nvmrc`와 `package.json` engines에 검증한 버전을 명시한다.
 
 ## 3. 저장소 구조
 
@@ -110,7 +110,7 @@ UTiverse/
 - 첫 scaffold는 React·TypeScript strict·Vite와 작은 AppFrame, `/`·`/universe`·`/me` 플레이스홀더로 시작했다. 이후 기능별 구현 상태는 0장·8장을 따른다.
 - 라우터는 `createBrowserRouter`(데이터 라우터)다. 쓰던 글·댓글이 있을 때 뒤로가기·이동을 확인하는 `useBlocker`가 이 방식에서만 동작한다(2026-11-17).
 - 미사용 Query provider, Vitest·Testing Library·jsdom·Playwright 환경을 제거했다. 테스트·추상화는 필요한 기능과 함께 추가한다. CLI는 로컬 의존성이다.
-- `.github/workflows/ci.yml`: main push마다 Node `.nvmrc` + `npm ci` → `npm run check` → `npm run deploy` (빌드 포함). 검사 실패 시 배포하지 않고 파일 자동 수정·커밋은 하지 않는다. concurrency로 병렬 배포를 제한한다. 직접 push를 막는 보호 규칙은 아니다. 계정 ID·배포 토큰은 저장소 Actions secrets로 전달하며 로컬 OAuth 자격 증명은 업로드하지 않는다.
+- `.github/workflows/ci.yml`: main push마다 Node `.nvmrc` + `npm ci` → `npm run check` → `npm test` → `npm run deploy` (빌드 포함). 검사 실패 시 배포하지 않고 파일 자동 수정·커밋은 하지 않는다. concurrency로 병렬 배포를 제한한다. 직접 push를 막는 보호 규칙은 아니다. 계정 ID·배포 토큰은 저장소 Actions secrets로 전달하며 로컬 OAuth 자격 증명은 업로드하지 않는다.
 - 루트 `biome.json`은 `biome init` 기본 설정이다. 로컬 포맷 수정은 `cd web && npm run format`, import 정렬·안전한 lint 수정은 `npx biome check --write .`. 웹 코드·설정 중 Biome 지원 파일만 검사하며 YAML 워크플로·문서 전체 포맷은 하지 않는다. 기존 Oxlint·Prettier 패키지와 설정은 제거했다.
 
 **직접 확인한 항목**
@@ -214,6 +214,15 @@ UTiverse/
 - [x] Chromium 360×640에서 모드 전환과 저장소 갱신 뒤에도 뽑기 횟수와 카드가 그대로였다. 뒤로·앞으로 이동할 때 방문 링크에 초점이 돌아왔으며 「다시 뽑기」와 새 탐색 진입은 각각 한 번씩 새로 뽑았다.
 - [x] 우주를 방향키로 돌린 뒤 탐색에서 돌아오면 해당 방향과 「탐색하기」 초점을 되살렸다. MY에서 홈으로 오면 마지막 시점을 이어 보고, 두 우주 기록을 뒤로·앞으로 오가면 각 기록의 방향이 달랐다.
 - 재현: `cd web && npm run check && npm run build`(기존 CSS 경고 6개). `npm run dev`의 `/universe`에서 동작 줄이기를 켠 Chromium으로 이동과 초점을 확인했다.
+
+### 3.10 단위 테스트
+
+- `cd web && npm test`는 Node.js 24의 `node --test`로 실행한다. 수정 중에는 `npm test -- --watch`를 쓸 수 있다. 테스트와 테스트가 불러오는 저장소의 런타임 import에는 `.ts` 확장자를 명시한다. 별도 러너 패키지, 로더, DOM 모사 환경, 브라우저 러너는 추가하지 않았다.
+- 대상: 독립된 샌드박스 저장소의 상태·알림·댓글·책갈피 계약, 프로필별 별자리 프리셋의 안정성·슬롯, 우주 구면 배치와 회전. 터치·키보드 초점·뒤로가기 같은 브라우저 동작은 이 단위 테스트의 범위가 아니다.
+
+**검증 기록**
+
+- [x] `cd web && npm ci && npm test && npm run check && npm run build` 실행. 테스트 파일 3개, 단위 테스트 11개 통과. GitHub Actions 실행 및 배포는 미확인이다.
 
 ## 4. 화면 비율과 레이아웃
 

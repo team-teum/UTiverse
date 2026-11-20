@@ -17,9 +17,10 @@ npm run dev
 | `npm run dev` | 개발 서버 |
 | `npm run format` | 코드 포맷팅 |
 | `npm run check` | 린팅 + 포맷팅 + 타입 검사 |
+| `npm test` | Node.js 내장 러너로 단위 테스트 |
 | `npm run build` | 프로덕션 빌드 → `dist/` |
 
-`main`에 push하면 코드 검사·빌드 후 Cloudflare에 자동 배포합니다.
+`main`에 push하면 코드 검사·테스트·빌드 후 Cloudflare에 자동 배포합니다.
 
 ## 파일 구조
 

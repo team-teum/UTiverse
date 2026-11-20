@@ -1,8 +1,8 @@
-import { isValidLength } from "../lib/postText";
-import { isValidRegion } from "../lib/regions";
-import { DEFAULT_LOOK, withLook } from "../pixel/look";
-import { sandboxEvents } from "./sandboxEvents";
-import { exampleProfiles } from "./sandboxExamples";
+import { isValidLength } from "../lib/postText.ts";
+import { isValidRegion } from "../lib/regions.ts";
+import { DEFAULT_LOOK, withLook } from "../pixel/look.ts";
+import { sandboxEvents } from "./sandboxEvents.ts";
+import { exampleProfiles } from "./sandboxExamples.ts";
 import {
 	COMMENT_MAX_CHARS,
 	type Comment,
@@ -17,7 +17,7 @@ import {
 	type Repository,
 	STAR_MAX_CHARS,
 	type Star,
-} from "./types";
+} from "./types.ts";
 
 interface StoredComment {
 	id: string;
