@@ -4,6 +4,7 @@ import { COMMENT_MAX_CHARS, type Comment } from "../../api/types";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatRelative } from "../../lib/dateFormat";
+import { preferredScrollBehavior } from "../../lib/motion";
 import { countChars, lengthError } from "../../lib/postText";
 import { AuthDialog } from "../auth/AuthDialog";
 import styles from "./CommentSection.module.css";
@@ -57,9 +58,12 @@ export function CommentSection({
 
 	useEffect(() => {
 		if (!focusCommentId || !hasComments) return;
-		document
-			.getElementById(`comment-${focusCommentId}`)
-			?.scrollIntoView({ block: "center", behavior: "smooth" });
+		const comment = document.getElementById(`comment-${focusCommentId}`);
+		comment?.focus({ preventScroll: true });
+		comment?.scrollIntoView({
+			block: "center",
+			behavior: preferredScrollBehavior(),
+		});
 	}, [focusCommentId, hasComments]);
 
 	const length = countChars(draft);
@@ -118,6 +122,7 @@ export function CommentSection({
 			<li
 				key={comment.id}
 				id={`comment-${comment.id}`}
+				tabIndex={comment.id === focusCommentId ? -1 : undefined}
 				className={`${styles.item} ${depth > 0 ? styles.reply : ""} ${comment.id === focusCommentId ? styles.focused : ""}`}
 			>
 				<p className={styles.meta}>

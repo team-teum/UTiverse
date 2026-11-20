@@ -294,6 +294,38 @@
 	);
 }
 
+/* 별과 탭 영역은 그대로 두고 두 별에만 짧게 빛을 더한다. */
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+	.front:nth-child(2 of .front) .dot::after,
+	.front:nth-child(4 of .front) .dot::after {
+		content: "";
+		position: absolute;
+		inset: -12px;
+		background:
+			radial-gradient(ellipse 8% 44%, #fff4ff 12%, transparent 100%),
+			radial-gradient(ellipse 44% 8%, #fff4ff 12%, transparent 100%),
+			radial-gradient(circle, rgb(219 177 255 / 90%), transparent 68%);
+		opacity: 0;
+		pointer-events: none;
+		animation: ambient-twinkle 950ms ease-in-out 6s;
+	}
+
+	.front:nth-child(4 of .front) .dot::after {
+		animation-delay: 10s;
+	}
+
+	:is(.globe:has(:focus-visible), .dragging, .flightStage, .link:hover)
+		.dot::after {
+		visibility: hidden;
+	}
+}
+
+@keyframes ambient-twinkle {
+	50% {
+		opacity: 0.85;
+	}
+}
+
 .name {
 	position: absolute;
 	inset-block-start: 44px;
@@ -313,16 +345,13 @@
 	transform: translateX(-50%);
 }
 
-/* 망원경이 뒤쪽 점을 골라도 출발 순간 목적지를 볼 수 있다. */
+/* 뒤쪽도 별 모양을 유지한다. 원근, 밝기와 색으로만 앞뒤를 구분한다. */
 .back:not(:where(.destination)) .dot {
-	inline-size: 5px;
-	block-size: 5px;
-	opacity: 0.45;
-	filter: blur(0.75px);
-}
-
-.back:not(:where(.destination)) .dot::before {
-	clip-path: circle(50%);
+	inline-size: 17px;
+	block-size: 17px;
+	color: color-mix(in srgb, var(--universe-white) 70%, var(--universe-blue));
+	opacity: calc(0.84 - 0.17 * var(--rear-depth));
+	filter: drop-shadow(0 0 3px var(--universe-blue));
 }
 
 .destination .dot {
@@ -360,6 +389,18 @@
 		transform: rotate(45deg) scale(0.65);
 	}
 
+	.back:not(:where(.destination)) .dot {
+		color: GrayText;
+		opacity: 1;
+	}
+
+	.back:not(:where(.destination)) .dot::before {
+		box-sizing: border-box;
+		border: 1px solid GrayText;
+		clip-path: none;
+		transform: rotate(45deg) scale(0.6);
+	}
+
 	.name {
 		border-color: LinkText;
 	}
@@ -389,7 +430,7 @@
 	filter: drop-shadow(0 2px 6px rgb(0 0 0 / 60%))
 		drop-shadow(0 0 10px rgb(190 154 250 / 70%));
 	transform: translate(-50%, -50%);
-	animation: swipe 2.6s ease-in-out infinite;
+	animation: swipe 2.6s ease-in-out;
 }
 
 .swipeFinger svg {

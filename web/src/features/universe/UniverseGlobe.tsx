@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Profile } from "../../api/types";
+import { REDUCED_MOTION } from "../../lib/motion";
 import {
 	NO_ROTATION,
 	projectPoint,
@@ -21,6 +22,7 @@ import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
 const FLIGHT_MS = 680;
+const INTRO_MS = 5000;
 const VISIT_STATE = { fromUniverse: true };
 const STREAKS = Array.from({ length: 24 }, (_, index) => ({
 	angle: `${(index * 137.5) % 360}deg`,
@@ -102,53 +104,46 @@ export function UniverseGlobe({
 	const [announcement, setAnnouncement] = useState("");
 	// 손가락 안내(튜토리얼 격): 한 번 돌려 보면 다시 나오지 않는다 (샌드박스는 새로고침하면 처음부터)
 	const [showSwipeHint, setShowSwipeHint] = useState(!swipedOnce);
-	const [focusInside, setFocusInside] = useState(false);
-	const lastDragEnd = useRef(Number.NEGATIVE_INFINITY);
+	const introStopped = useRef(false);
 
-	// 키보드로 별(링크)을 고르는 중이면 자동 회전을 멈춘다
+	// 새로 들어올 때만 잠깐 회전한다. 조작을 시작했거나 복귀한 뷰는 움직이지 않는다.
 	useEffect(() => {
-		const update = () => {
-			const active = document.activeElement;
-			setFocusInside(
-				Boolean(
-					active &&
-						active !== handleRef.current &&
-						globeRef.current?.contains(active),
-				),
-			);
-		};
-		document.addEventListener("focusin", update);
-		document.addEventListener("focusout", update);
-		return () => {
-			document.removeEventListener("focusin", update);
-			document.removeEventListener("focusout", update);
-		};
-	}, []);
-
-	// 가만히 두면 천천히 돈다 (끌고 있을 때·끈 직후 3초·키보드로 고르는 중·움직임 줄이기 설정이면 멈춤)
-	useEffect(() => {
+		const motion = window.matchMedia(REDUCED_MOTION);
+		const globe = globeRef.current;
 		if (
-			dragging ||
-			flight ||
-			focusInside ||
-			!window.matchMedia("(prefers-reduced-motion: no-preference)").matches
-		) {
+			origin ||
+			introStopped.current ||
+			motion.matches ||
+			globe?.contains(document.activeElement)
+		)
 			return;
-		}
-		let frame = 0;
+
 		let last = performance.now();
+		const end = last + INTRO_MS;
+		let frame: number;
 		const tick = (now: number) => {
-			const dt = Math.min(now - last, 64);
+			if (introStopped.current || motion.matches || document.hidden) return;
+			const dt = Math.max(0, Math.min(now - last, end - last, 64));
 			last = now;
-			if (now - lastDragEnd.current > 3000 && !document.hidden) {
-				// 초당 약 4°
-				setRotation((current) => rotateBy(current, (dt / 1000) * 0.07, 0));
-			}
-			frame = requestAnimationFrame(tick);
+			setRotation((current) => rotateBy(current, (dt / 1000) * 0.07, 0));
+			if (now < end) frame = requestAnimationFrame(tick);
+		};
+		const stop = () => {
+			introStopped.current = true;
+			cancelAnimationFrame(frame);
+		};
+		const onPreferenceChange = () => {
+			if (motion.matches) stop();
 		};
 		frame = requestAnimationFrame(tick);
-		return () => cancelAnimationFrame(frame);
-	}, [dragging, flight, focusInside]);
+		globe?.addEventListener("focusin", stop);
+		motion.addEventListener("change", onPreferenceChange);
+		return () => {
+			cancelAnimationFrame(frame);
+			globe?.removeEventListener("focusin", stop);
+			motion.removeEventListener("change", onPreferenceChange);
+		};
+	}, [origin]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
 
@@ -217,10 +212,7 @@ export function UniverseGlobe({
 		trigger: VisitTrigger,
 	) {
 		const globe = globeRef.current;
-		if (
-			!globe?.animate ||
-			!window.matchMedia("(prefers-reduced-motion: no-preference)").matches
-		) {
+		if (!globe?.animate || window.matchMedia(REDUCED_MOTION).matches) {
 			return false;
 		}
 
@@ -285,6 +277,7 @@ export function UniverseGlobe({
 			dragRef.current
 		)
 			return;
+		introStopped.current = true;
 		suppressClick.current = false;
 		setAnnouncement("");
 		dragRef.current = {
@@ -325,7 +318,6 @@ export function UniverseGlobe({
 			setAnnouncement("우주를 돌렸어요.");
 		}
 		dragRef.current = null;
-		lastDragEnd.current = performance.now();
 		setDragging(false);
 	}
 
@@ -394,6 +386,7 @@ export function UniverseGlobe({
 											transform: `translate(-50%, -50%) translate(calc(${point.x} * var(--dp)), calc(${point.y} * var(--dp)))`,
 											zIndex: Math.round((1 - point.depth) * 100),
 											"--star-scale": point.scale,
+											"--rear-depth": Math.max(0, point.depth),
 										} as CSSProperties
 									}
 								>

@@ -68,9 +68,24 @@ export function ShipPage({
 	// MY: 별자리 화면 ⇄ 꾸미기 화면 두 장. 위/아래로 밀면 중간에 멈추지 않고 한 장씩 넘어간다.
 	const sectionRef = useRef<HTMLElement>(null);
 	const shipRef = useRef<HTMLDivElement>(null);
+	const shipButtonRef = useRef<HTMLButtonElement>(null);
+	const customizeHintRef = useRef<HTMLButtonElement>(null);
+	const openedFromHint = useRef(false);
 	const hintRef = useRef<HTMLDivElement>(null);
 	const panelRef = useRef<HTMLDivElement>(null);
 	const [open, setOpen] = useState(Boolean(customize && startAtCustomize));
+	const previousOpen = useRef(open);
+
+	useLayoutEffect(() => {
+		if (previousOpen.current === open) return;
+		previousOpen.current = open;
+		const target =
+			!open && openedFromHint.current
+				? customizeHintRef.current
+				: shipButtonRef.current;
+		target?.focus({ preventScroll: true });
+		if (!open) openedFromHint.current = false;
+	}, [open]);
 	const [offset, setOffset] = useState(0);
 	const [panelHeight, setPanelHeight] = useState<number | undefined>();
 	const progress = customize && open ? 1 : 0;
@@ -301,6 +316,7 @@ export function ShipPage({
 						<button
 							type="button"
 							className={styles.shipButton}
+							ref={shipButtonRef}
 							aria-label={
 								progress > 0.5 ? "별자리로 돌아가기" : "우주선 꾸미기 열기"
 							}
@@ -344,12 +360,16 @@ export function ShipPage({
 								<button
 									type="button"
 									className={styles.swipeHint}
+									ref={customizeHintRef}
 									aria-label={
 										open
 											? "별자리로 돌아가기"
 											: "위로 스와이프해서 우주선 꾸미기"
 									}
-									onClick={() => turn(!open)}
+									onClick={() => {
+										if (!open) openedFromHint.current = true;
+										turn(!open);
+									}}
 								>
 									{open ? (
 										<>

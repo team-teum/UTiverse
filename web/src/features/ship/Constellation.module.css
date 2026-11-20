@@ -48,6 +48,11 @@
 .item {
 	position: absolute;
 	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+
+.item > button {
+	pointer-events: auto;
 }
 
 .star {

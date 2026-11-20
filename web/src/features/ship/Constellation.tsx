@@ -1,4 +1,9 @@
-import { type PointerEvent, type ReactNode, useRef } from "react";
+import {
+	type MouseEvent,
+	type PointerEvent,
+	type ReactNode,
+	useRef,
+} from "react";
 import { repo } from "../../api/repository";
 import type { Comment, Star } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
@@ -143,6 +148,8 @@ export function Constellation({
 	);
 	const isLastPage = current === pageCount - 1;
 	const swipeStart = useRef<number | null>(null);
+	const swiped = useRef(false);
+	const skyRef = useRef<HTMLDivElement>(null);
 	const { data: allComments } = useRepositoryData(
 		`constellation:${profileId}`,
 		() => repo.listConstellationComments(profileId),
@@ -153,6 +160,7 @@ export function Constellation({
 	}
 
 	function onPointerDown(event: PointerEvent) {
+		swiped.current = false;
 		swipeStart.current = event.clientX;
 	}
 
@@ -161,7 +169,39 @@ export function Constellation({
 		const delta = event.clientX - swipeStart.current;
 		swipeStart.current = null;
 		if (Math.abs(delta) < 40) return;
+		swiped.current = true;
 		go(current + (delta < 0 ? 1 : -1));
+	}
+
+	function activateStar(event: MouseEvent<HTMLButtonElement>) {
+		if (event.detail > 0 && swiped.current) return;
+		const clicked = event.currentTarget;
+
+		// 겹치는 터치 영역에서는 가장 가까운 별을 고른다. 키보드는 초점을 둔 버튼을 고른다.
+		let target = clicked;
+		if (event.detail > 0) {
+			const { clientX: x, clientY: y } = event;
+			let nearest = Number.POSITIVE_INFINITY;
+			const buttons = skyRef.current?.querySelectorAll<HTMLButtonElement>(
+				"button[data-star-id]",
+			);
+			for (const button of buttons ?? []) {
+				const { left, right, top, bottom } = button.getBoundingClientRect();
+				if (x < left || x > right || y < top || y > bottom) continue;
+				const distance = Math.hypot(
+					x - (left + right) / 2,
+					y - (top + bottom) / 2,
+				);
+				if (distance < nearest) {
+					target = button;
+					nearest = distance;
+				}
+			}
+			if (target !== clicked) target.focus({ preventScroll: true });
+		}
+
+		const star = visible.find(({ id }) => id === target.dataset.starId);
+		if (star) onSelect(star, target.dataset.commentId);
 	}
 
 	const { points, edges } = getConstellationPattern(profileId);
@@ -210,6 +250,7 @@ export function Constellation({
 				</button>
 				<div
 					className={styles.sky}
+					ref={skyRef}
 					onPointerDown={onPointerDown}
 					onPointerUp={onPointerUp}
 					onPointerCancel={() => {
@@ -287,7 +328,8 @@ export function Constellation({
 										type="button"
 										className={`${styles.star} ${star.id === highlightId ? styles.new : ""}`}
 										aria-label={`${formatMonthDay(star.createdAt)} 별: ${star.body.slice(0, 20)}${countFor(star.id) ? `, 댓글 ${countFor(star.id)}개` : ""}`}
-										onClick={() => onSelect(star)}
+										data-star-id={star.id}
+										onClick={activateStar}
 									>
 										<svg
 											viewBox="0 0 24 24"
@@ -316,7 +358,9 @@ export function Constellation({
 									type="button"
 									className={`${styles.leafButton} ${branch.depth > 0 ? styles.leafSmall : ""}`}
 									aria-label={`${branch.author}의 댓글: ${branch.body.slice(0, 20)}`}
-									onClick={() => onSelect(branch.star, branch.id)}
+									data-star-id={branch.star.id}
+									data-comment-id={branch.id}
+									onClick={activateStar}
 								/>
 							</li>
 						))}

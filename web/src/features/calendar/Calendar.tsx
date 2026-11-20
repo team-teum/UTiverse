@@ -5,6 +5,7 @@ import { AssetImage } from "../../components/AssetImage";
 import ui from "../../components/Cosmic.module.css";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { preferredScrollBehavior } from "../../lib/motion";
 import styles from "./Calendar.module.css";
 import {
 	addMonths,
@@ -60,9 +61,7 @@ export function Calendar() {
 		setSelected(date);
 		requestAnimationFrame(() =>
 			listRef.current?.scrollIntoView({
-				behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-					? "instant"
-					: "smooth",
+				behavior: preferredScrollBehavior(),
 				block: "start",
 			}),
 		);
