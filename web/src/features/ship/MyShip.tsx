@@ -32,8 +32,9 @@ export function MyShip() {
 	// 꾸미기 초안: 고른 아이템은 여기 모았다가 「저장하기」에서 한 번에 저장
 	const [draft, setDraft] = useState<Partial<Look>>({});
 	const [closeSignal, setCloseSignal] = useState(0);
-	const [askLeave, setAskLeave] = useState(false);
+	const [askingToClosePanel, setAskingToClosePanel] = useState(false);
 	const [saving, setSaving] = useState(false);
+	const [saveFailed, setSaveFailed] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
 	const dirty =
 		me !== undefined &&
@@ -43,6 +44,11 @@ export function MyShip() {
 
 	// 저장 안 한 꾸미기가 있는데 다른 화면으로 가려 하면 물어본다
 	const { blocker } = useDiscardGuard(dirty);
+
+	// 패널에서 저장 중에 이동을 요청했으면 저장이 끝난 뒤 이어서 이동한다.
+	useEffect(() => {
+		if (blocker.state === "blocked" && !dirty && !saving) blocker.proceed();
+	}, [blocker, dirty, saving]);
 
 	useEffect(() => {
 		void repo.takeSwipeHint().then((show) => {
@@ -66,26 +72,47 @@ export function MyShip() {
 	const previewLook: Look = { ...me.look, ...draft };
 	const preview = { ...me, look: previewLook };
 
-	async function save(thenClose: boolean) {
-		if (saving) return;
-		setSaving(true);
-		await repo.updateMyLook(draft);
-		setDraft({});
-		setSaving(false);
-		setAskLeave(false);
-		setToast("꾸민 모습을 저장했어요");
-		if (thenClose) setCloseSignal((n) => n + 1);
-	}
+	const leave =
+		blocker.state === "blocked"
+			? { proceed: blocker.proceed, cancel: blocker.reset }
+			: askingToClosePanel
+				? { proceed: closePanel }
+				: null;
 
-	function discardAndClose() {
-		setDraft({});
-		setAskLeave(false);
+	function closePanel() {
 		setCloseSignal((n) => n + 1);
 	}
 
-	function back() {
-		if (dirty) setAskLeave(true);
-		else setCloseSignal((n) => n + 1);
+	function canClosePanel() {
+		if (saving) return false;
+		if (!dirty) return true;
+		setAskingToClosePanel(true);
+		return false;
+	}
+
+	function finishChoice(next?: () => void) {
+		setAskingToClosePanel(false);
+		setSaveFailed(false);
+		next?.();
+	}
+
+	async function save(afterSave?: () => void) {
+		if (saving) return;
+		setSaving(true);
+		setSaveFailed(false);
+		try {
+			await repo.updateMyLook(draft);
+		} catch {
+			// 실패하면 초안과 나가려던 위치를 그대로 둔다.
+			setSaveFailed(true);
+			if (!afterSave) setToast("지금은 저장하지 못했어요. 다시 시도해 주세요.");
+			return;
+		} finally {
+			setSaving(false);
+		}
+		setDraft({});
+		setToast("꾸민 모습을 저장했어요");
+		finishChoice(afterSave);
 	}
 
 	return (
@@ -98,24 +125,26 @@ export function MyShip() {
 					if (p > 0.2) setHint(false);
 				}}
 				closeSignal={closeSignal}
-				beforeClose={() => {
-					if (!dirty) return true;
-					setAskLeave(true);
-					return false;
-				}}
+				beforeClose={canClosePanel}
 				customizeActions={
 					<div className={styles.actions}>
-						<button type="button" className={styles.back} onClick={back}>
+						<button
+							type="button"
+							className={styles.back}
+							onClick={() => {
+								if (canClosePanel()) closePanel();
+							}}
+						>
 							← 돌아가기
 						</button>
 						<span className={styles.state} aria-live="polite">
-							{dirty ? "저장 안 됨" : "저장됨 ✓"}
+							{saving ? "저장 중…" : dirty ? "저장 안 됨" : "저장됨 ✓"}
 						</span>
 						<button
 							type="button"
 							className={styles.save}
 							disabled={!dirty || saving}
-							onClick={() => void save(false)}
+							onClick={() => void save()}
 						>
 							저장하기
 						</button>
@@ -124,7 +153,9 @@ export function MyShip() {
 				customize={
 					<CustomizeView
 						look={previewLook}
-						onPick={(patch) => setDraft((prev) => ({ ...prev, ...patch }))}
+						onPick={(patch) => {
+							if (!saving) setDraft((prev) => ({ ...prev, ...patch }));
+						}}
 						mode={mode}
 						onModeChange={setMode}
 						starCount={stars?.length ?? 0}
@@ -132,25 +163,18 @@ export function MyShip() {
 				}
 			/>
 			{hint && <SwipeHint />}
-			{blocker.state === "blocked" && (
+			{leave && (
 				<LeaveDialog
-					onKeep={() => blocker.reset()}
+					saving={saving}
+					saveFailed={saveFailed}
+					onKeep={() => {
+						if (!saving) finishChoice(leave.cancel);
+					}}
 					onDiscard={() => {
 						setDraft({});
-						blocker.proceed();
+						finishChoice(leave.proceed);
 					}}
-					onSave={async () => {
-						await repo.updateMyLook(draft);
-						setDraft({});
-						blocker.proceed();
-					}}
-				/>
-			)}
-			{askLeave && (
-				<LeaveDialog
-					onKeep={() => setAskLeave(false)}
-					onDiscard={discardAndClose}
-					onSave={() => void save(true)}
+					onSave={() => void save(leave.proceed)}
 				/>
 			)}
 			<Toast message={toast} onDone={() => setToast(null)} />
@@ -187,10 +211,14 @@ function SwipeHint() {
 
 /** 저장하지 않은 꾸미기가 있을 때 돌아가기: 저장하고 나가기 / 저장 안 하고 나가기 / 계속 꾸미기 */
 function LeaveDialog({
+	saving,
+	saveFailed,
 	onKeep,
 	onDiscard,
 	onSave,
 }: {
+	saving: boolean;
+	saveFailed: boolean;
 	onKeep: () => void;
 	onDiscard: () => void;
 	onSave: () => void;
@@ -202,20 +230,36 @@ function LeaveDialog({
 				꾸민 모습을 저장할까요?
 			</p>
 			<p className={styles.leaveText}>저장하지 않으면 바꾼 내용이 사라져요.</p>
+			{saveFailed && (
+				<p className={styles.leaveText} role="alert">
+					지금은 저장하지 못했어요. 다시 시도해 주세요.
+				</p>
+			)}
 			<div className={styles.leaveActions}>
-				<button type="button" className="button-secondary" onClick={onKeep}>
+				<button
+					type="button"
+					className="button-secondary"
+					onClick={onKeep}
+					disabled={saving}
+				>
 					계속 꾸미기
 				</button>
-				<button type="button" className="button-secondary" onClick={onDiscard}>
+				<button
+					type="button"
+					className="button-secondary"
+					onClick={onDiscard}
+					disabled={saving}
+				>
 					저장 안 함
 				</button>
 				<button
 					type="button"
 					className={styles.save}
 					onClick={onSave}
+					aria-disabled={saving}
 					data-autofocus
 				>
-					저장하기
+					{saving ? "저장 중…" : "저장하기"}
 				</button>
 			</div>
 		</ModalDialog>
