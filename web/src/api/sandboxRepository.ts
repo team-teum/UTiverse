@@ -295,7 +295,6 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			if (!isValidRegion(location.sido, location.sigungu)) {
 				throw new Error("시·도와 시·군·구를 다시 골라 주세요.");
 			}
-			// 샌드박스의 가상 위치는 실제 DB의 7일 변경 제한을 적용하지 않는다(SPECIFICATION 기능 D).
 			myLocation = { ...location };
 			notify();
 		},

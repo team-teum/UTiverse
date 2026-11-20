@@ -221,6 +221,47 @@ test("shared content has stable demo links and enforces ownership under two sess
 		[],
 	);
 
+	for (const [path, values, field, max, method] of [
+		[profileById(a.profileId), {}, "nickname", 12, "PATCH"],
+		[stars, { profile_id: a.profileId }, "body", 500, "POST"],
+		[
+			comments,
+			{ profile_id: a.profileId, star_id: first.id },
+			"body",
+			200,
+			"POST",
+		],
+	]) {
+		for (const value of ["\t\n\u3000\ufeff", "x" + " ".repeat(max)]) {
+			assert.equal(
+				(
+					await expectStatus(400, path, {
+						method,
+						token: ta,
+						body: { ...values, [field]: value },
+					})
+				).code,
+				"23514",
+			);
+		}
+	}
+	for (const token of [undefined, ta]) {
+		const cards = await expectStatus(
+			200,
+			"/rest/v1/rpc/random_cards",
+			post({ card_count: 99 }, token),
+		);
+		assert.equal(new Set(cards.map((c) => c.id)).size, 4);
+		assert.equal(cards.length, 4);
+		for (const card of cards) {
+			if (token) assert.notEqual(card.id, a.profileId);
+			const [latest] = await expectStatus(
+				200,
+				`${stars}?select=body&profile_id=eq.${card.id}&order=created_at.desc,id.desc&limit=1`,
+			);
+			assert.equal(card.latest_star, latest?.body.split("\n")[0] ?? null);
+		}
+	}
 	const reply = (profile_id, star_id, parent_id, token) =>
 		post({ profile_id, star_id, parent_id, body: "테스트 댓글" }, token);
 	const [parent] = await expectStatus(
@@ -288,7 +329,9 @@ function localOperator(sql) {
 		"docker",
 		[
 			"exec",
-			"supabase_db_utiverse-auth-dev",
+			process.env.UTIVERSE_RELEASE_CHECK === "1"
+				? "supabase_db_utiverse-release-check"
+				: "supabase_db_utiverse-auth-dev",
 			"psql",
 			"-U",
 			"postgres",
@@ -357,12 +400,17 @@ test("remaining features persist privately and local operators can review, suspe
 		await expectStatus(200, rpc("my_location"), post({}, ta)),
 		[],
 	);
-	const limited = await expectStatus(
-		400,
+	assert.equal(
+		localOperator(
+			`select count(*) from private.profile_locations where profile_id = '${a.profileId}'`,
+		),
+		"0",
+	);
+	await expectStatus(
+		204,
 		rpc("save_my_location"),
 		post({ ...region, region_sigungu: "남동구" }, ta),
 	);
-	assert.equal(limited.message, "REGION_CHANGE_LIMIT");
 	await expectStatus(204, rpc("save_my_location"), post(region, ta));
 	let budgetHit = false;
 	for (let i = 0; i < 24; i++) {
@@ -468,6 +516,21 @@ test("remaining features persist privately and local operators can review, suspe
 	localOperator(
 		`insert into private.account_controls(profile_id) values ('${a.profileId}')`,
 	);
+	assert.equal(
+		localOperator(
+			`select visible from private.profile_locations where profile_id = '${a.profileId}'`,
+		),
+		"f",
+	);
+	assert.ok(
+		!(await expectStatus(200, rpc("nearby_profiles"), post({}, tb))).some(
+			(row) => row.id === a.profileId,
+		),
+	);
+	await expectPermissionDenied(
+		rpc("share_my_location"),
+		post({ share_location: true }, ta),
+	);
 	await expectPermissionDenied(profileById(a.profileId), {
 		method: "PATCH",
 		body: { nickname: "차단" },
@@ -496,6 +559,15 @@ test("remaining features persist privately and local operators can review, suspe
 		{ event_id: event },
 	]);
 
+	localOperator(
+		`update private.account_controls set suspended = false where profile_id = '${a.profileId}'`,
+	);
+	assert.equal(
+		localOperator(
+			`select visible from private.profile_locations where profile_id = '${a.profileId}'`,
+		),
+		"f",
+	);
 	localOperator(`delete from auth.users where id = '${a.session.user.id}'`);
 	assert.deepEqual(await expectStatus(200, profileById(a.profileId)), []);
 	assert.deepEqual(

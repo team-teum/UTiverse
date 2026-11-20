@@ -44,6 +44,10 @@ biome.json         린팅·포맷팅 설정
 .github/workflows/ci.yml  main push 코드 검사·배포
 ```
 
+## Supabase 공개 전환
+
+기본 빌드는 샌드박스입니다. 호스팅 설정, 마이그레이션 순서, 데모 계정, 확인·롤백 절차는 [운영 전환 체크리스트](./docs/SUPABASE_RELEASE.md)를 따릅니다.
+
 ## 로컬 Supabase 테스트
 
 Docker가 실행 중일 때 저장소 루트에서 실행합니다. 

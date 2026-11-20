@@ -1,10 +1,11 @@
 import { useId, useState } from "react";
-import { accountPreviewEnabled, repo } from "../../api/repository";
+import { repo } from "../../api/repository";
 import type { MyLocation } from "../../api/types";
 import { AssetImage } from "../../components/AssetImage";
 import { ModalDialog } from "../../components/ModalDialog";
 import ui from "../../components/SpaceUi.module.css";
 import { REGIONS, SIDO_LIST } from "../../lib/regions";
+import { useParticipation } from "../auth/ParticipationGate";
 
 interface LocationDialogProps {
 	/** 이미 등록한 위치가 있으면 변경 모드 */
@@ -23,6 +24,7 @@ export function LocationDialog({
 	onClose,
 	onSaved,
 }: LocationDialogProps) {
+	const authorize = useParticipation();
 	const titleId = useId();
 	const [sido, setSido] = useState(current?.sido ?? "");
 	const [sigungu, setSigungu] = useState(current?.sigungu ?? "");
@@ -35,6 +37,10 @@ export function LocationDialog({
 		setSaving(true);
 		setError(null);
 		try {
+			if (!(await authorize())) {
+				setSaving(false);
+				return;
+			}
 			await repo.setMyLocation({ sido, sigungu, visible });
 			onSaved();
 		} catch (cause) {
@@ -123,11 +129,7 @@ export function LocationDialog({
 			<ul className={ui.info}>
 				<li>정확한 거리와 방향은 누구에게도 보이지 않아요</li>
 				<li>별이 궤도 위에 놓이는 자리는 매번 무작위예요</li>
-				<li>
-					{accountPreviewEnabled
-						? "공개는 언제든 끌 수 있고, 다른 지역으로는 7일 뒤에 바꿀 수 있어요"
-						: "설정에서 언제든 바꾸거나 끌 수 있어요"}
-				</li>
+				<li>설정에서 언제든 바꾸거나 끌 수 있어요</li>
 				<li>꺼도 랜덤 탐색·우주에서는 내 우주선이 보여요</li>
 			</ul>
 			{error && (

@@ -53,6 +53,7 @@ const result = spawnSync(
 		stdio: "inherit",
 		env: {
 			...process.env,
+			UTIVERSE_BACKEND: "sandbox",
 			VITE_SUPABASE_ACCOUNT_PREVIEW: "true",
 			VITE_SUPABASE_LOCAL_PUBLISHABLE_KEY: key,
 		},

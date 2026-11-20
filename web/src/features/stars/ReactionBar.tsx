@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { repo } from "../../api/repository";
 import { REACTION_TYPES, type ReactionType } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { useParticipation } from "../auth/ParticipationGate";
 import styles from "./ReactionBar.module.css";
 
 // 카카오톡 반응처럼 알록달록한 이모지. 싫어요 같은 부정 반응은 두지 않는다.
@@ -18,6 +19,7 @@ const REACTIONS: Record<
 
 /** 긍정 반응 5종. 개수만 보이고 누가 눌렀는지는 보이지 않는다. */
 export function ReactionBar({ starId }: { starId: string }) {
+	const authorize = useParticipation();
 	const { data } = useRepositoryData(`reactions:${starId}`, () =>
 		repo.getReactions(starId),
 	);
@@ -33,6 +35,7 @@ export function ReactionBar({ starId }: { starId: string }) {
 		setPending(type);
 		setFailed(false);
 		try {
+			if (!(await authorize())) return;
 			await repo.toggleReaction(starId, type);
 		} catch {
 			setFailed(true);

@@ -37,11 +37,17 @@ export function Title() {
 				<TitleScene />
 			</button>
 			<div className={styles.notice}>
-				<strong>테스트 모드예요.</strong>
+				<strong>
+					{import.meta.env.HOSTED_SUPABASE
+						? "유T버스에 오신 걸 환영해요."
+						: "테스트 모드예요."}
+				</strong>
 				<p>
-					{accountPreviewEnabled
-						? "로컬 서버에 글과 댓글이 저장돼요. 테스트 내용만 남겨 주세요."
-						: "글과 댓글은 나만 볼 수 있고, 새로고침하면 사라져요."}
+					{import.meta.env.HOSTED_SUPABASE
+						? "가입하지 않아도 이웃의 별을 읽을 수 있어요. 글과 댓글은 모두에게 보여요."
+						: accountPreviewEnabled
+							? "로컬 서버에 글과 댓글이 저장돼요. 테스트 내용만 남겨 주세요."
+							: "글과 댓글은 나만 볼 수 있고, 새로고침하면 사라져요."}
 				</p>
 				{error && <p role="alert">시작하지 못했어요. 다시 눌러 주세요.</p>}
 				{exampleCount > 0 && (

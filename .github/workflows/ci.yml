@@ -12,7 +12,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  database-check:
+    if: vars.UTIVERSE_BACKEND == 'supabase'
+    uses: ./.github/workflows/supabase.yml
   check-and-deploy:
+    needs: database-check
+    if: ${{ !cancelled() && (needs.database-check.result == 'success' || (vars.UTIVERSE_BACKEND != 'supabase' && needs.database-check.result == 'skipped')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -30,6 +35,10 @@ jobs:
       - run: npm test
       - name: Deploy to Cloudflare
         env:
+          VITE_SUPPORT_EMAIL: ${{ vars.VITE_SUPPORT_EMAIL }}
+          UTIVERSE_BACKEND: ${{ vars.UTIVERSE_BACKEND }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run deploy

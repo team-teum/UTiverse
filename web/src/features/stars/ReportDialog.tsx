@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { accountPreviewEnabled } from "../../api/repository";
 import { REPORT_REASONS, type ReportReason } from "../../api/types";
 import { ModalDialog } from "../../components/ModalDialog";
 import styles from "./ReportDialog.module.css";
@@ -34,8 +35,9 @@ export function ReportDialog({ what, onCancel, onSubmit }: ReportDialogProps) {
 				))}
 			</fieldset>
 			<p className={styles.note}>
-				테스트 모드라 실제로 전달되지는 않아요. 실제 서비스에서는 운영자가
-				확인해요.
+				{accountPreviewEnabled
+					? "신고 내용은 운영자가 확인해요."
+					: "테스트 모드라 실제로 전달되지는 않아요."}
 			</p>
 			<div className={styles.actions}>
 				<button type="button" className="button-plain" onClick={onCancel}>

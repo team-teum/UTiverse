@@ -6,6 +6,10 @@ import { ModalDialog } from "../../components/ModalDialog";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatStarDate } from "../../lib/dateFormat";
+import {
+	useParticipation,
+	useParticipationFeedback,
+} from "../auth/ParticipationGate";
 import { CommentSection } from "./CommentSection";
 import { ReactionBar } from "./ReactionBar";
 import { ReportDialog } from "./ReportDialog";
@@ -29,6 +33,7 @@ export function StarDetailDialog({
 	onClose,
 	onDeleted,
 }: StarDetailDialogProps) {
+	const authorize = useParticipation();
 	const titleId = useId();
 	const { data: star, loading } = useRepositoryData(`star:${starId}`, () =>
 		repo.getStar(starId),
@@ -40,7 +45,7 @@ export function StarDetailDialog({
 	const [reporting, setReporting] = useState<{ commentId?: string } | null>(
 		null,
 	);
-	const [reported, setReported] = useState<string | null>(null);
+	const { message: reported, show: setReported } = useParticipationFeedback();
 	const { blocker, skipNext } = useDiscardGuard(draft.trim().length > 0);
 
 	const isMine = star?.profileId === myProfileId;
@@ -164,19 +169,24 @@ export function StarDetailDialog({
 						const target = reporting.commentId
 							? { commentId: reporting.commentId }
 							: { starId };
-						setReporting(null);
+						let scope = repo.readScope?.() ?? 0;
 						try {
+							if (!(await authorize())) return;
+							scope = repo.readScope?.() ?? 0;
+							setReporting(null);
 							await repo.report(target, reason);
 							setReported(
 								accountPreviewEnabled
 									? "신고를 접수했어요."
 									: "신고가 접수됐어요. (테스트 모드라 실제로 전달되지는 않아요)",
+								scope,
 							);
 						} catch (cause) {
 							setReported(
 								cause instanceof Error
 									? cause.message
 									: "신고하지 못했어요. 다시 시도해 주세요.",
+								scope,
 							);
 						}
 					}}

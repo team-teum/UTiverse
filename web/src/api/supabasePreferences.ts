@@ -63,10 +63,6 @@ export function createSupabasePreferences({
 		const { error } = await client.rpc(functionName, args);
 		if (error?.message === "ACCOUNT_SUSPENDED")
 			throw new Error("이 계정은 지금 변경할 수 없어요.");
-		if (error?.message === "REGION_CHANGE_LIMIT")
-			throw new Error(
-				"다른 지역으로 바꾸려면 마지막 변경 뒤 7일이 지나야 해요.",
-			);
 		if (error?.message === "INVALID_REGION")
 			throw new Error("시·도와 시·군·구를 다시 골라 주세요.");
 		if (error) throw new Error(fallback);

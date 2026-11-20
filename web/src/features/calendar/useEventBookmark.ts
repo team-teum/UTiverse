@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { repo } from "../../api/repository";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { useParticipation } from "../auth/ParticipationGate";
 
 export function useEventBookmark(eventId: string) {
+	const authorize = useParticipation();
 	const { data: saved } = useRepositoryData(`bookmark:${eventId}`, () =>
 		repo.isBookmarked(eventId),
 	);
@@ -14,6 +16,7 @@ export function useEventBookmark(eventId: string) {
 		setBusy(true);
 		setError(null);
 		try {
+			if (!(await authorize())) return;
 			await repo.toggleBookmark(eventId);
 		} catch (cause) {
 			setError(

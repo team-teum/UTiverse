@@ -83,7 +83,7 @@ function toComment(row: CommentRow): Comment {
 	};
 }
 
-/** Local development only. Account data never falls back to the sandbox. */
+/** Shared local/hosted repository. Account data never falls back to the sandbox. */
 export function createSupabaseRepository(): Repository {
 	let swipePending = true;
 	let scope = 0;
@@ -227,17 +227,16 @@ export function createSupabaseRepository(): Repository {
 			return updateProfile(me.id, { look: { ...me.look, ...patch } });
 		},
 		async exploreRandom(count) {
-			const other = await listOtherProfiles();
-			for (let i = other.length - 1; i > 0; i--) {
-				const j = Math.floor(Math.random() * (i + 1));
-				[other[i], other[j]] = [other[j], other[i]];
-			}
-			return Promise.all(
-				other.slice(0, count).map(async (profile) => ({
-					profile,
-					latestStar:
-						(await listStars(profile.id)).at(-1)?.body.split("\n")[0] ?? null,
-				})),
+			const client = await getPreviewClient();
+			const { data, error } = await client.rpc("random_cards", {
+				card_count: count,
+			});
+			if (error) throw new Error("우주선을 불러오지 못했어요.");
+			return (data as (ProfileRow & { latest_star: string | null })[]).map(
+				(row) => ({
+					profile: toProfile(row),
+					latestStar: row.latest_star,
+				}),
 			);
 		},
 		async createStar(body) {

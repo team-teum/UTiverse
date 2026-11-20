@@ -220,9 +220,11 @@ export function AuthDialog({
 					{fieldMessage("password")}
 				</div>
 				<p className={styles.notice}>
-					{preview
-						? "로컬 테스트예요. 테스트 이메일과 새 비밀번호만 써 주세요. 계정은 이 기기의 로컬 서버에 저장돼요."
-						: "테스트 모드예요. 실제 계정은 만들어지지 않고 새로고침하면 사라져요. 평소 쓰는 비밀번호는 넣지 마세요."}
+					{import.meta.env.HOSTED_SUPABASE
+						? "이메일은 로그인에만 쓰며 확인 메일은 보내지 않아요. 다른 곳과 다른 비밀번호를 써 주세요."
+						: preview
+							? "로컬 테스트예요. 테스트 이메일과 새 비밀번호만 써 주세요. 계정은 이 기기의 로컬 서버에 저장돼요."
+							: "테스트 모드예요. 실제 계정은 만들어지지 않고 새로고침하면 사라져요. 평소 쓰는 비밀번호는 넣지 마세요."}
 				</p>
 				{error && (
 					<p className={ui.error} role="alert">

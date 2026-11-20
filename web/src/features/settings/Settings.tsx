@@ -85,7 +85,7 @@ export function Settings() {
 					<h2 id="profile-heading">프로필</h2>
 					{profileError || sessionError ? (
 						<p className={ui.error} role="alert">
-							계정 정보를 불러오지 못했어요. 로컬 서버 설정을 확인해 주세요.
+							계정 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.
 						</p>
 					) : (
 						<p className={styles.value}>
@@ -166,12 +166,19 @@ export function Settings() {
 				aria-labelledby="etc-heading"
 			>
 				<h2 id="etc-heading">계정 · 안내</h2>
+				{import.meta.env.HOSTED_SUPABASE && (
+					<a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL}`}>
+						운영팀 문의 · 계정 삭제 요청
+					</a>
+				)}
 				<p className={styles.value}>
 					{checkingAccount
-						? "로컬 계정을 확인하는 중…"
+						? "계정을 확인하는 중…"
 						: signedIn
 							? "로그인됨 (이메일은 다른 사람에게 보이지 않아요)"
-							: "테스트 프로필로 둘러보는 중"}
+							: accountPreviewEnabled
+								? "비로그인으로 둘러보는 중"
+								: "테스트 프로필로 둘러보는 중"}
 				</p>
 				<div className={styles.buttons}>
 					{signedIn ? (
@@ -207,9 +214,11 @@ export function Settings() {
 					</p>
 				)}
 				<p className={styles.note}>
-					{accountPreviewEnabled
-						? "로컬 테스트예요. 변경 내용은 이 기기의 테스트 서버에 저장돼요."
-						: "테스트 모드예요. 작성한 내용과 설정은 이 화면에서만 보이고, 새로고침하면 사라져요."}
+					{import.meta.env.HOSTED_SUPABASE
+						? "변경 내용은 계정에 저장돼요."
+						: accountPreviewEnabled
+							? "로컬 테스트예요. 변경 내용은 이 기기의 테스트 서버에 저장돼요."
+							: "테스트 모드예요. 작성한 내용과 설정은 이 화면에서만 보이고, 새로고침하면 사라져요."}
 				</p>
 			</section>
 
@@ -228,7 +237,7 @@ export function Settings() {
 					message="내 위치를 지울까요?"
 					detail={
 						accountPreviewEnabled
-							? "주변 별 찾기에서 내 위치가 숨겨져요. 다시 등록할 때 변경 제한을 확인할 수 있도록 마지막 지역과 변경 시각은 남아요."
+							? "서버에서 내 위치를 지워요. 원하면 언제든 다시 등록할 수 있어요."
 							: "주변 별 찾기가 다시 위치 없음 상태가 돼요."
 					}
 					cancelLabel="취소"

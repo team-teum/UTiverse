@@ -1,0 +1,23 @@
+name: Supabase local contracts
+on:
+  pull_request:
+    paths: ['supabase/**', '.github/workflows/supabase.yml']
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: Start disposable local database (no hosted credentials)
+        run: npx --yes supabase@3.2.0 start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit >/dev/null
+      - name: Run API contracts with publishable key only
+        run: |
+          key=$(npx --yes supabase@3.2.0 status -o json | jq -er .PUBLISHABLE_KEY)
+          SUPABASE_LOCAL_PUBLISHABLE_KEY="$key" node --test supabase/tests/auth-profiles.test.mjs

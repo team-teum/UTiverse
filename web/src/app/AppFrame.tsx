@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { TopBar } from "../components/TopBar";
+import { ParticipationGate } from "../features/auth/ParticipationGate";
 import styles from "./AppFrame.module.css";
 
 export function AppFrame() {
@@ -19,7 +20,9 @@ export function AppFrame() {
 					className={`${styles.content} ${fullScene ? styles.scene : ""} ${pathname.startsWith("/me") ? styles.pagerHost : ""}`}
 					tabIndex={-1}
 				>
-					<Outlet />
+					<ParticipationGate>
+						<Outlet />
+					</ParticipationGate>
 				</main>
 				<div id="overlay-root" className={styles.overlays} />
 			</div>
