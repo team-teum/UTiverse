@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
-import { repo } from "../../api/repository";
+import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { ModalDialog } from "../../components/ModalDialog";
 import ui from "../../components/SpaceUi.module.css";
@@ -21,7 +21,7 @@ interface AuthDialogProps {
 
 /**
  * 회원가입·로그인 창 하나 (prd.md 기능 A). 가입하면 바로 로그인 상태.
- * 테스트 모드: 계정은 이 화면 메모리에만 있고 새로고침하면 사라진다. 메일을 보내거나 서버에 저장하지 않는다.
+ * 기본은 메모리 샌드박스이며 로컬 개발에서만 계정 저장을 시험할 수 있다.
  */
 export function AuthDialog({
 	initialMode = "signup",
@@ -29,6 +29,7 @@ export function AuthDialog({
 	onSkip,
 	intro,
 }: AuthDialogProps) {
+	const preview = accountPreviewEnabled;
 	const titleId = useId();
 	const [mode, setMode] = useState<Mode>(initialMode);
 	const [nickname, setNickname] = useState("");
@@ -115,8 +116,13 @@ export function AuthDialog({
 		}
 	}
 
+	const previewPending = preview && busy;
+	function dismiss() {
+		if (!previewPending) onSkip();
+	}
+
 	return (
-		<ModalDialog variant="space" labelledBy={titleId} onDismiss={onSkip}>
+		<ModalDialog variant="space" labelledBy={titleId} onDismiss={dismiss}>
 			<div className={ui.head}>
 				<h2 id={titleId} className={ui.title}>
 					{mode === "signup" ? "내 우주선 만들기" : "다시 탑승하기"}
@@ -125,14 +131,15 @@ export function AuthDialog({
 					type="button"
 					className={ui.close}
 					aria-label="닫기"
-					onClick={onSkip}
+					onClick={dismiss}
+					disabled={previewPending}
 				>
 					<AssetImage assetKey="icon.close" alt="" fallback="×" />
 				</button>
 			</div>
 			{intro && <p className={ui.text}>{intro}</p>}
 
-			<fieldset className={styles.tabs}>
+			<fieldset className={styles.tabs} disabled={previewPending}>
 				<legend className="sr-only">가입 또는 로그인</legend>
 				<button
 					type="button"
@@ -180,7 +187,8 @@ export function AuthDialog({
 							{...fieldProps("email")}
 							type="email"
 							value={email}
-							autoComplete="email"
+							autoComplete={preview ? "username" : "email"}
+							spellCheck={preview ? false : undefined}
 							inputMode="email"
 							placeholder="test@example.com"
 							onChange={(e) => {
@@ -212,8 +220,9 @@ export function AuthDialog({
 					{fieldMessage("password")}
 				</div>
 				<p className={styles.notice}>
-					테스트 모드예요. 실제 계정은 만들어지지 않고 새로고침하면 사라져요.
-					평소 쓰는 비밀번호는 넣지 마세요.
+					{preview
+						? "로컬 테스트예요. 테스트 이메일과 새 비밀번호만 써 주세요. 계정은 이 기기의 로컬 서버에 저장돼요."
+						: "테스트 모드예요. 실제 계정은 만들어지지 않고 새로고침하면 사라져요. 평소 쓰는 비밀번호는 넣지 마세요."}
 				</p>
 				{error && (
 					<p className={ui.error} role="alert">
@@ -221,7 +230,12 @@ export function AuthDialog({
 					</p>
 				)}
 				<div className={ui.actions}>
-					<button type="button" className={ui.ghost} onClick={onSkip}>
+					<button
+						type="button"
+						className={ui.ghost}
+						onClick={dismiss}
+						disabled={previewPending}
+					>
 						나중에 할게요
 					</button>
 					<button type="submit" className={ui.primary} disabled={busy}>

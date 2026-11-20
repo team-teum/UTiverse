@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { repo } from "../../api/repository";
+import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import cosmic from "../../components/Cosmic.module.css";
@@ -9,43 +9,46 @@ import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { AuthDialog } from "../auth/AuthDialog";
 import { LocationDialog } from "../explore/LocationDialog";
+import { ProfileEditor } from "./ProfileEditor";
 import styles from "./Settings.module.css";
 
 /** S16 설정: 닉네임·한 줄 소개, 내 위치, 주변 탐색 표시, 튜토리얼 다시 보기, 로그인/로그아웃 */
 export function Settings() {
 	const navigate = useNavigate();
-	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
+	const { data: profile, error: profileError } = useRepositoryData("me", () =>
+		repo.getMyProfile(),
+	);
 	const { data: location } = useRepositoryData("location", () =>
 		repo.getMyLocation(),
 	);
-	const { data: session } = useRepositoryData("session", () =>
-		repo.getSession(),
+	const { data: session, error: sessionError } = useRepositoryData(
+		"session",
+		() => repo.getSession(),
 	);
-	const [nickname, setNickname] = useState<string | null>(null);
-	const [tagline, setTagline] = useState<string | null>(null);
-	const [error, setError] = useState<string | null>(null);
+	const [accountError, setAccountError] = useState<string | null>(null);
+	const [signingOut, setSigningOut] = useState(false);
+	const [locationError, setLocationError] = useState<string | null>(null);
 	const [toast, setToast] = useState<string | null>(null);
 	const [dialog, setDialog] = useState<"location" | "delete" | "auth" | null>(
 		null,
 	);
 
-	if (!me) return <p className={styles.state}>불러오는 중…</p>;
-	const nicknameValue = nickname ?? me.nickname;
-	const taglineValue = tagline ?? me.tagline;
-	const dirty = nicknameValue !== me.nickname || taglineValue !== me.tagline;
+	if (!accountPreviewEnabled && !profile)
+		return <p className={styles.state}>불러오는 중…</p>;
+	const signedIn = Boolean(session);
+	const checkingAccount =
+		accountPreviewEnabled && session === undefined && !sessionError;
 
-	async function saveProfile() {
-		setError(null);
+	async function signOut() {
+		setSigningOut(true);
+		setAccountError(null);
 		try {
-			await repo.updateMyProfile({
-				nickname: nicknameValue,
-				tagline: taglineValue,
-			});
-			setNickname(null);
-			setTagline(null);
-			setToast("프로필을 저장했어요");
-		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "저장하지 못했어요.");
+			await repo.signOut();
+			setToast("로그아웃했어요");
+		} catch {
+			setAccountError("로그아웃하지 못했어요. 다시 시도해 주세요.");
+		} finally {
+			setSigningOut(false);
 		}
 	}
 
@@ -67,50 +70,43 @@ export function Settings() {
 				<p className={cosmic.subtitle}>내 우주선 관리실</p>
 			</header>
 
-			<section
-				className={`${cosmic.panel} ${styles.group}`}
-				aria-labelledby="profile-heading"
-			>
-				<h2 id="profile-heading">프로필</h2>
-				<label className={ui.label}>
-					닉네임
-					<input
-						className={ui.field}
-						value={nicknameValue}
-						maxLength={12}
-						onChange={(e) => setNickname(e.target.value)}
-					/>
-				</label>
-				<label className={ui.label}>
-					한 줄 소개
-					<input
-						className={ui.field}
-						value={taglineValue}
-						maxLength={40}
-						placeholder="예: 천천히 나를 알아가는 중"
-						onChange={(e) => setTagline(e.target.value)}
-					/>
-				</label>
-				{error && (
-					<p className={ui.error} role="alert">
-						{error}
-					</p>
-				)}
-				<button
-					type="button"
-					className={ui.primary}
-					disabled={!dirty}
-					onClick={saveProfile}
+			{profile ? (
+				<ProfileEditor
+					key={profile.id}
+					profile={profile}
+					onSave={(values) => repo.updateMyProfile(values, profile.id)}
+					onSaved={() => setToast("프로필을 저장했어요")}
+				/>
+			) : (
+				<section
+					className={`${cosmic.panel} ${styles.group}`}
+					aria-labelledby="profile-heading"
 				>
-					저장하기
-				</button>
-			</section>
+					<h2 id="profile-heading">프로필</h2>
+					{profileError || sessionError ? (
+						<p className={ui.error} role="alert">
+							계정 정보를 불러오지 못했어요. 로컬 서버 설정을 확인해 주세요.
+						</p>
+					) : (
+						<p className={styles.value}>
+							{checkingAccount || signedIn
+								? "불러오는 중…"
+								: "로그인하면 프로필을 저장할 수 있어요."}
+						</p>
+					)}
+				</section>
+			)}
 
 			<section
 				className={`${cosmic.panel} ${styles.group}`}
 				aria-labelledby="location-heading"
 			>
 				<h2 id="location-heading">내 위치</h2>
+				{locationError && (
+					<p className={ui.error} role="alert">
+						{locationError}
+					</p>
+				)}
 				<p className={styles.value}>
 					{location
 						? `${location.sido} ${location.sigungu}`
@@ -130,7 +126,18 @@ export function Settings() {
 							aria-checked={location.visible}
 							aria-label="주변 별 찾기에 내 별 보이기"
 							className={ui.switch}
-							onClick={() => repo.setLocationVisibility(!location.visible)}
+							onClick={async () => {
+								setLocationError(null);
+								try {
+									await repo.setLocationVisibility(!location.visible);
+								} catch (cause) {
+									setLocationError(
+										cause instanceof Error
+											? cause.message
+											: "공개 설정을 바꾸지 못했어요.",
+									);
+								}
+							}}
 						/>
 					</div>
 				)}
@@ -160,19 +167,19 @@ export function Settings() {
 			>
 				<h2 id="etc-heading">계정 · 안내</h2>
 				<p className={styles.value}>
-					{session
-						? `로그인됨 (이메일은 다른 사람에게 보이지 않아요)`
-						: "테스트 프로필로 둘러보는 중"}
+					{checkingAccount
+						? "로컬 계정을 확인하는 중…"
+						: signedIn
+							? "로그인됨 (이메일은 다른 사람에게 보이지 않아요)"
+							: "테스트 프로필로 둘러보는 중"}
 				</p>
 				<div className={styles.buttons}>
-					{session ? (
+					{signedIn ? (
 						<button
 							type="button"
 							className={ui.secondary}
-							onClick={async () => {
-								await repo.signOut();
-								setToast("로그아웃했어요");
-							}}
+							onClick={signOut}
+							disabled={signingOut}
 						>
 							로그아웃
 						</button>
@@ -181,6 +188,7 @@ export function Settings() {
 							type="button"
 							className={ui.secondary}
 							onClick={() => setDialog("auth")}
+							disabled={checkingAccount}
 						>
 							회원가입 · 로그인
 						</button>
@@ -193,9 +201,15 @@ export function Settings() {
 						튜토리얼 다시 보기
 					</button>
 				</div>
+				{accountError && (
+					<p className={ui.error} role="alert">
+						{accountError}
+					</p>
+				)}
 				<p className={styles.note}>
-					테스트 모드예요. 작성한 내용과 설정은 이 화면에서만 보이고,
-					새로고침하면 사라져요.
+					{accountPreviewEnabled
+						? "로컬 테스트예요. 변경 내용은 이 기기의 테스트 서버에 저장돼요."
+						: "테스트 모드예요. 작성한 내용과 설정은 이 화면에서만 보이고, 새로고침하면 사라져요."}
 				</p>
 			</section>
 
@@ -212,14 +226,28 @@ export function Settings() {
 			{dialog === "delete" && (
 				<ConfirmDialog
 					message="내 위치를 지울까요?"
-					detail="주변 별 찾기가 다시 위치 없음 상태가 돼요."
+					detail={
+						accountPreviewEnabled
+							? "주변 별 찾기에서 내 위치가 숨겨져요. 다시 등록할 때 변경 제한을 확인할 수 있도록 마지막 지역과 변경 시각은 남아요."
+							: "주변 별 찾기가 다시 위치 없음 상태가 돼요."
+					}
 					cancelLabel="취소"
 					confirmLabel="지우기"
 					onCancel={() => setDialog(null)}
 					onConfirm={async () => {
-						await repo.deleteMyLocation();
-						setDialog(null);
-						setToast("내 위치를 지웠어요");
+						setLocationError(null);
+						try {
+							await repo.deleteMyLocation();
+							setToast("내 위치를 지웠어요");
+						} catch (cause) {
+							setLocationError(
+								cause instanceof Error
+									? cause.message
+									: "내 위치를 지우지 못했어요.",
+							);
+						} finally {
+							setDialog(null);
+						}
 					}}
 				/>
 			)}

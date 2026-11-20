@@ -2,12 +2,14 @@ import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import { repo } from "../../api/repository";
+import type { Profile } from "../../api/types";
 import { AssetImage } from "../../components/AssetImage";
 import { ModalDialog } from "../../components/ModalDialog";
 import { Toast } from "../../components/Toast";
 import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import type { Look } from "../../pixel/look";
+import { AuthDialog } from "../auth/AuthDialog";
 import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
 import { ShipPage } from "./ShipPage";
@@ -18,15 +20,45 @@ import { ShipPage } from "./ShipPage";
  * /me/customize/ship · /me/customize/avatar 로 들어오면 꾸미기 쪽에서 시작한다.
  */
 export function MyShip() {
+	const { data: me, error } = useRepositoryData("me", () =>
+		repo.getMyProfile(),
+	);
+	const [showAuth, setShowAuth] = useState(false);
+	if (error)
+		return <p className="scaffold-screen">내 우주선을 불러오지 못했어요.</p>;
+	if (me === undefined) return <p className="scaffold-screen">불러오는 중…</p>;
+	if (!me)
+		return (
+			<section className="scaffold-screen">
+				<h1>내 우주선</h1>
+				<p>로그인하면 내 우주선을 볼 수 있어요.</p>
+				<button
+					type="button"
+					className="button-primary"
+					onClick={() => setShowAuth(true)}
+				>
+					회원가입 · 로그인
+				</button>
+				{showAuth && (
+					<AuthDialog
+						onDone={() => setShowAuth(false)}
+						onSkip={() => setShowAuth(false)}
+					/>
+				)}
+			</section>
+		);
+	return <OwnedShip key={me.id} me={me} />;
+}
+
+function OwnedShip({ me }: { me: Profile }) {
 	const navigate = useNavigate();
 	const { pathname } = useLocation();
 	const startAtCustomize = pathname.startsWith("/me/customize");
 	const [mode, setMode] = useState<CustomizeMode>(
 		pathname.endsWith("/avatar") ? "avatar" : "ship",
 	);
-	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
-	const { data: stars } = useRepositoryData(`stars:${me?.id ?? ""}`, () =>
-		me ? repo.listStars(me.id) : Promise.resolve([]),
+	const { data: stars } = useRepositoryData(`stars:${me.id}`, () =>
+		repo.listStars(me.id),
 	);
 	const [hint, setHint] = useState(false);
 	// 꾸미기 초안: 고른 아이템은 여기 모았다가 「저장하기」에서 한 번에 저장
@@ -36,11 +68,9 @@ export function MyShip() {
 	const [saving, setSaving] = useState(false);
 	const [saveFailed, setSaveFailed] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
-	const dirty =
-		me !== undefined &&
-		Object.entries(draft).some(
-			([key, value]) => me.look[key as keyof Look] !== value,
-		);
+	const dirty = Object.entries(draft).some(
+		([key, value]) => me.look[key as keyof Look] !== value,
+	);
 
 	// 저장 안 한 꾸미기가 있는데 다른 화면으로 가려 하면 물어본다
 	const { blocker } = useDiscardGuard(dirty);
@@ -66,8 +96,6 @@ export function MyShip() {
 		// 꾸미기 주소로 들어왔으면 /me로 정리 (스크롤 위치가 화면 상태를 대신한다)
 		if (startAtCustomize) navigate("/me", { replace: true });
 	}, [startAtCustomize, navigate]);
-
-	if (!me) return <p className="scaffold-screen">불러오는 중…</p>;
 
 	const previewLook: Look = { ...me.look, ...draft };
 	const preview = { ...me, look: previewLook };
@@ -101,7 +129,7 @@ export function MyShip() {
 		setSaving(true);
 		setSaveFailed(false);
 		try {
-			await repo.updateMyLook(draft);
+			await repo.updateMyLook(draft, me.id);
 		} catch {
 			// 실패하면 초안과 나가려던 위치를 그대로 둔다.
 			setSaveFailed(true);

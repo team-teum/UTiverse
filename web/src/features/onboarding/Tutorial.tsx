@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { repo } from "../../api/repository";
+import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { TopBar } from "../../components/TopBar";
 import { AuthDialog } from "../auth/AuthDialog";
@@ -23,17 +23,24 @@ export function Tutorial() {
 	const navigate = useNavigate();
 	const [index, setIndex] = useState(0);
 	const [askAuth, setAskAuth] = useState(false);
+	const [finishing, setFinishing] = useState(false);
+	const [saveError, setSaveError] = useState(false);
 	const step = STEPS[index];
 	const isLast = index === STEPS.length - 1;
 
-	function complete() {
-		void repo.completeTutorial();
-		if (isLast) void repo.requestSwipeHint();
-	}
-
-	function finish() {
-		complete();
-		navigate("/universe", { replace: true });
+	async function finish() {
+		if (finishing) return;
+		setAskAuth(false);
+		setFinishing(true);
+		setSaveError(false);
+		try {
+			await repo.completeTutorial();
+			if (isLast) await repo.requestSwipeHint();
+			navigate("/universe", { replace: true });
+		} catch {
+			setSaveError(true);
+			setFinishing(false);
+		}
 	}
 
 	function next() {
@@ -68,14 +75,26 @@ export function Tutorial() {
 				<p className={styles.dialogText} aria-live="polite">
 					{step.text}
 				</p>
-				<button type="button" className={styles.advance} onClick={next}>
+				{saveError && (
+					<p role="alert">진행 상태를 저장하지 못했어요. 다시 시도해 주세요.</p>
+				)}
+				<button
+					type="button"
+					className={styles.advance}
+					onClick={next}
+					disabled={finishing}
+				>
 					{isLast ? "우주 둘러보기" : "다음"}
 				</button>
 			</div>
 
 			{askAuth && (
 				<AuthDialog
-					intro="가입하지 않아도 둘러볼 수 있어요. 테스트 계정은 새로고침하면 사라져요."
+					intro={
+						accountPreviewEnabled
+							? "가입하지 않아도 둘러볼 수 있어요."
+							: "가입하지 않아도 둘러볼 수 있어요. 테스트 계정은 새로고침하면 사라져요."
+					}
 					onDone={finish}
 					onSkip={finish}
 				/>
@@ -84,7 +103,12 @@ export function Tutorial() {
 			<div className={styles.top}>
 				{/* 튜토리얼 중에는 메뉴·MY·홈을 누를 수 없다 */}
 				<TopBar locked />
-				<button type="button" className={styles.skip} onClick={finish}>
+				<button
+					type="button"
+					className={styles.skip}
+					onClick={finish}
+					disabled={finishing}
+				>
 					튜토리얼 건너뛰기&gt;
 				</button>
 			</div>

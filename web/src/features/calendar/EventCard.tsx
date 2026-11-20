@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { repo } from "../../api/repository";
 import type { CommunityEvent } from "../../api/types";
 import { AssetImage } from "../../components/AssetImage";
 import ui from "../../components/Cosmic.module.css";
-import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatDay } from "./calendarDates";
 import { EVENT_ICON, kindOf, tagTone } from "./eventLook";
+import { useEventBookmark } from "./useEventBookmark";
 
 /** 행사 카드 (Figma 캘린더 오른쪽 카드): 아이콘 · 제목 · 시간 · 장소 · 태그 · 설명 · 책갈피 · 더 알아보기 */
 export function EventCard({
@@ -16,10 +14,12 @@ export function EventCard({
 	event: CommunityEvent;
 	showDate?: boolean;
 }) {
-	const { data: saved } = useRepositoryData(`bookmark:${event.id}`, () =>
-		repo.isBookmarked(event.id),
-	);
-	const [busy, setBusy] = useState(false);
+	const {
+		saved,
+		busy,
+		error: bookmarkError,
+		toggle,
+	} = useEventBookmark(event.id);
 
 	return (
 		<article className={ui.event} aria-labelledby={`event-${event.id}`}>
@@ -57,6 +57,11 @@ export function EventCard({
 						</span>
 					))}
 				</p>
+				{bookmarkError && (
+					<p className={ui.empty} role="alert">
+						{bookmarkError}
+					</p>
+				)}
 				<div className={ui.eventFoot}>
 					<p className={ui.desc}>{event.description}</p>
 					<Link to={`/calendar/${event.id}`} className={ui.cta}>
@@ -70,11 +75,7 @@ export function EventCard({
 				aria-pressed={saved ?? false}
 				aria-label={saved ? "북마크 해제" : "북마크"}
 				disabled={busy || saved === undefined}
-				onClick={async () => {
-					setBusy(true);
-					await repo.toggleBookmark(event.id);
-					setBusy(false);
-				}}
+				onClick={toggle}
 			>
 				<svg viewBox="0 0 35 52" aria-hidden="true">
 					<path d="M0 0h35v52L17.5 38.8 0 52z" />

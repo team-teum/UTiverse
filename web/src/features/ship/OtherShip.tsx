@@ -26,7 +26,7 @@ export function OtherShip() {
 		() => repo.getProfile(profileId),
 	);
 
-	if (!me || (loading && profile === undefined)) {
+	if (me === undefined || (loading && profile === undefined)) {
 		return <p className="scaffold-screen">불러오는 중…</p>;
 	}
 	if (!profile) {
@@ -43,7 +43,7 @@ export function OtherShip() {
 		<ShipPage
 			key={profile.id}
 			profile={profile}
-			myProfileId={me.id}
+			myProfileId={me?.id ?? ""}
 			fromUniverse={fromUniverse}
 			fromExplore={arrival?.fromExplore === true}
 			onBack={() => {

@@ -106,7 +106,7 @@ export interface Session {
  * 실패는 Promise 거절로 알린다. 오류 문구는 분기 조건으로 쓰지 않는다.
  */
 export interface Repository {
-	getMyProfile(): Promise<Profile>;
+	getMyProfile(): Promise<Profile | null>;
 	/** 없는 프로필은 null */
 	getProfile(profileId: string): Promise<Profile | null>;
 	/** 나를 뺀 우주선 목록. 우주의 점 하나가 프로필 하나에 대응한다. */
@@ -139,7 +139,7 @@ export interface Repository {
 	/** 대기 중인 MY 스와이프 안내가 있으면 true를 반환하고 대기 상태를 해제한다. */
 	takeSwipeHint(): Promise<boolean>;
 	requestSwipeHint(): Promise<void>;
-	updateMyLook(patch: Partial<Look>): Promise<Profile>;
+	updateMyLook(patch: Partial<Look>, expectedId?: string): Promise<Profile>;
 	getSession(): Promise<Session | null>;
 	signUp(input: {
 		email: string;
@@ -149,10 +149,10 @@ export interface Repository {
 	signIn(input: { email: string; password: string }): Promise<void>;
 	signOut(): Promise<void>;
 	/** 지정한 필드만 공백을 다듬어 저장한다. 닉네임은 1~12자, 소개는 40자 이하다. */
-	updateMyProfile(patch: {
-		nickname?: string;
-		tagline?: string;
-	}): Promise<Profile>;
+	updateMyProfile(
+		patch: { nickname?: string; tagline?: string },
+		expectedId?: string,
+	): Promise<Profile>;
 	/** 탐색: 나를 뺀 우주선 n개를 무작위로 */
 	exploreRandom(count: number): Promise<ExploreCard[]>;
 	getMyLocation(): Promise<MyLocation | null>;
@@ -176,4 +176,6 @@ export interface Repository {
 	toggleBookmark(eventId: string): Promise<void>;
 	/** 화면 데이터 변경이 반영된 뒤 listener를 부른다. 반환값은 구독 해제 함수다. */
 	subscribe(listener: () => void): () => void;
+	/** 계정 전환 시 이전 계정의 조회 결과를 재사용하지 않는다. */
+	readScope?(): number;
 }

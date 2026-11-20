@@ -8,7 +8,7 @@ import { EventCard } from "./EventCard";
 
 /** S17 북마크: 책갈피한 행사, 날짜순 (캘린더와 같은 우주 도트 화면) */
 export function Bookmarks() {
-	const { data: events } = useRepositoryData("bookmarks", () =>
+	const { data: events, error } = useRepositoryData("bookmarks", () =>
 		repo.listBookmarkedEvents(),
 	);
 
@@ -30,7 +30,11 @@ export function Bookmarks() {
 				<p className={ui.subtitle}>가 보고 싶은 행사를 모아 둬요</p>
 			</header>
 			<div className={`${ui.panel} ${styles.dayPanel}`}>
-				{!events ? (
+				{error ? (
+					<p className={ui.empty} role="alert">
+						책갈피를 불러오지 못했어요.
+					</p>
+				) : !events ? (
 					<p className={ui.empty} role="status">
 						불러오는 중…
 					</p>

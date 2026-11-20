@@ -66,9 +66,11 @@ export function Explore() {
 	const { key, state } = useLocation();
 	const entry =
 		(state as { exploreEntry?: string } | null)?.exploreEntry ?? key;
-	const { data: location } = useRepositoryData("location", () =>
-		repo.getMyLocation(),
+	const { data: location, error: locationError } = useRepositoryData(
+		"location",
+		() => repo.getMyLocation(),
 	);
+	const drawEntry = `${repo.readScope?.() ?? 0}:${entry}`;
 	const asked = params.get("mode");
 	const mode: Mode =
 		asked === "random" || asked === "nearby"
@@ -115,7 +117,9 @@ export function Explore() {
 
 			<div key={mode} className={styles.body}>
 				{mode === "random" ? (
-					<RandomExplore key={entry} entry={entry} />
+					<RandomExplore key={drawEntry} entry={drawEntry} />
+				) : locationError ? (
+					<p role="alert">위치를 불러오지 못했어요. 새로고침해 주세요.</p>
 				) : location === undefined ? (
 					<p role="status">불러오는 중…</p>
 				) : (
@@ -268,9 +272,9 @@ function NearbyExplore({
 		settingsRef.current?.focus();
 	}, [editing, location]);
 	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
-	const { data: ships } = useRepositoryData(
+	const { data: ships, error: shipsError } = useRepositoryData(
 		`explore:nearby:${location?.sido}:${location?.sigungu}`,
-		() => repo.exploreNearby(),
+		() => (location ? repo.exploreNearby() : Promise.resolve([])),
 	);
 
 	const placed = useMemo(() => {
@@ -335,7 +339,7 @@ function NearbyExplore({
 							visible: false,
 						})}
 						ships={previewShips}
-						me={me}
+						me={me ?? undefined}
 					/>
 				</div>
 				<div className={styles.needCard}>
@@ -370,8 +374,15 @@ function NearbyExplore({
 
 	return (
 		<div className={styles.nearby}>
-			<OrbitView labels={labels} ships={placed} me={me} />
+			<OrbitView labels={labels} ships={placed} me={me ?? undefined} />
 			<div className={styles.nearbyFoot}>
+				{Boolean(shipsError) && (
+					<p role="alert">
+						{shipsError instanceof Error
+							? shipsError.message
+							: "주변 별을 불러오지 못했어요."}
+					</p>
+				)}
 				<span>
 					{location.visible
 						? "내 우주선도 주변 별 찾기에 보여요"

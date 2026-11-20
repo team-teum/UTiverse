@@ -82,11 +82,18 @@ export function CommentSection({
 			inputRef.current?.focus();
 			return;
 		}
-		if (!(await repo.getSession())) {
-			setNeedAuth(true);
-			return;
+		setSubmitting(true);
+		try {
+			if (!(await repo.getSession())) {
+				setNeedAuth(true);
+				return;
+			}
+			await submitNow();
+		} catch {
+			setSubmitError("로그인 상태를 확인하지 못했어요. 다시 시도해 주세요.");
+		} finally {
+			setSubmitting(false);
 		}
-		await submitNow();
 	}
 
 	async function submitNow() {

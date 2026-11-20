@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
@@ -7,6 +6,7 @@ import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { formatDay } from "./calendarDates";
 import styles from "./EventDetail.module.css";
 import { EVENT_ICON, kindOf, tagTone } from "./eventLook";
+import { useEventBookmark } from "./useEventBookmark";
 
 /** 행사 상세 (캘린더와 같은 우주 도트 화면): 표지 · 제목 · 일시 · 장소 · 주최 · 설명 · 링크 · 책갈피 */
 export function EventDetail() {
@@ -14,10 +14,12 @@ export function EventDetail() {
 	const { data: event, error } = useRepositoryData(`event:${eventId}`, () =>
 		repo.getEvent(eventId),
 	);
-	const { data: saved } = useRepositoryData(`bookmark:${eventId}`, () =>
-		repo.isBookmarked(eventId),
-	);
-	const [busy, setBusy] = useState(false);
+	const {
+		saved,
+		busy,
+		error: bookmarkError,
+		toggle,
+	} = useEventBookmark(eventId);
 
 	if (error) return <p className={ui.empty}>행사를 불러오지 못했어요.</p>;
 	if (event === undefined) return <p className={ui.empty}>불러오는 중…</p>;
@@ -93,11 +95,7 @@ export function EventDetail() {
 					className={saved ? ui.pill : ui.cta}
 					aria-pressed={saved ?? false}
 					disabled={busy}
-					onClick={async () => {
-						setBusy(true);
-						await repo.toggleBookmark(event.id);
-						setBusy(false);
-					}}
+					onClick={toggle}
 				>
 					<svg
 						viewBox="0 0 35 52"
@@ -108,6 +106,11 @@ export function EventDetail() {
 					</svg>
 					{saved ? "책갈피했어요" : "책갈피"}
 				</button>
+				{bookmarkError && (
+					<p className={ui.empty} role="alert">
+						{bookmarkError}
+					</p>
+				)}
 				{event.link && (
 					<a
 						className={ui.pill}

@@ -20,7 +20,8 @@ interface Loaded<T> {
  */
 export function useRepositoryData<T>(key: string, load: () => Promise<T>) {
 	const currentVersion = useSyncExternalStore(repo.subscribe, getVersion);
-	const requestKey = `${key}#${currentVersion}`;
+	const scopedKey = `${repo.readScope?.() ?? 0}:${key}`;
+	const requestKey = `${scopedKey}#${currentVersion}`;
 	const loadRef = useRef(load);
 	loadRef.current = load;
 	const [loaded, setLoaded] = useState<Loaded<T> | null>(null);
@@ -28,15 +29,16 @@ export function useRepositoryData<T>(key: string, load: () => Promise<T>) {
 	useEffect(() => {
 		let active = true;
 		loadRef.current().then(
-			(data) => active && setLoaded({ requestKey, key, data }),
-			(error: unknown) => active && setLoaded({ requestKey, key, error }),
+			(data) => active && setLoaded({ requestKey, key: scopedKey, data }),
+			(error: unknown) =>
+				active && setLoaded({ requestKey, key: scopedKey, error }),
 		);
 		return () => {
 			active = false;
 		};
-	}, [key, requestKey]);
+	}, [scopedKey, requestKey]);
 
-	const sameKey = loaded?.key === key;
+	const sameKey = loaded?.key === scopedKey;
 	return {
 		data: sameKey ? loaded?.data : undefined,
 		error: sameKey ? loaded?.error : undefined,

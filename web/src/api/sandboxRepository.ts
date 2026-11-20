@@ -66,7 +66,9 @@ function copyEvent(event: CommunityEvent): CommunityEvent {
  * 독립된 인메모리 샌드박스와 예시 데이터를 만든다 (SPECIFICATION 6.1).
  * 브라우저 저장소나 네트워크를 쓰지 않으며, DB 권한 검증을 대신하지 않는다.
  */
-export function createSandboxRepository(): Repository {
+export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
+	getMyProfile(): Promise<Profile>;
+} {
 	/** 공통 테스트 식별자 tester@utiverse.invalid 의 프로필. 이메일은 화면에 보이지 않는다. */
 	const me: Profile = {
 		// 새로고침해도 공통 테스트 프로필의 별자리 모양은 같다. 글은 초기화된다.

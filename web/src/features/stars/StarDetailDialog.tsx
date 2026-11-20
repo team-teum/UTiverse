@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { repo } from "../../api/repository";
+import { accountPreviewEnabled, repo } from "../../api/repository";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { FigmaCloseIcon, MoreIcon } from "../../components/icons";
 import { ModalDialog } from "../../components/ModalDialog";
@@ -168,10 +168,16 @@ export function StarDetailDialog({
 						try {
 							await repo.report(target, reason);
 							setReported(
-								"신고가 접수됐어요. (테스트 모드라 실제로 전달되지는 않아요)",
+								accountPreviewEnabled
+									? "신고를 접수했어요."
+									: "신고가 접수됐어요. (테스트 모드라 실제로 전달되지는 않아요)",
 							);
-						} catch {
-							setReported("신고하지 못했어요. 다시 시도해 주세요.");
+						} catch (cause) {
+							setReported(
+								cause instanceof Error
+									? cause.message
+									: "신고하지 못했어요. 다시 시도해 주세요.",
+							);
 						}
 					}}
 				/>
