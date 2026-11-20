@@ -2,7 +2,7 @@ import { isValidLength } from "../lib/postText.ts";
 import { isValidRegion } from "../lib/regions.ts";
 import { DEFAULT_LOOK, withLook } from "../pixel/look.ts";
 import { sandboxEvents } from "./sandboxEvents.ts";
-import { exampleProfiles } from "./sandboxExamples.ts";
+import { exampleLocations, exampleProfiles } from "./sandboxExamples.ts";
 import {
 	COMMENT_MAX_CHARS,
 	type Comment,
@@ -33,63 +33,6 @@ interface StoredReaction {
 	profileId: string;
 	type: ReactionType;
 }
-
-/**
- * 예시 우주선의 가상 위치(prd.md 6장: "예시 우주선의 위치는 가상으로 설정되어 있어요").
- * 서울 관악구·경기 구리시를 고르면 세 궤도가 모두 채워진다. visible=false 인 둘은 주변 탐색에 안 나온다.
- */
-const exampleLocations: Record<string, MyLocation> = {
-	"00000000-0000-4000-8000-000000010000": {
-		sido: "서울특별시",
-		sigungu: "관악구",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000020000": {
-		sido: "서울특별시",
-		sigungu: "관악구",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000030000": {
-		sido: "서울특별시",
-		sigungu: "마포구",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000040000": {
-		sido: "경기도",
-		sigungu: "구리시",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000050000": {
-		sido: "경기도",
-		sigungu: "구리시",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000060000": {
-		sido: "경기도",
-		sigungu: "수원시",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000070000": {
-		sido: "부산광역시",
-		sigungu: "해운대구",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000080000": {
-		sido: "대전광역시",
-		sigungu: "유성구",
-		visible: true,
-	},
-	"00000000-0000-4000-8000-000000090000": {
-		sido: "서울특별시",
-		sigungu: "관악구",
-		visible: false,
-	},
-	"00000000-0000-4000-8000-000000100000": {
-		sido: "경기도",
-		sigungu: "구리시",
-		visible: false,
-	},
-};
 
 function tierOf(other: MyLocation, mine: MyLocation): DistanceTier {
 	if (other.sido === mine.sido && other.sigungu === mine.sigungu)

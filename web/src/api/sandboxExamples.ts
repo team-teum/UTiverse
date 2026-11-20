@@ -1,4 +1,5 @@
 import type { Look } from "../pixel/look";
+import type { MyLocation } from "./types";
 
 // 샌드박스 예시 우주선 (SPECIFICATION 6.1, prd.md 6장 '시드 콘텐츠')
 // - 전부 지어낸 인물·이야기다. 실제 사람·지역을 특정할 수 있는 내용은 넣지 않는다.
@@ -7,6 +8,63 @@ import type { Look } from "../pixel/look";
 // - 이 데이터는 DB가 아니라 앱 코드에 들어가 빌드된다. 페이지를 열 때마다 메모리로 읽혀
 //   새로고침하면 처음 상태로 돌아온다. 실제 DB 모드에서는 supabase/seed.sql로 옮긴다.
 // 날짜는 '오늘로부터 며칠 전'으로 적는다(열 때마다 오늘 기준으로 계산).
+
+/**
+ * 예시 우주선의 가상 위치(prd.md 6장: "예시 우주선의 위치는 가상으로 설정되어 있어요").
+ * 서울 관악구·경기 구리시를 고르면 세 궤도가 모두 채워진다. visible=false 인 둘은 주변 탐색에 안 나온다.
+ */
+export const exampleLocations: Record<string, MyLocation> = {
+	"00000000-0000-4000-8000-000000010000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000020000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000030000": {
+		sido: "서울특별시",
+		sigungu: "마포구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000040000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000050000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000060000": {
+		sido: "경기도",
+		sigungu: "수원시",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000070000": {
+		sido: "부산광역시",
+		sigungu: "해운대구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000080000": {
+		sido: "대전광역시",
+		sigungu: "유성구",
+		visible: true,
+	},
+	"00000000-0000-4000-8000-000000090000": {
+		sido: "서울특별시",
+		sigungu: "관악구",
+		visible: false,
+	},
+	"00000000-0000-4000-8000-000000100000": {
+		sido: "경기도",
+		sigungu: "구리시",
+		visible: false,
+	},
+};
 
 interface ExampleComment {
 	/** 댓글을 쓴 예시 프로필의 key */

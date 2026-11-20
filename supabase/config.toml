@@ -1,0 +1,26 @@
+# Local account and content rehearsal. Do not push these settings to a hosted project.
+project_id = "utiverse-auth-dev"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./fixtures/sandbox-neighbors.sql", "./fixtures/rehearsal-calendar-and-locations.sql"]
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:5173"
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 8
+
+[auth.email]
+enabled = true
+# Local throwaway accounts only; hosted signup policy is a separate decision.
+enable_confirmations = false
