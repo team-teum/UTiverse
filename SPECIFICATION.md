@@ -353,7 +353,18 @@ UTiverse/
 - `supabase/migrations/20261120092320_shared_profiles_and_stars.sql`: 프로필·꾸미기·별·댓글·반응을 같은 계정으로 저장한다. 글·댓글은 공개 읽기, 쓰기·삭제는 인증과 소유권 검사. 다른 별의 댓글을 답글 부모로 만들 수 없다. 반응 원본은 비공개이고 집계·내 반응 여부만 반환한다.
 - 로컬 DB 시작 후 `web/`에서 `npm run dev:supabase`를 실행하면 CLI가 로컬 공개 키를 읽고 기존 가입창·설정·MY·댓글이 같은 Supabase 저장소를 쓴다. 주소는 `127.0.0.1:54321`로 고정한다. 위치·일정·책갈피·튜토리얼 및 신고도 아래 후속 마이그레이션으로 연결했다. 플래그 없는 개발 실행과 프로덕션 빌드는 샌드박스다.
 - 로컬 시작 시 `supabase/fixtures/sandbox-neighbors.sql`로 Auth 계정 없는 프로필 10개, 글 36개, 댓글 30개와 반응을 불러온다. 프로필·별 ID는 기존 링크와 같다. 클라이언트에는 예시 여부만 공개한다. 운영자는 배치로 정리할 수 있지만, 배치 밖의 댓글·답글·반응·신고가 연결되면 삭제 스크립트가 중단된다. 운영 반영은 팀의 내용 검토 뒤 별도 결정이다.
-- 재현은 README의 로컬 Supabase 명령을 따른다. `supabase/tests/auth-profiles.test.mjs`는 로컬 API만 쓰고 기존 웹 CI의 필수 단계에는 넣지 않는다.
+
+**로컬 API 권한 테스트**
+
+README대로 Docker와 로컬 Supabase를 시작한 뒤, 저장소 루트에서 실행한다. Vite는 켤 필요 없다.
+
+```bash
+npx --yes supabase@3.2.0 status
+# 위 출력의 Publishable 키만 사용한다. Secret 키는 쓰지 않는다.
+SUPABASE_LOCAL_PUBLISHABLE_KEY='<local-publishable-key>' node --test supabase/tests/auth-profiles.test.mjs
+```
+
+API 요청은 `127.0.0.1:54321`로만 보내며, 운영자 시나리오는 로컬 Docker DB 컨테이너를 사용한다. 테스트용 계정과 데이터가 생기므로 운영 프로젝트에는 실행하지 않는다. 웹 CI에는 넣지 않는다.
 
 **검증 기록**
 
