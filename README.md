@@ -25,17 +25,18 @@ npm run dev
 
 ## 로컬 Supabase로 개발하기
 
-Docker를 켜고 **저장소 루트**에서 로컬 DB를 시작합니다. Supabase CLI를 전역으로 설치할 필요는 없습니다.
+Docker Desktop(또는 Docker Engine)을 실행한 뒤 **저장소 루트**에서 시작합니다.
 
 ```bash
-npx --yes supabase@3.2.0 start -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
+npx --yes supabase@3.2.0 start \
+  -x realtime,storage-api,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor,mailpit
 cd web
 npm run dev:supabase
 ```
 
-개발 서버는 실행 중인 로컬 DB의 공개 키를 자동으로 읽습니다. 키를 복사하거나 `.env` 파일을 만들 필요가 없습니다.
+Docker는 필요하지만 Supabase CLI 전역 설치는 선택입니다. 팀 공용 명령은 같은 버전을 쓰도록 CLI를 고정합니다. 로컬 공개 키는 자동으로 읽으므로 `.env` 설정은 필요 없습니다.
 
-`/settings`에서 테스트 이메일로 가입하고 프로필을 저장한 뒤, MY에서 같은 이름으로 꾸미기·글 작성을 하고 다른 우주선에서 같은 계정으로 댓글을 남길 수 있습니다. 새로고침 후 저장값을 확인합니다. 위치·책갈피·로그인한 계정의 튜토리얼 완료도 저장됩니다. 신고는 로컬 DB에 접수됩니다. 일반 `npm run dev`와 프로덕션 빌드는 기존 샌드박스를 사용합니다.
+`/settings`에서 테스트 이메일로 가입해 시작하세요. 일반 `npm run dev`와 프로덕션 빌드는 샌드박스를 사용합니다.
 
 ### API 권한 테스트 및 정리
 
