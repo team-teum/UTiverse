@@ -7,6 +7,7 @@ import {
 import { repo } from "../../api/repository";
 import type { Comment, Star } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { commentsByParent } from "../../lib/commentThreads";
 import { formatMonthDay } from "../../lib/dateFormat";
 import styles from "./Constellation.module.css";
 import { getConstellationPattern } from "./constellationPatterns";
@@ -47,6 +48,7 @@ function growBranches(
 	star: Star,
 ): Branch[] {
 	const out: Branch[] = [];
+	const byParent = commentsByParent(comments);
 	const cx = BOX.width / 2;
 	const cy = BOX.height / 2;
 	let base = Math.atan2(origin[1] - cy, origin[0] - cx);
@@ -59,9 +61,10 @@ function growBranches(
 		depth: number,
 	) {
 		if (depth >= MAX_DEPTH) return;
-		const children = comments
-			.filter((c) => c.parentId === parentId)
-			.slice(0, depth === 0 ? MAX_DIRECT : 3);
+		const children = (byParent.get(parentId) ?? []).slice(
+			0,
+			depth === 0 ? MAX_DIRECT : 3,
+		);
 		const spread = depth === 0 ? 0.62 : 0.5;
 		children.forEach((child, i) => {
 			const a = angle + (i - (children.length - 1) / 2) * spread;

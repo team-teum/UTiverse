@@ -3,6 +3,7 @@ import { repo } from "../../api/repository";
 import { COMMENT_MAX_CHARS, type Comment } from "../../api/types";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { commentsByParent } from "../../lib/commentThreads";
 import { formatRelative } from "../../lib/dateFormat";
 import { preferredScrollBehavior } from "../../lib/motion";
 import { countChars, lengthError } from "../../lib/postText";
@@ -66,6 +67,7 @@ export function CommentSection({
 		});
 	}, [focusCommentId, hasComments]);
 
+	const byParent = commentsByParent(comments ?? []);
 	const length = countChars(draft);
 
 	function validate() {
@@ -123,7 +125,7 @@ export function CommentSection({
 	}
 
 	function renderThread(comment: Comment, depth: number) {
-		const replies = (comments ?? []).filter((c) => c.parentId === comment.id);
+		const replies = byParent.get(comment.id) ?? [];
 		const mine = comment.author.id === myProfileId;
 		return (
 			<li
@@ -203,13 +205,7 @@ export function CommentSection({
 			)}
 			{comments && comments.length > 0 && (
 				<ul className={styles.list}>
-					{comments
-						.filter(
-							(c) =>
-								c.parentId === null ||
-								!comments.some((p) => p.id === c.parentId),
-						)
-						.map((comment) => renderThread(comment, 0))}
+					{byParent.get(null)?.map((comment) => renderThread(comment, 0))}
 				</ul>
 			)}
 			{deleteError && (

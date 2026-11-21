@@ -9,9 +9,12 @@ import { preferredScrollBehavior } from "../../lib/motion";
 import styles from "./Calendar.module.css";
 import {
 	addMonths,
+	type CalendarSelection,
+	focusedDate,
 	formatMonth,
 	monthCells,
 	monthOf,
+	selectedMonth,
 	todayKst,
 	weekdayOf,
 } from "./calendarDates";
@@ -21,14 +24,12 @@ import { EVENT_DOT, kindOf } from "./eventLook";
 const SWIPE = 50;
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
 
-/**
- * S15 캘린더 (Figma 「우주 속 행사 캘린더」 105:852를 모바일 세로로).
- * 위: 달력(좌우로 밀거나 화살표로 달 넘김), 아래: 고른 날의 행사 카드.
- */
 export function Calendar() {
 	const today = todayKst();
-	const [month, setMonth] = useState(monthOf(today));
-	const [selected, setSelected] = useState<string | null>(null);
+	const [selection, setSelection] = useState<CalendarSelection>({
+		month: monthOf(today),
+	});
+	const month = selectedMonth(selection);
 	const [toast, setToast] = useState<string | null>(null);
 	const [slide, setSlide] = useState<"next" | "prev" | null>(null);
 	const start = useRef<{ x: number; y: number } | null>(null);
@@ -42,23 +43,18 @@ export function Calendar() {
 		byDate.set(event.date, [...(byDate.get(event.date) ?? []), event]);
 	}
 
-	// 고른 날이 없으면 이달의 행사 날짜를 사용한다. 빈 달은 날짜를 고르기 전까지 월 단위로 안내한다.
-	const focus =
-		selected ??
-		(byDate.has(today)
-			? today
-			: ((events ?? []).find((e) => e.date >= today)?.date ??
-				events?.[0]?.date));
+	const focus = focusedDate(selection, events ?? [], today);
 	const dayEvents = focus ? (byDate.get(focus) ?? []) : [];
 
 	function go(delta: number) {
 		setSlide(delta > 0 ? "next" : "prev");
-		setMonth((current) => addMonths(current, delta));
-		setSelected(null);
+		setSelection((current) => ({
+			month: addMonths(selectedMonth(current), delta),
+		}));
 	}
 
 	function pick(date: string) {
-		setSelected(date);
+		setSelection({ date });
 		requestAnimationFrame(() => {
 			const list = listRef.current;
 			if (
@@ -130,8 +126,7 @@ export function Calendar() {
 						className={`${ui.pill} ${styles.today}`}
 						onClick={() => {
 							setSlide(null);
-							setMonth(monthOf(today));
-							setSelected(today);
+							setSelection({ date: today });
 						}}
 					>
 						오늘로

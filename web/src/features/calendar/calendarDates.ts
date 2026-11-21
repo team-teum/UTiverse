@@ -9,6 +9,22 @@ export function monthOf(date: string): string {
 	return date.slice(0, 7);
 }
 
+export type CalendarSelection = { month: string } | { date: string };
+
+export function selectedMonth(selection: CalendarSelection): string {
+	return "date" in selection ? monthOf(selection.date) : selection.month;
+}
+
+/** Events are in date order. Without an explicit pick, prefer upcoming dates. */
+export function focusedDate(
+	selection: CalendarSelection,
+	events: readonly { date: string }[],
+	today: string,
+): string | undefined {
+	if ("date" in selection) return selection.date;
+	return events.find((event) => event.date >= today)?.date ?? events[0]?.date;
+}
+
 export function addMonths(month: string, delta: number): string {
 	const [y, m] = month.split("-").map(Number);
 	const index = y * 12 + (m - 1) + delta;
