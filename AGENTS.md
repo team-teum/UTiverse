@@ -1,12 +1,34 @@
 # AGENTS.md — 코딩 에이전트 작업 규칙
 
-이 저장소에서 일하는 코딩 에이전트(Codex, Claude 등)는 아래 순서를 따른다.
+## 작업 전
 
-1. 작업 전에 `prd.md`(무엇을·왜), `SPECIFICATION.md`(어떻게·구현 상태), `new_requests.md`(변경 요청)를 읽는다. 이미지 작업이면 `docs/ASSETS.md`도 읽는다.
-2. 사용자가 이번에 요청한 범위만 구현한다. PRD 전체를 한 번에 만들지 않는다. Scaffold는 필수 기반만 작고 단순하게 유지하고, 미사용 추상화·데이터 계층·대규모 테스트 환경은 미리 추가하지 않는다. 필요해지는 기능과 함께 최소한으로 추가한다.
-3. 앱 코드는 `web/`, DB 변경은 `supabase/migrations/`에 새 파일로 추가한다. 이미 적용된 migration 파일은 고치지 않는다.
-4. 이미지는 `web/public/assets/` + `web/src/assets/manifest.ts` 키로만 참조하고, 새 키를 만들면 `docs/ASSETS.md` 표를 같은 커밋에서 고친다.
-5. 비밀 키(service role, secret)를 브라우저 코드·저장소에 넣지 않는다. `.env.local`은 커밋하지 않는다.
-6. 권한은 화면이 아니라 RLS·DB 함수로 막는다. 사용자 콘텐츠 테이블을 추가하면 RLS와 grant를 함께 만든다.
-7. 끝나면 바뀐 파일과 실행·검증 방법을 설명하고, **직접 확인한 항목만** `SPECIFICATION.md`에 `- [x]`로 표시하고 「검증 기록」을 채운다. 0장 구현 상태 표도 갱신한다.
-8. 사용자 화면 문구는 한국어로, 짧고 다정하게 쓴다. 성별·정체성을 추정하거나 기본값으로 두지 않는다.
+- [PRD](prd.md)(무엇을·왜), [명세](SPECIFICATION.md)(어떻게·구현 상태), [변경 요청](new_requests.md)을 읽는다. 이미지 작업이면 [에셋 가이드](docs/ASSETS.md)도 읽는다.
+
+## 저장소 구조와 에셋
+
+- **코드 배치와 마이그레이션.** 현재 저장소 구조를 따르고, 구조 변경은 작업에 필요한 범위로 제한한다. DB 스키마 변경은 새 마이그레이션으로 추가하고, 이미 적용된 마이그레이션은 고치지 않는다.
+- **이미지 참조.** 이미지는 기존 에셋 관리 방식을 따라 참조한다. 에셋 키를 추가하거나 변경하면 같은 변경에서 [에셋 가이드](docs/ASSETS.md)도 갱신한다.
+
+## 보안과 권한
+
+- 비밀 키(service role, secret)를 브라우저 코드·저장소에 넣지 않는다. `.env.local`은 커밋하지 않는다.
+- 권한은 화면이 아니라 RLS·DB 함수로 강제한다. 사용자 콘텐츠 테이블을 추가하면 RLS와 `GRANT`를 함께 설정한다.
+
+## 사용자 화면 문구
+
+- 한국어로, 짧고 다정하게 쓴다. 성별·정체성을 추정하거나 기본값으로 두지 않는다.
+
+## 코드 작성 원칙
+
+Optimize for local reasoning with the simplest code that makes behavior clear. A reader should be able to understand a change from the code and the contracts of its immediate dependencies.
+
+- **Keep code and comments lean.** Prefer clear names, types, and direct control flow. Add a helper or abstraction only if it makes the code easier to understand or change. Use short comments for intent, constraints, or trade-offs the code can't express clearly; don't narrate the implementation.
+- **State the contract.** At meaningful boundaries, document only what callers need and can't tell from the interface: non-obvious requirements, guarantees, failure behavior, or side effects. Don't promise incidental details.
+- **Enforce invariants close to the state.** Prefer types and restricted mutation that keep related values consistent. Document an invariant next to its owner when the code alone doesn't make it clear.
+- **Keep effects explicit.** Where it helps, separate decisions from file I/O, preferences, and UI updates. Pass relevant inputs explicitly rather than reaching for global state from decision logic.
+- **Apply this incrementally.** Where a change requires tracing several files to answer a basic question, look for a clearer contract or boundary. Test the guarantees that callers rely on, including meaningful failure cases. Don't add comments or abstractions just to satisfy a checklist.
+
+## 작업 마무리
+
+- 바뀐 파일과 실행·검증 방법을 설명한다.
+- [명세](SPECIFICATION.md)에서 **직접 확인한 항목만** `- [x]`로 표시하고 「검증 기록」을 채운다. 0장 구현 상태 표도 갱신한다.
