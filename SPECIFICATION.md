@@ -10,7 +10,7 @@
 
 | 영역 | 상태 | 비고 |
 |---|---|---|
-| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 검사와 Node.js 단위 테스트(3.10)를 CI에서 실행. 웹 접근성·입력 검증 보완. 미사용 코드·기능별 디렉터리 정리 및 검증은 3.3·3.4, 초점·터치·동작 줄이기 보완은 3.6, 모바일 전체 폭·한글 줄바꿈과 데스크톱 배치는 4장 |
+| 저장소 구조 · 개발 환경 | 기본 scaffold 완료 | Node.js 26 LTS(3.10 검증 기록); 3.1·3.2 검증 기록; 최소 Vite/React 기반, lint·format·타입 검사와 Node.js 단위 테스트(3.10)를 CI에서 실행. 웹 접근성·입력 검증 보완. 미사용 코드·기능별 디렉터리 정리 및 검증은 3.3·3.4, 초점·터치·동작 줄이기 보완은 3.6, 모바일 전체 폭·한글 줄바꿈과 데스크톱 배치는 4장 |
 | 로컬 테스트 샌드박스 | 일부 (글·댓글·반응·예시 우주선) | 3.2·6.1; 시작 화면에 예시 이웃 수 표시. 예시 프로필·별은 고정 UUID로 직접 링크 새로고침 지원. `web/src/api/` 공통 인터페이스 + 메모리 구현. 앱은 샌드박스 인스턴스 하나를 공유하며 반환값은 독립 스냅샷이다. 거절된 쓰기는 상태·구독에 영향을 주지 않으며 책갈피는 존재하는 행사만 가리킨다(3.7). 예시 우주선 10개·별 36개·댓글은 `web/src/api/sandboxExamples.ts`(Claude 초안, **팀 검토·승인 필요**) |
 | Supabase 스키마 · RLS · 함수 (migration) | 공개 전환 마이그레이션·즉시 변경·행 삭제 로컬 검증 / 호스팅 미적용 | 데모 배치, 로컬 두 계정·비로그인 검사, 신고·정지·계정 삭제 검증(7.0·7.9). 운영 연결은 보류 |
 | 시드 데이터 | 미착수 | 7.6 |
@@ -58,7 +58,7 @@
 | 3D 우주 | 외부 3D 라이브러리 없이 구면 좌표 → 2D 투영 자체 구현 |
 | DB·인증 | Supabase (Postgres, Auth). 스키마는 `supabase/migrations/*.sql` |
 | 배포 | Cloudflare Workers Static Assets (`npx wrangler deploy`) |
-| 도구 | Node.js 24 LTS (`.nvmrc`: 24.22.2), npm 11.19.1로 검증, Wrangler 4.162.0(로컬 devDependency). Supabase 테스트는 Docker와 `npx supabase@3.2.0`을 따로 사용 |
+| 도구 | Node.js 26 LTS (`.nvmrc`: 26.13.1), npm 11.20.0으로 검증, Wrangler 4.162.0(로컬 devDependency). Supabase 테스트는 Docker와 `npx supabase@3.2.0`을 따로 사용 |
 | 코드 검사 | Biome 2.6.8 (`biome init` 기본 formatter·권장 lint·import 정렬) + TypeScript strict. main push마다 GitHub Actions에서 검사 통과 후 빌드·배포 |
 | 테스트 | Node.js 내장 러너로 저장소 계약·별자리 프리셋·우주 구면 계산을 검사(3.10). 브라우저는 일회성 확인, 실제 DB 두 계정 점검은 9장 |
 
@@ -219,12 +219,13 @@ UTiverse/
 
 ### 3.10 단위 테스트
 
-- `cd web && npm test`는 Node.js 24의 `node --test`로 실행한다. 수정 중에는 `npm test -- --watch`를 쓸 수 있다. 테스트와 테스트가 불러오는 저장소의 런타임 import에는 `.ts` 확장자를 명시한다. 별도 러너 패키지, 로더, DOM 모사 환경, 브라우저 러너는 추가하지 않았다.
+- `cd web && npm test`는 Node.js 26의 `node --test`로 실행한다. 수정 중에는 `npm test -- --watch`를 쓸 수 있다. 테스트와 테스트가 불러오는 저장소의 런타임 import에는 `.ts` 확장자를 명시한다. 별도 러너 패키지, 로더, DOM 모사 환경, 브라우저 러너는 추가하지 않았다.
 - 대상: 독립된 샌드박스 저장소의 상태·알림·댓글·책갈피 계약, 프로필별 별자리 프리셋의 안정성·슬롯, 우주 구면 배치와 회전. 터치·키보드 초점·뒤로가기 같은 브라우저 동작은 이 단위 테스트의 범위가 아니다.
 
 **검증 기록**
 
-- [x] `cd web && npm ci && npm test && npm run check && npm run build` 실행. 테스트 파일 3개, 단위 테스트 11개 통과. GitHub Actions 실행 및 배포는 미확인이다.
+- [x] `cd web && npm ci && npm test && npm run check && npm run build` 실행. 테스트 파일 3개, 단위 테스트 11개 통과.
+- [x] Node.js 26.13.1 / npm 11.20.0에서 `npm ci`, `npm run check`(기존 CSS 경고 6개), `npm test`(11개), `npm run build` 통과. Fish에서 저장소 진입 시 Node.js 26.13.1이 선택되고 `pi --version`이 실행됨을 확인했다. GitHub Actions, Supabase 계약 테스트 및 배포는 이번 변경에서 실행하지 않았다.
 
 ## 4. 화면 비율과 레이아웃
 
