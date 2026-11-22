@@ -63,6 +63,12 @@
 	font-weight: 700;
 }
 
+.hint {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
 .error {
 	margin: 0;
 	font-size: 0.875rem;

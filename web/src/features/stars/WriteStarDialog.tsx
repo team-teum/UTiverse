@@ -9,15 +9,21 @@ import { countChars, lengthError } from "../../lib/postText";
 import styles from "./WriteStarDialog.module.css";
 
 interface WriteStarDialogProps {
+	showAudienceCue: boolean;
 	onClose: () => void;
 	onCreated: (star: Star) => void;
 }
 
 /** S12 별 만들기. 오늘의 주제 추천 카드는 이번 MVP에서 뺀다(prd.md 7장). */
-export function WriteStarDialog({ onClose, onCreated }: WriteStarDialogProps) {
+export function WriteStarDialog({
+	showAudienceCue,
+	onClose,
+	onCreated,
+}: WriteStarDialogProps) {
 	const titleId = useId();
 	const counterId = useId();
 	const validationId = useId();
+	const audienceId = useId();
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const [validationError, setValidationError] = useState<string | null>(null);
 	const [body, setBody] = useState("");
@@ -108,7 +114,7 @@ export function WriteStarDialog({ onClose, onCreated }: WriteStarDialogProps) {
 						placeholder="무엇이든 자유롭게 써보세요."
 						aria-label="별에 남길 이야기"
 						aria-invalid={validationError ? true : undefined}
-						aria-describedby={`${counterId}${validationError ? ` ${validationId}` : ""}`}
+						aria-describedby={`${showAudienceCue ? `${audienceId} ` : ""}${counterId}${validationError ? ` ${validationId}` : ""}`}
 						rows={12}
 						data-autofocus
 					/>
@@ -126,6 +132,12 @@ export function WriteStarDialog({ onClose, onCreated }: WriteStarDialogProps) {
 					{error && (
 						<p className={styles.error} role="alert">
 							{error}
+						</p>
+					)}
+					{showAudienceCue && (
+						<p id={audienceId} className={styles.hint}>
+							이 별은 로그인하지 않은 사람도 읽을 수 있어요. 나누고 싶은 만큼만
+							적어 주세요.
 						</p>
 					)}
 					<button

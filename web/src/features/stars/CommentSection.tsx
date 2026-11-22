@@ -39,6 +39,7 @@ export function CommentSection({
 	const headingId = useId();
 	const counterId = useId();
 	const validationId = useId();
+	const normId = useId();
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const [validationError, setValidationError] = useState<string | null>(null);
 	const { data: comments, error } = useRepositoryData(
@@ -230,6 +231,9 @@ export function CommentSection({
 						</button>
 					</p>
 				)}
+				<p id={normId} className={styles.muted}>
+					이 별을 읽고 어떤 생각이 들었나요?
+				</p>
 				<textarea
 					ref={inputRef}
 					name="body"
@@ -253,7 +257,7 @@ export function CommentSection({
 						replyTo ? `${replyTo.author.nickname}님에게 답글 달기` : "댓글 달기"
 					}
 					aria-invalid={validationError ? true : undefined}
-					aria-describedby={`${counterId}${validationError ? ` ${validationId}` : ""}`}
+					aria-describedby={`${normId} ${counterId}${validationError ? ` ${validationId}` : ""}`}
 					rows={2}
 				/>
 				<div className={styles.formRow}>

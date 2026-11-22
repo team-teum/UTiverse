@@ -13,7 +13,7 @@ import {
 const SWIPE = 45;
 
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { repo } from "../../api/repository";
+import { accountPreviewEnabled, repo } from "../../api/repository";
 import type { Profile, Star } from "../../api/types";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
@@ -426,6 +426,7 @@ export function ShipPage({
 
 			{writing && (
 				<WriteStarDialog
+					showAudienceCue={accountPreviewEnabled && !stars?.length}
 					onClose={() => setWriting(false)}
 					onCreated={handleCreated}
 				/>
