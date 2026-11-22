@@ -11,6 +11,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import type { Profile } from "../../api/types";
 import { REDUCED_MOTION } from "../../lib/motion";
+import sparkle from "../../styles/Twinkle.module.css";
 import {
 	NO_ROTATION,
 	projectPoint,
@@ -408,7 +409,10 @@ export function UniverseGlobe({
 										tabIndex={front ? 0 : -1}
 										onClick={(event) => handleVisitClick(event, profile, front)}
 									>
-										<span className={styles.dot} aria-hidden="true" />
+										<span
+											className={`${styles.dot} ${sparkle.twinkle}`}
+											aria-hidden="true"
+										/>
 										<span className={styles.name}>{profile.nickname}</span>
 									</Link>
 								</li>

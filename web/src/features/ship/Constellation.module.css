@@ -106,20 +106,18 @@
 	filter: drop-shadow(0 0 3px rgb(91 206 250 / 80%));
 }
 
-.new .starImage {
-	animation: twinkle 700ms ease-in-out 4;
+.new {
+	position: relative;
 }
 
-@keyframes twinkle {
-	50% {
-		transform: scale(1.6);
-		filter: drop-shadow(0 0 8px var(--color-star));
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+	.new[data-pause-twinkle]::after {
+		animation-play-state: paused;
 	}
-}
 
-@media (prefers-reduced-motion: reduce) {
-	.new .starImage {
-		animation: none;
+	.new::after {
+		content: "";
+		inset: 12%;
 	}
 }
 

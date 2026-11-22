@@ -208,10 +208,12 @@ export function ShipPage({
 	const [page, setPage] = useState(0);
 	const [writing, setWriting] = useState(false);
 	const [highlightId, setHighlightId] = useState<string | null>(null);
+	const [newCommentIds, setNewCommentIds] = useState<string[]>([]);
 	const [toast, setToast] = useState<string | null>(null);
 	const clearToast = useCallback(() => setToast(null), []);
 
 	function openStar(star: Star, commentId?: string) {
+		setNewCommentIds([]);
 		setSearchParams(
 			commentId ? { star: star.id, comment: commentId } : { star: star.id },
 			{ state: { sheet: true } },
@@ -300,9 +302,15 @@ export function ShipPage({
 							profileId={profile.id}
 							stars={stars ?? []}
 							page={page}
-							onPageChange={setPage}
+							onPageChange={(next) => {
+								setHighlightId(null);
+								setNewCommentIds([]);
+								setPage(next);
+							}}
 							onSelect={openStar}
 							highlightId={highlightId}
+							newCommentIds={newCommentIds}
+							viewingDetail={Boolean(openStarId)}
 							writeButton={
 								isMine ? (
 									<WriteStarButton onClick={() => setWriting(true)} />
@@ -438,6 +446,7 @@ export function ShipPage({
 					focusCommentId={searchParams.get("comment")}
 					myProfileId={myProfileId}
 					onClose={closeStar}
+					onCommentCreated={(id) => setNewCommentIds((ids) => [...ids, id])}
 					onDeleted={() => {
 						closeStar();
 						setToast("별을 지웠어요");

@@ -12,6 +12,7 @@ import styles from "./CommentSection.module.css";
 
 interface CommentSectionProps {
 	starId: string;
+	onCommentCreated: (id: string) => void;
 	/** 이 댓글로 스크롤하고 잠깐 강조 */
 	focusCommentId?: string | null;
 	/** 별 주인 (점 색: 주인 분홍 · 다른 사람 하늘) */
@@ -29,6 +30,7 @@ interface CommentSectionProps {
  */
 export function CommentSection({
 	starId,
+	onCommentCreated,
 	ownerId,
 	focusCommentId = null,
 	myProfileId,
@@ -103,7 +105,12 @@ export function CommentSection({
 		setSubmitting(true);
 		setSubmitError(null);
 		try {
-			await repo.createComment(starId, draft, replyTo?.id ?? null);
+			const comment = await repo.createComment(
+				starId,
+				draft,
+				replyTo?.id ?? null,
+			);
+			onCommentCreated(comment.id);
 			onDraftChange("");
 			setReplyTo(null);
 		} catch {

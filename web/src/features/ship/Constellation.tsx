@@ -9,6 +9,7 @@ import type { Comment, Star } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { commentsByParent } from "../../lib/commentThreads";
 import { formatMonthDay } from "../../lib/dateFormat";
+import sparkle from "../../styles/Twinkle.module.css";
 import styles from "./Constellation.module.css";
 import { getConstellationPattern } from "./constellationPatterns";
 
@@ -127,6 +128,8 @@ interface ConstellationProps {
 	/** 별(글)이나 가지(댓글)를 누르면. 댓글이면 commentId가 함께 온다 */
 	onSelect: (star: Star, commentId?: string) => void;
 	highlightId?: string | null;
+	newCommentIds: readonly string[];
+	viewingDetail: boolean;
 	/** MY에서만: 별자리 끝에 붙는 별 만들기 버튼 */
 	writeButton?: ReactNode;
 	/** 별이 없을 때 별자리 자리에 보여 줄 내용 */
@@ -140,6 +143,8 @@ export function Constellation({
 	onPageChange,
 	onSelect,
 	highlightId,
+	newCommentIds,
+	viewingDetail,
 	writeButton,
 	empty,
 }: ConstellationProps) {
@@ -329,7 +334,7 @@ export function Constellation({
 								>
 									<button
 										type="button"
-										className={`${styles.star} ${star.id === highlightId ? styles.new : ""}`}
+										className={`${styles.star} ${star.id === highlightId ? `${styles.new} ${sparkle.twinkle}` : ""}`}
 										aria-label={`${formatMonthDay(star.createdAt)} 별: ${star.body.slice(0, 20)}${countFor(star.id) ? `, 댓글 ${countFor(star.id)}개` : ""}`}
 										data-star-id={star.id}
 										onClick={activateStar}
@@ -359,7 +364,8 @@ export function Constellation({
 							>
 								<button
 									type="button"
-									className={`${styles.leafButton} ${branch.depth > 0 ? styles.leafSmall : ""}`}
+									className={`${styles.leafButton} ${branch.depth > 0 ? styles.leafSmall : ""} ${newCommentIds.includes(branch.id) ? `${styles.new} ${sparkle.twinkle}` : ""}`}
+									data-pause-twinkle={viewingDetail || undefined}
 									aria-label={`${branch.author}의 댓글: ${branch.body.slice(0, 20)}`}
 									data-star-id={branch.star.id}
 									data-comment-id={branch.id}

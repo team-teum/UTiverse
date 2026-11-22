@@ -303,15 +303,8 @@
 	.front:nth-child(2 of .front) .dot::after,
 	.front:nth-child(4 of .front) .dot::after {
 		content: "";
-		position: absolute;
 		inset: -12px;
-		background:
-			radial-gradient(ellipse 8% 44%, #fff4ff 12%, transparent 100%),
-			radial-gradient(ellipse 44% 8%, #fff4ff 12%, transparent 100%),
-			radial-gradient(circle, rgb(219 177 255 / 90%), transparent 68%);
-		opacity: 0;
-		pointer-events: none;
-		animation: ambient-twinkle 950ms ease-in-out 6s;
+		animation-delay: 6s;
 	}
 
 	.front:nth-child(4 of .front) .dot::after {
@@ -321,12 +314,6 @@
 	:is(.globe:has(:focus-visible), .dragging, .flightStage, .link:hover)
 		.dot::after {
 		visibility: hidden;
-	}
-}
-
-@keyframes ambient-twinkle {
-	50% {
-		opacity: 0.85;
 	}
 }
 

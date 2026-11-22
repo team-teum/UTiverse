@@ -23,6 +23,7 @@ interface StarDetailDialogProps {
 	/** 창을 닫는 이동(뒤로가기 또는 ?star 제거) */
 	onClose: () => void;
 	onDeleted: () => void;
+	onCommentCreated: (id: string) => void;
 }
 
 /** S10 별 상세 (Figma 「(남의) 별 눌렀을 때」 54:6841): 날짜·본문·반응·댓글. `?star=:starId`로 열린다. */
@@ -32,6 +33,7 @@ export function StarDetailDialog({
 	myProfileId,
 	onClose,
 	onDeleted,
+	onCommentCreated,
 }: StarDetailDialogProps) {
 	const authorize = useParticipation();
 	const titleId = useId();
@@ -148,6 +150,7 @@ export function StarDetailDialog({
 							)}
 							<ReactionBar starId={star.id} />
 							<CommentSection
+								onCommentCreated={onCommentCreated}
 								starId={star.id}
 								ownerId={star.profileId}
 								focusCommentId={focusCommentId}
