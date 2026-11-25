@@ -347,6 +347,71 @@ function localOperator(sql) {
 	).trim();
 }
 
+test("similar discovery matches custom labels before limiting results", async (t) => {
+	const mine = await signUp("닮은 별 검사 A");
+	const neighbor = await signUp("닮은 별 검사 B");
+	const ta = mine.session.access_token;
+	const tb = neighbor.session.access_token;
+	const suffix = randomUUID().slice(0, 8);
+	const label = `Å${suffix}`;
+	const rpc = (name) => `/rest/v1/rpc/${name}`;
+	const post = (body, token) => ({ method: "POST", body, token });
+	const similar = () =>
+		expectStatus(200, rpc("similar_profiles"), post({}, ta));
+	const save = (identity_ids, identity_other, show_identity, token) =>
+		expectStatus(
+			204,
+			rpc("save_my_identity"),
+			post({ identity_ids, identity_other, show_identity }, token),
+		);
+
+	await expectPermissionDenied(rpc("similar_profiles"), post({}));
+	assert.deepEqual(await similar(), []);
+	await save(["other", "nonbinary"], label, false, ta);
+	await save(["other", "nonbinary"], `  ${label.toLowerCase()}  `, false, tb);
+	assert.ok(!(await similar()).some(({ id }) => id === neighbor.profileId));
+	await save(["other", "nonbinary"], label.toLowerCase(), true, tb);
+	const matched = (await similar()).find(({ id }) => id === neighbor.profileId);
+	assert.deepEqual(matched?.shared, ["other", "nonbinary"]);
+	assert.equal(matched.all_match, true);
+	await save(["other", "nonbinary"], "다른 말", true, tb);
+	const partial = (await similar()).find(({ id }) => id === neighbor.profileId);
+	assert.deepEqual(partial?.shared, ["nonbinary"]);
+	assert.equal(partial.all_match, false);
+
+	await save(["other"], label, false, ta);
+	assert.deepEqual(await similar(), []);
+	const fixtureName = `검사${suffix}`;
+	t.after(() =>
+		localOperator(
+			`delete from public.profiles where demo_batch = '${fixtureName}'`,
+		),
+	);
+	localOperator(`
+		with fixtures as (
+			insert into public.profiles(nickname, demo_batch)
+			select '${fixtureName}', '${fixtureName}' from generate_series(1, 130)
+			returning id
+		)
+		insert into private.profile_identities(profile_id, ids, other, visible)
+		select id, array['other'], case when row_number() over (order by id) <= 65
+			then '${label}' else '다른 말' end, true
+		from fixtures
+	`);
+	const results = await similar();
+	assert.equal(results.length, 60);
+	assert.ok(
+		results.every(
+			({ id, other, shared, all_match }) =>
+				id !== mine.profileId &&
+				other === label &&
+				shared.length === 1 &&
+				shared[0] === "other" &&
+				all_match,
+		),
+	);
+});
+
 test("remaining features persist privately and local operators can review, suspend and delete accounts", async () => {
 	const a = await signUp("운영 검사 A");
 	const b = await signUp("운영 검사 B");

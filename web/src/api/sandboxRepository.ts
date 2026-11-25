@@ -1,4 +1,8 @@
-import { cleanIdentity, sharedIdentities } from "../lib/identity.ts";
+import {
+	cleanIdentity,
+	type Identity,
+	sharedIdentities,
+} from "../lib/identity.ts";
 import { isValidLength } from "../lib/postText.ts";
 import { isValidRegion } from "../lib/regions.ts";
 import { DEFAULT_LOOK, withLook } from "../pixel/look.ts";
@@ -260,6 +264,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			me.identity = cleaned;
 			profiles.set(me.id, me);
 			notify();
+			return "signed-in";
 		},
 
 		async signIn({ email, password }) {
@@ -326,10 +331,20 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 					const own = stars.filter((star) => star.profileId === profile.id);
 					const latest = own[own.length - 1];
 					return {
-						profile: publicProfile(profile),
+						profile: { ...copyProfile(profile), identity: null },
 						latestStar: latest ? latest.body.split("\n")[0] : null,
 					};
 				});
+		},
+
+		async getPublicIdentities(profileIds) {
+			const found = new Map<string, Identity>();
+			for (const id of profileIds) {
+				const profile = profiles.get(id);
+				const identity = profile && publicProfile(profile).identity;
+				if (identity) found.set(id, identity);
+			}
+			return found;
 		},
 
 		async getMyLocation() {

@@ -32,7 +32,7 @@ export function IdentityPicker({
 	function toggle(option: IdentityId) {
 		let ids: IdentityId[];
 		if (value.ids.includes(option)) ids = value.ids.filter((x) => x !== option);
-		else if (full) ids = [value.ids[1], option];
+		else if (full) return;
 		else ids = [...value.ids, option];
 		onChange({
 			...value,
@@ -60,6 +60,7 @@ export function IdentityPicker({
 					type="button"
 					className={`${ui.field} ${styles.toggle}`}
 					aria-expanded={open}
+					aria-controls={open ? `${id}-options` : undefined}
 					aria-labelledby={`${id}-label ${id}-value`}
 					disabled={disabled}
 					onClick={() => openList(!open)}
@@ -80,19 +81,36 @@ export function IdentityPicker({
 						key={x}
 						id={x}
 						other={value.other}
-						onRemove={disabled ? undefined : () => toggle(x)}
+						onRemove={
+							disabled
+								? undefined
+								: () => {
+										buttonRef.current?.focus();
+										toggle(x);
+									}
+						}
 					/>
 				))}
 			</div>
 			{open && (
 				<fieldset
 					ref={listRef}
+					id={`${id}-options`}
 					className={styles.list}
+					disabled={disabled}
 					aria-describedby={`${id}-count`}
+					onKeyDown={(event) => {
+						if (event.key !== "Escape") return;
+						event.preventDefault();
+						event.stopPropagation();
+						setOpen(false);
+						buttonRef.current?.focus();
+					}}
 				>
 					<legend className="sr-only">정체성 고르기</legend>
-					<p id={`${id}-count`} className={styles.count}>
-						{value.ids.length}/{IDENTITY_MAX} 골랐어요
+					<p id={`${id}-count`} className={styles.count} role="status">
+						{value.ids.length}/{IDENTITY_MAX} 골랐어요.
+						{full && " 다른 항목을 고르려면 하나를 먼저 빼 주세요."}
 					</p>
 					{IDENTITY_OPTIONS.map((option) => {
 						const selected = value.ids.includes(option.id);
@@ -101,14 +119,9 @@ export function IdentityPicker({
 								key={option.id}
 								type="button"
 								aria-pressed={selected}
+								aria-disabled={(full && !selected) || undefined}
 								className={`${styles.option} ${option.id === "other" ? styles.sep : ""}`}
 								onClick={() => toggle(option.id)}
-								onKeyDown={(event) => {
-									if (event.key === "Escape") {
-										setOpen(false);
-										buttonRef.current?.focus();
-									}
-								}}
 							>
 								<FlagMark id={option.id} />
 								<span>

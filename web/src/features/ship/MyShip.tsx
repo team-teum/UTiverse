@@ -24,30 +24,36 @@ export function MyShip() {
 		repo.getMyProfile(),
 	);
 	const [showAuth, setShowAuth] = useState(false);
-	if (error)
-		return <p className="scaffold-screen">내 우주선을 불러오지 못했어요.</p>;
-	if (me === undefined) return <p className="scaffold-screen">불러오는 중…</p>;
-	if (!me)
-		return (
-			<section className="scaffold-screen">
-				<h1>내 우주선</h1>
-				<p>로그인하면 내 우주선을 볼 수 있어요.</p>
-				<button
-					type="button"
-					className="button-primary"
-					onClick={() => setShowAuth(true)}
-				>
-					회원가입 · 로그인
-				</button>
-				{showAuth && (
-					<AuthDialog
-						onDone={() => setShowAuth(false)}
-						onSkip={() => setShowAuth(false)}
-					/>
-				)}
-			</section>
-		);
-	return <OwnedShip key={me.id} me={me} />;
+	return (
+		<>
+			{error ? (
+				<p className="scaffold-screen">내 우주선을 불러오지 못했어요.</p>
+			) : me === undefined ? (
+				<p className="scaffold-screen">불러오는 중…</p>
+			) : me ? (
+				<OwnedShip key={me.id} me={me} />
+			) : (
+				<section className="scaffold-screen">
+					<h1>내 우주선</h1>
+					<p>로그인하면 내 우주선을 볼 수 있어요.</p>
+					<button
+						type="button"
+						className="button-primary"
+						onClick={() => setShowAuth(true)}
+					>
+						회원가입 · 로그인
+					</button>
+				</section>
+			)}
+			{/* 세션이 먼저 바뀌어도 가입 결과를 알릴 때까지 창을 유지한다. */}
+			{showAuth && (
+				<AuthDialog
+					onDone={() => setShowAuth(false)}
+					onSkip={() => setShowAuth(false)}
+				/>
+			)}
+		</>
+	);
 }
 
 function OwnedShip({ me }: { me: Profile }) {

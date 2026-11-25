@@ -151,6 +151,31 @@ describe("sandbox repository", () => {
 		assert.ok(others.some((profile) => profile.identity?.ids.length));
 	});
 
+	it("keeps identities out of cached draws and reads current public choices separately", async () => {
+		const repo = createSandboxRepository();
+		const draw = await repo.exploreRandom(4);
+		assert.equal(draw.length, 4);
+		assert.ok(draw.every(({ profile }) => profile.identity === null));
+
+		const { id } = await repo.getMyProfile();
+		const identity = { ids: ["agender"] as const, other: "" };
+		await repo.updateMyIdentity({
+			...identity,
+			ids: [...identity.ids],
+			visible: true,
+		});
+		assert.deepEqual((await repo.getPublicIdentities([id])).get(id), {
+			...identity,
+			visible: true,
+		});
+		await repo.updateMyIdentity({
+			...identity,
+			ids: [...identity.ids],
+			visible: false,
+		});
+		assert.equal((await repo.getPublicIdentities([id])).has(id), false);
+	});
+
 	it("finds similar ships by exact identity items only", async () => {
 		const repo = createSandboxRepository();
 		assert.deepEqual(await repo.exploreSimilar(), []);

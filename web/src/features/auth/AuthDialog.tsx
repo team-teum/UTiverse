@@ -1,4 +1,10 @@
-import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import {
+	type FormEvent,
+	useId,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { IdentityPicker } from "../../components/IdentityPicker";
@@ -42,19 +48,28 @@ export function AuthDialog({
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [identityNotSaved, setIdentityNotSaved] = useState(false);
+	const continueRef = useRef<HTMLButtonElement>(null);
 	const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 	const formRef = useRef<HTMLFormElement>(null);
 	const pendingFocus = useRef<Field | undefined>(undefined);
 
-	useEffect(() => {
+	// 단계가 바뀌거나 오류 문구가 표시된 뒤, 새 입력란에 초점을 준다.
+	useLayoutEffect(() => {
 		const field = pendingFocus.current;
 		pendingFocus.current = undefined;
-		if (!field || !fieldErrors[field]) return;
+		if (!field) return;
 		const input = formRef.current?.elements.namedItem(field);
 		if (input instanceof HTMLInputElement) input.focus();
-	}, [fieldErrors]);
+	});
+
+	useLayoutEffect(() => {
+		if (identityNotSaved) continueRef.current?.focus();
+	}, [identityNotSaved]);
 
 	function changeMode(next: Mode) {
+		if (next === mode) return;
+		pendingFocus.current = "email";
 		setMode(next);
 		setStep(1);
 		setFieldErrors({});
@@ -117,6 +132,7 @@ export function AuthDialog({
 		setFieldErrors(errors);
 		if (firstInvalid) return;
 		if (mode === "signup" && step === 1) {
+			pendingFocus.current = "nickname";
 			setStep(2);
 			return;
 		}
@@ -133,9 +149,20 @@ export function AuthDialog({
 		}
 		setBusy(true);
 		try {
-			if (mode === "signup")
-				await repo.signUp({ email, password, nickname, identity: cleaned });
-			else await repo.signIn({ email, password });
+			if (mode === "signup") {
+				const outcome = await repo.signUp({
+					email,
+					password,
+					nickname,
+					identity: cleaned,
+				});
+				if (outcome === "identity-not-saved") {
+					setPassword("");
+					setBusy(false);
+					setIdentityNotSaved(true);
+					return;
+				}
+			} else await repo.signIn({ email, password });
 			onDone();
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "다시 시도해 주세요.");
@@ -146,6 +173,30 @@ export function AuthDialog({
 	const previewPending = preview && busy;
 	function dismiss() {
 		if (!previewPending) onSkip();
+	}
+
+	if (identityNotSaved) {
+		return (
+			<ModalDialog variant="space" labelledBy={titleId} onDismiss={onDone}>
+				<h2 id={titleId} className={ui.title}>
+					가입했어요
+				</h2>
+				<p id={`${titleId}-identity-note`} className={ui.text}>
+					고른 정체성은 저장하지 못했어요. 설정에서 다시 고를 수 있어요.
+				</p>
+				<div className={ui.actions}>
+					<button
+						ref={continueRef}
+						type="button"
+						className={ui.primary}
+						aria-describedby={`${titleId}-identity-note`}
+						onClick={onDone}
+					>
+						계속하기
+					</button>
+				</div>
+			</ModalDialog>
+		);
 	}
 
 	return (
@@ -201,7 +252,6 @@ export function AuthDialog({
 								maxLength={12}
 								autoComplete="nickname"
 								placeholder="불리고 싶은 이름"
-								data-autofocus
 								onChange={(e) => {
 									setNickname(e.target.value);
 									clearFieldError("nickname");
@@ -231,7 +281,7 @@ export function AuthDialog({
 									{...fieldProps("email")}
 									type="email"
 									value={email}
-									autoComplete={preview ? "username" : "email"}
+									autoComplete="username"
 									spellCheck={preview ? false : undefined}
 									inputMode="email"
 									placeholder="test@example.com"
@@ -283,7 +333,9 @@ export function AuthDialog({
 							type="button"
 							className={ui.ghost}
 							onClick={() => {
+								pendingFocus.current = "email";
 								setStep(1);
+								setFieldErrors({});
 								setError(null);
 							}}
 							disabled={busy}

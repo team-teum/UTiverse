@@ -153,13 +153,13 @@ export interface Repository {
 	requestSwipeHint(): Promise<void>;
 	updateMyLook(patch: Partial<Look>, expectedId?: string): Promise<Profile>;
 	getSession(): Promise<Session | null>;
-	/** identity는 가입 직후 내 정체성으로 저장한다 (없으면 고르지 않음) */
+	/** 계정·세션이 만들어진 뒤 정체성 저장만 실패하면 identity-not-saved를 반환한다. */
 	signUp(input: {
 		email: string;
 		password: string;
 		nickname: string;
 		identity?: Identity;
-	}): Promise<void>;
+	}): Promise<"signed-in" | "identity-not-saved">;
 	signIn(input: { email: string; password: string }): Promise<void>;
 	signOut(): Promise<void>;
 	/** 지정한 필드만 공백을 다듬어 저장한다. 닉네임은 1~12자, 소개는 40자 이하다. */
@@ -174,8 +174,10 @@ export interface Repository {
 	 * 내 정체성은 숨겨 둬도 비교에 쓴다. 내 정체성이 없으면 빈 배열.
 	 */
 	exploreSimilar(): Promise<SimilarShip[]>;
-	/** 탐색: 나를 뺀 우주선 n개를 무작위로 */
+	/** 탐색 기록에 보관하는 무작위 카드. 정체성은 포함하지 않는다. */
 	exploreRandom(count: number): Promise<ExploreCard[]>;
+	/** 현재 보이기로 한 정체성만. 숨긴 값은 본인 ID를 넘겨도 제외한다. */
+	getPublicIdentities(profileIds: string[]): Promise<Map<string, Identity>>;
 	getMyLocation(): Promise<MyLocation | null>;
 	setMyLocation(location: MyLocation): Promise<void>;
 	deleteMyLocation(): Promise<void>;

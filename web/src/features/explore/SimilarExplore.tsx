@@ -36,7 +36,9 @@ function spread(count: number, offset: number): number[] {
  */
 export function SimilarExplore() {
 	const navigate = useNavigate();
-	const { data: me } = useRepositoryData("me", () => repo.getMyProfile());
+	const { data: me, error: profileError } = useRepositoryData("me", () =>
+		repo.getMyProfile(),
+	);
 	const { data: ships, error } = useRepositoryData("explore:similar", () =>
 		repo.exploreSimilar(),
 	);
@@ -51,18 +53,17 @@ export function SimilarExplore() {
 		);
 		const inner = shuffle(pool.filter((s) => s.all)).slice(0, INNER.max);
 		const outer = shuffle(pool.filter((s) => !s.all)).slice(0, OUTER.max);
-		const at = (list: SimilarShip[], r: number, offset: number) =>
-			list.map((ship, i) => ({
-				ship,
-				r,
-				angle: spread(list.length, offset)[i],
-			}));
+		const at = (list: SimilarShip[], r: number, offset: number) => {
+			const angles = spread(list.length, offset);
+			return list.map((ship, i) => ({ ship, r, angle: angles[i] }));
+		};
 		return [...at(inner, INNER.r, 20), ...at(outer, OUTER.r, 0)];
 	}, [ships, filter, round]);
 
-	if (me === undefined || (ships === undefined && !error))
+	if (profileError || error)
+		return <p role="alert">닮은 별을 불러오지 못했어요.</p>;
+	if (me === undefined || ships === undefined)
 		return <p role="status">닮은 별을 찾는 중…</p>;
-	if (error) return <p role="alert">닮은 별을 불러오지 못했어요.</p>;
 
 	if (!me || !mine?.ids.length) {
 		return (
@@ -173,11 +174,15 @@ export function SimilarExplore() {
 					})}
 				</ul>
 			</div>
-			{placed.length === 0 ? (
-				<p className={styles.nearbyFoot}>
-					아직 같은 깃발을 보이기로 한 우주선이 없어요
-				</p>
-			) : (
+			<p
+				role="status"
+				className={placed.length ? "sr-only" : styles.nearbyFoot}
+			>
+				{placed.length
+					? `닮은 우주선 ${placed.length}대를 찾았어요.`
+					: "아직 같은 깃발을 보이기로 한 우주선이 없어요."}
+			</p>
+			{placed.length > 0 && (
 				<button
 					type="button"
 					className={styles.refresh}

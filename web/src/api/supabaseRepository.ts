@@ -1,9 +1,4 @@
-import {
-	cleanIdentity,
-	type Identity,
-	isIdentityId,
-	sharedIdentities,
-} from "../lib/identity";
+import { cleanIdentity, type Identity, isIdentityId } from "../lib/identity";
 import { AVATAR_TABS, type Look, SHIP_TABS, withLook } from "../pixel/look";
 import {
 	getPreviewClient,
@@ -78,11 +73,9 @@ interface IdentityRow {
 	other: string;
 	visible?: boolean;
 }
-function toIdentity(row: IdentityRow, visible: boolean): Identity | null {
+function toPublicIdentity(row: IdentityRow): Identity | null {
 	const ids = row.ids.filter(isIdentityId);
-	return ids.length || visible === false
-		? { ids, other: row.other, visible }
-		: null;
+	return ids.length ? { ids, other: row.other, visible: true } : null;
 }
 function toStar(row: StarRow): Star {
 	return {
@@ -145,27 +138,42 @@ export function createSupabaseRepository(): Repository {
 		if (!id) throw new Error("로그인한 뒤 다시 시도해 주세요.");
 		return id;
 	}
-	/**
-	 * 내 정체성은 전부, 남의 것은 보이기를 켠 것만 (DB 함수가 거른다).
-	 * 태그는 곁들이 정보라, 읽기에 실패하면(예: 마이그레이션 전) 태그 없이 프로필을 보여 준다.
-	 */
+	async function getPublicIdentities(profileIds: string[]) {
+		const found = new Map<string, Identity>();
+		if (profileIds.length === 0) return found;
+		const client = await getPreviewClient();
+		const { data, error } = await client.rpc("public_identities", {
+			profile_ids: profileIds,
+		});
+		if (error) return found;
+		for (const row of data as IdentityRow[]) {
+			const identity = toPublicIdentity(row);
+			if (row.profile_id && identity) found.set(row.profile_id, identity);
+		}
+		return found;
+	}
+	async function getOwnIdentity(): Promise<Identity | null> {
+		const client = await getPreviewClient();
+		const { data, error } = await client.rpc("my_identity");
+		if (error) throw new Error("내 정체성 정보를 불러오지 못했어요.");
+		const row = (data as IdentityRow[])[0];
+		return row
+			? {
+					ids: row.ids.filter(isIdentityId),
+					other: row.other,
+					visible: row.visible ?? false,
+				}
+			: null;
+	}
+	/** 다른 사람의 깃발은 읽지 못해도 표시만 생략한다. 내 정체성은 편집에 필요하다. */
 	async function withIdentities(profiles: Profile[]): Promise<Profile[]> {
 		if (profiles.length === 0) return profiles;
-		const client = await getPreviewClient();
 		const mine = await myId();
 		const others = profiles.filter((p) => p.id !== mine).map((p) => p.id);
-		const found = new Map<string, Identity | null>();
-		if (others.length) {
-			const { data, error } = await client.rpc("public_identities", {
-				profile_ids: others,
-			});
-			for (const row of error ? [] : (data as IdentityRow[]))
-				if (row.profile_id) found.set(row.profile_id, toIdentity(row, true));
-		}
+		const found = await getPublicIdentities(others);
 		if (mine && profiles.some((p) => p.id === mine)) {
-			const { data, error } = await client.rpc("my_identity");
-			const row = error ? undefined : (data as IdentityRow[])[0];
-			found.set(mine, row ? toIdentity(row, row.visible ?? false) : null);
+			const identity = await getOwnIdentity();
+			if (identity) found.set(mine, identity);
 		}
 		return profiles.map((p) => ({ ...p, identity: found.get(p.id) ?? null }));
 	}
@@ -178,8 +186,9 @@ export function createSupabaseRepository(): Repository {
 			show_identity: clean.visible,
 		});
 		if (error) throw new Error("정체성을 저장하지 못했어요.");
+		return clean;
 	}
-	async function getProfile(id: string) {
+	async function readProfile(id: string) {
 		if (!uuid.test(id)) return null;
 		const client = await getPreviewClient();
 		const { data, error } = await client
@@ -188,15 +197,22 @@ export function createSupabaseRepository(): Repository {
 			.eq("id", id)
 			.maybeSingle<ProfileRow>();
 		if (error) throw new Error("프로필을 불러오지 못했어요.");
-		return data ? (await withIdentities([toProfile(data)]))[0] : null;
+		return data ? toProfile(data) : null;
+	}
+	async function getProfile(id: string) {
+		const profile = await readProfile(id);
+		return profile ? (await withIdentities([profile]))[0] : null;
 	}
 	async function getMyProfile() {
 		const id = await myId();
-		return id ? getProfile(id) : null;
+		if (!id) return null;
+		const profile = await readProfile(id);
+		return profile && { ...profile, identity: await getOwnIdentity() };
 	}
 	async function updateProfile(
 		id: string,
 		values: { nickname?: string; tagline?: string; look?: Look },
+		identity: Identity | null,
 	) {
 		const client = await getPreviewClient();
 		const { data, error } = await client
@@ -207,7 +223,7 @@ export function createSupabaseRepository(): Repository {
 			.single<ProfileRow>();
 		if (error) throw new Error("프로필을 저장하지 못했어요.");
 		notify();
-		return (await withIdentities([toProfile(data)]))[0];
+		return { ...toProfile(data), identity };
 	}
 	async function listOtherProfiles() {
 		const id = await myId();
@@ -247,17 +263,24 @@ export function createSupabaseRepository(): Repository {
 	return {
 		getSession,
 		async signUp({ identity, ...credentials }) {
-			if (identity) cleanIdentity(identity);
+			const clean = identity ? cleanIdentity(identity) : null;
 			await signUpPreview(credentials);
-			if (identity) await saveIdentity(identity);
+			if (!clean?.ids.length) return "signed-in";
+			try {
+				await saveIdentity(clean);
+			} catch {
+				// Auth succeeded; the caller can continue without repeating signup.
+				return "identity-not-saved";
+			}
+			notify();
+			return "signed-in";
 		},
 		async updateMyIdentity(identity) {
-			await requireId();
-			await saveIdentity(identity);
-			notify();
-			const me = await getMyProfile();
+			const me = await readProfile(await requireId());
 			if (!me) throw new Error("프로필을 찾지 못했어요.");
-			return me;
+			const saved = await saveIdentity(identity);
+			notify();
+			return { ...me, identity: saved };
 		},
 		signIn: signInPreview,
 		signOut: signOutPreview,
@@ -284,31 +307,34 @@ export function createSupabaseRepository(): Repository {
 				if (current) return current;
 				throw new Error("프로필을 찾지 못했어요.");
 			}
-			return updateProfile(id, { nickname, tagline });
+			return updateProfile(id, { nickname, tagline }, await getOwnIdentity());
 		},
 		async updateMyLook(patch, expectedId) {
 			const me = await getMyProfile();
 			if (!me || (expectedId && me.id !== expectedId))
 				throw new Error("로그인 상태를 확인해 주세요.");
-			return updateProfile(me.id, { look: { ...me.look, ...patch } });
+			return updateProfile(
+				me.id,
+				{ look: { ...me.look, ...patch } },
+				me.identity,
+			);
 		},
 		async exploreSimilar() {
-			const me = await getMyProfile();
-			const mine = me?.identity;
-			if (!mine?.ids.length) return [];
+			if (!(await getSession())) return [];
 			const client = await getPreviewClient();
 			const { data, error } = await client.rpc("similar_profiles");
 			if (error) throw new Error("닮은 별을 불러오지 못했어요.");
+			const rows = data as (ProfileRow &
+				IdentityRow & { shared: string[]; all_match: boolean })[];
 			const result: SimilarShip[] = [];
-			for (const row of data as (ProfileRow & IdentityRow)[]) {
-				const identity = toIdentity(row, true);
-				if (!identity) continue;
-				const shared = sharedIdentities(mine, identity);
-				if (shared.length)
+			for (const row of rows) {
+				const identity = toPublicIdentity(row);
+				const shared = row.shared.filter(isIdentityId);
+				if (identity && shared.length)
 					result.push({
 						profile: { ...toProfile(row), identity },
 						shared,
-						all: shared.length === mine.ids.length,
+						all: row.all_match,
 					});
 			}
 			return result;
@@ -320,12 +346,12 @@ export function createSupabaseRepository(): Repository {
 			});
 			if (error) throw new Error("우주선을 불러오지 못했어요.");
 			const rows = data as (ProfileRow & { latest_star: string | null })[];
-			const profiles = await withIdentities(rows.map(toProfile));
-			return rows.map((row, i) => ({
-				profile: profiles[i],
+			return rows.map((row) => ({
+				profile: toProfile(row),
 				latestStar: row.latest_star,
 			}));
 		},
+		getPublicIdentities,
 		async createStar(body) {
 			const id = await requireId();
 			const client = await getPreviewClient();

@@ -164,6 +164,12 @@ function RandomExplore({ entry }: { entry: string }) {
 		`explore:random:${entry}:${round}`,
 		() => getRandomDraw(entry).cards,
 	);
+	// 카드 순서는 복원하되 공개 여부는 돌아올 때마다 다시 확인한다.
+	const { data: identities, loading: loadingIdentities } = useRepositoryData(
+		`explore:random-identities:${entry}:${round}:${Boolean(cards)}`,
+		() =>
+			repo.getPublicIdentities(cards?.map(({ profile }) => profile.id) ?? []),
+	);
 
 	useLayoutEffect(() => {
 		if (!cards || !restore.current) return;
@@ -218,7 +224,11 @@ function RandomExplore({ entry }: { entry: string }) {
 										className={styles.cardShip}
 									/>
 									<IdentityDots
-										identity={profile.identity}
+										identity={
+											loadingIdentities
+												? null
+												: (identities?.get(profile.id) ?? null)
+										}
 										className={styles.cardFlags}
 									/>
 								</span>

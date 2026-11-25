@@ -97,8 +97,13 @@
 	cursor: pointer;
 }
 
-.option:hover {
+.option:not([aria-disabled="true"]):hover {
 	background: #211a4a;
+}
+
+.option[aria-disabled="true"] {
+	color: #a9a6d6;
+	cursor: not-allowed;
 }
 
 .option:focus-visible {
