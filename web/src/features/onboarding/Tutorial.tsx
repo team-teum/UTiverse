@@ -4,6 +4,7 @@ import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { TopBar } from "../../components/TopBar";
 import { AuthDialog } from "../auth/AuthDialog";
+import glass from "./OnboardingGlass.module.css";
 import { TitleScene } from "./TitleScene";
 import styles from "./Tutorial.module.css";
 
@@ -71,7 +72,10 @@ export function Tutorial() {
 				className={styles.tini}
 			/>
 
-			<div className={styles.dialog}>
+			<div className={`${styles.dialog} ${glass.surface}`}>
+				<span className={styles.speaker} aria-hidden="true">
+					티니
+				</span>
 				<p className={styles.dialogText} aria-live="polite">
 					{step.text}
 				</p>

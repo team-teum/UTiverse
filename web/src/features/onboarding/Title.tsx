@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { accountPreviewEnabled, repo } from "../../api/repository";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import glass from "./OnboardingGlass.module.css";
 import styles from "./Title.module.css";
 import { TitleScene } from "./TitleScene";
 
@@ -35,8 +36,12 @@ export function Title() {
 				onClick={start}
 			>
 				<TitleScene />
+				<span className={styles.desktopCopy} aria-hidden="true">
+					<span className={styles.tagline}>우리가 우리일 수 있는 곳</span>
+					<span className={styles.prompt}>화면을 클릭해서 시작하기</span>
+				</span>
 			</button>
-			<div className={styles.notice}>
+			<div className={`${styles.notice} ${glass.surface}`}>
 				<strong>
 					{import.meta.env.HOSTED_SUPABASE
 						? "유T버스에 오신 걸 환영해요."
