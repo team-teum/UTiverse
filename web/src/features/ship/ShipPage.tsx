@@ -18,7 +18,6 @@ import type { Profile, Star } from "../../api/types";
 import { IdentityPills } from "../../components/IdentityTags";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
-import { unlockedAt } from "../../pixel/look";
 import { StarDetailDialog } from "../stars/StarDetailDialog";
 import { WriteStarDialog } from "../stars/WriteStarDialog";
 import { Constellation, STARS_PER_PAGE } from "./Constellation";
@@ -232,12 +231,7 @@ export function ShipPage({
 		setWriting(false);
 		setPage(Math.floor(count / STARS_PER_PAGE));
 		setHighlightId(star.id);
-		const opened = unlockedAt(count + 1);
-		setToast(
-			opened.length > 0
-				? `새 별이 떴어요 · 새 아이템: ${opened.join(", ")}`
-				: "새 별이 떴어요",
-		);
+		setToast("새 별이 떴어요");
 	}
 
 	// 남의 우주선은 누를 때마다 열리고 닫힌다

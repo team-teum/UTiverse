@@ -13,7 +13,6 @@ interface CustomizeViewProps {
 	mode: CustomizeMode;
 	onModeChange: (mode: CustomizeMode) => void;
 	/** 내가 만든 별 수: 잠긴 아이템을 여는 조건 */
-	starCount: number;
 }
 
 const MODES = [
@@ -35,7 +34,6 @@ export function CustomizeView({
 	onPick,
 	mode,
 	onModeChange,
-	starCount,
 }: CustomizeViewProps) {
 	const tabs = mode === "ship" ? SHIP_TABS : AVATAR_TABS;
 	const [tabId, setTabId] = useState<Record<CustomizeMode, string>>({
@@ -47,14 +45,6 @@ export function CustomizeView({
 	const category =
 		tab.categories.find((item) => item.key === categoryKey) ??
 		tab.categories[0];
-
-	const allOptions = [...SHIP_TABS, ...AVATAR_TABS].flatMap((t) =>
-		t.categories.flatMap((c) => c.options),
-	);
-	const nextUnlock = allOptions
-		.map((o) => o.unlockAt ?? 0)
-		.filter((n) => n > starCount)
-		.sort((a, b) => a - b)[0];
 
 	return (
 		<section className={styles.view} aria-label="꾸미기">
@@ -79,10 +69,6 @@ export function CustomizeView({
 						</button>
 					))}
 				</fieldset>
-				<span className={styles.stars} title="모은 별">
-					<span aria-hidden="true">★</span> {starCount}
-					<span className="sr-only">개의 별을 모았어요</span>
-				</span>
 			</div>
 
 			<div className={styles.card}>
@@ -125,23 +111,13 @@ export function CustomizeView({
 					{category.options.map((option) => {
 						const selected = look[category.key] === option.id;
 						const preview = { ...look, [category.key]: option.id };
-						const locked = (option.unlockAt ?? 0) > starCount;
-						const fresh =
-							!locked &&
-							option.unlockAt !== undefined &&
-							option.unlockAt === starCount;
 						return (
 							<li key={option.id}>
 								<button
 									type="button"
 									className={styles.item}
 									aria-pressed={selected}
-									disabled={locked}
-									aria-label={
-										locked
-											? `${option.label}: 별 ${option.unlockAt}개를 모으면 열려요`
-											: option.label
-									}
+									aria-label={option.label}
 									onClick={() => onPick({ [category.key]: option.id })}
 								>
 									<span className={styles.thumb}>
@@ -164,20 +140,6 @@ export function CustomizeView({
 												✓
 											</span>
 										)}
-										{fresh && (
-											<span className={styles.new} aria-hidden="true">
-												NEW
-											</span>
-										)}
-										{locked && (
-											<span className={styles.lock} aria-hidden="true">
-												<svg viewBox="0 0 16 18" aria-hidden="true">
-													<path d="M4 8V5a4 4 0 0 1 8 0v3" />
-													<rect x="2" y="8" width="12" height="9" rx="1.5" />
-												</svg>
-												★{option.unlockAt}
-											</span>
-										)}
 									</span>
 									<span className={styles.label}>{option.label}</span>
 								</button>
@@ -185,12 +147,9 @@ export function CustomizeView({
 						);
 					})}
 				</ul>
-				<p className={styles.foot}>
-					{category.options.length > 4 ? "옆으로 넘겨 보기 → · " : ""}
-					{nextUnlock
-						? `별 ${nextUnlock - starCount}개 더 만들면 새 아이템`
-						: "모든 아이템을 열었어요!"}
-				</p>
+				{category.options.length > 4 && (
+					<p className={styles.foot}>옆으로 넘겨 보기 →</p>
+				)}
 			</div>
 		</section>
 	);

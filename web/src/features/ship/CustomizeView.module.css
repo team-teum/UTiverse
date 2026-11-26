@@ -61,17 +61,6 @@
 	box-shadow: inset 0 -2px 0 rgb(0 0 0 / 15%);
 }
 
-.stars {
-	flex: none;
-	padding: 6px 12px;
-	border-radius: 999px;
-	background: rgb(255 241 89 / 14%);
-	color: var(--color-accent-yellow);
-	font-family: var(--font-latin);
-	font-size: 14px;
-	font-weight: 800;
-}
-
 .card {
 	display: grid;
 	gap: calc(10 * var(--dp));
@@ -241,54 +230,6 @@
 	font-weight: 900;
 }
 
-.new {
-	position: absolute;
-	inset-block-start: -6px;
-	inset-inline-start: -4px;
-	padding: 0 5px;
-	border-radius: 6px;
-	background: #ff6fa3;
-	color: #fff;
-	font-family: var(--font-latin);
-	font-size: 9px;
-	font-weight: 800;
-	line-height: 16px;
-}
-
-.item:disabled {
-	cursor: default;
-}
-
-.item:disabled .thumb {
-	background: linear-gradient(160deg, #3a3566 0%, #2b2752 100%);
-}
-
-.item:disabled .art {
-	opacity: 0.3;
-	filter: grayscale(1) brightness(1.4);
-}
-
-.lock {
-	position: absolute;
-	inset: 0;
-	display: grid;
-	place-content: center;
-	justify-items: center;
-	gap: 2px;
-	color: var(--color-accent-yellow);
-	font-family: var(--font-latin);
-	font-size: 11px;
-	font-weight: 800;
-}
-
-.lock svg {
-	inline-size: 16px;
-	block-size: 18px;
-	fill: none;
-	stroke: #fff;
-	stroke-width: 1.8;
-}
-
 .label {
 	max-inline-size: 100%;
 	overflow: hidden;
@@ -296,10 +237,6 @@
 	color: #e9e4ff;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.item:disabled .label {
-	color: #8d8ab8;
 }
 
 .foot {

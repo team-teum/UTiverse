@@ -45,8 +45,6 @@ export const DEFAULT_LOOK: Look = {
 interface Option {
 	id: string;
 	label: string;
-	/** 이만큼 별(글)을 만들어야 열린다. 없으면 처음부터 열려 있음 */
-	unlockAt?: number;
 }
 
 interface Category {
@@ -65,7 +63,7 @@ const none = { id: "none", label: "비우기" };
 
 /**
  * Figma 「내 캐릭터 꾸미기」(33:15522): 몸 / 우주복.
- * 헤어는 짧은 머리·단발, 우주복은 기본 우주복만 처음부터 열려 있고 나머지는 별을 만들 때마다 하나씩 열린다.
+ * 모든 아이템은 처음부터 열려 있다.
  */
 export const AVATAR_TABS: Tab[] = [
 	{
@@ -100,9 +98,9 @@ export const AVATAR_TABS: Tab[] = [
 					none,
 					{ id: "hair1", label: "짧은 머리" },
 					{ id: "hair2", label: "단발" },
-					{ id: "hair3", label: "곱슬", unlockAt: 1 },
-					{ id: "hair4", label: "긴 머리", unlockAt: 2 },
-					{ id: "hair5", label: "똥머리", unlockAt: 3 },
+					{ id: "hair3", label: "곱슬" },
+					{ id: "hair4", label: "긴 머리" },
+					{ id: "hair5", label: "똥머리" },
 				],
 			},
 			{
@@ -143,26 +141,15 @@ export const AVATAR_TABS: Tab[] = [
 				options: [
 					none,
 					{ id: "suit1", label: "기본 우주복" },
-					{ id: "suit2", label: "후드 점퍼", unlockAt: 1 },
-					{ id: "suit3", label: "멜빵 작업복", unlockAt: 2 },
-					{ id: "suit4", label: "별무늬 잠옷", unlockAt: 3 },
-					{ id: "suit5", label: "탐험가 슈트", unlockAt: 4 },
+					{ id: "suit2", label: "후드 점퍼" },
+					{ id: "suit3", label: "멜빵 작업복" },
+					{ id: "suit4", label: "별무늬 잠옷" },
+					{ id: "suit5", label: "탐험가 슈트" },
 				],
 			},
 		],
 	},
 ];
-
-/** 별 수에 따라 지금 막 열린 아이템 이름들 (별을 만든 직후 알림용) */
-export function unlockedAt(starCount: number): string[] {
-	return AVATAR_TABS.flatMap((tab) =>
-		tab.categories.flatMap((category) =>
-			category.options
-				.filter((option) => option.unlockAt === starCount)
-				.map((option) => option.label),
-		),
-	);
-}
 
 /** Figma 「우주선 꾸미기」(33:14371) 탭: 우주선 / 가구 / 장식품 / 플래그 */
 export const SHIP_TABS: Tab[] = [

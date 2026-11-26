@@ -57,9 +57,6 @@ function OwnedShip({ me }: { me: Profile }) {
 	const [mode, setMode] = useState<CustomizeMode>(
 		pathname.endsWith("/avatar") ? "avatar" : "ship",
 	);
-	const { data: stars } = useRepositoryData(`stars:${me.id}`, () =>
-		repo.listStars(me.id),
-	);
 	const [hint, setHint] = useState(false);
 	// 꾸미기 초안: 고른 아이템은 여기 모았다가 「저장하기」에서 한 번에 저장
 	const [draft, setDraft] = useState<Partial<Look>>({});
@@ -186,7 +183,6 @@ function OwnedShip({ me }: { me: Profile }) {
 						}}
 						mode={mode}
 						onModeChange={setMode}
-						starCount={stars?.length ?? 0}
 					/>
 				}
 			/>
