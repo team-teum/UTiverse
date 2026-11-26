@@ -16,6 +16,13 @@ export const REACTION_TYPES = [
 ] as const;
 export type ReactionType = (typeof REACTION_TYPES)[number];
 
+export interface GlobeSky {
+	/** Same ID-ordered roster for every viewer. */
+	profiles: Pick<Profile, "id" | "nickname">[];
+	viewerId: string | null;
+	linkedIds: string[];
+}
+
 export interface Profile {
 	id: string;
 	nickname: string;
@@ -123,6 +130,7 @@ export interface Repository {
 	getProfile(profileId: string): Promise<Profile | null>;
 	/** 나를 뺀 우주선 목록. 우주의 점 하나가 프로필 하나에 대응한다. */
 	listOtherProfiles(): Promise<Profile[]>;
+	getGlobeSky(): Promise<GlobeSky>;
 	/** 오래된 순 */
 	listStars(profileId: string): Promise<Star[]>;
 	/** 없는 별은 null */

@@ -9,16 +9,18 @@ import {
 	useState,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import type { Profile } from "../../api/types";
+import type { GlobeSky } from "../../api/types";
 import { REDUCED_MOTION } from "../../lib/motion";
 import sparkle from "../../styles/Twinkle.module.css";
 import {
+	facePoint,
 	NO_ROTATION,
 	projectPoint,
 	type Rotation,
 	rotateBy,
 	spherePoint,
 } from "./globeProjection";
+import { linkDots, seedOf, sparklePath } from "./linkStrand";
 import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
@@ -53,11 +55,11 @@ interface GlobeView {
  * 복원한 시점은 시작 회전을 하지 않는다. 기록은 페이지를 새로고침하면 초기화한다.
  */
 const historyViews = new Map<string, GlobeView>();
-let latestView: GlobeView | undefined;
+const latestViews = new Map<string | null, GlobeView>();
 
-function rememberView(key: string, view: GlobeView) {
+function rememberView(viewerId: string | null, key: string, view: GlobeView) {
 	historyViews.set(key, view);
-	latestView = view;
+	latestViews.set(viewerId, view);
 }
 
 function findStarLink(globe: HTMLDivElement | null, profileId: string) {
@@ -81,10 +83,11 @@ let swipedOnce = false;
 export function UniverseGlobe({
 	entryKey,
 	profiles,
+	viewerId,
+	linkedIds,
 	resumeView,
-}: {
+}: GlobeSky & {
 	entryKey: string;
-	profiles: Profile[];
 	resumeView: boolean;
 }) {
 	const helpId = useId();
@@ -96,11 +99,17 @@ export function UniverseGlobe({
 	const dragRef = useRef<Drag | null>(null);
 	const suppressClick = useRef(false);
 	const [origin] = useState(
-		() => historyViews.get(entryKey) ?? (resumeView ? latestView : undefined),
+		() =>
+			historyViews.get(entryKey) ??
+			(resumeView ? latestViews.get(viewerId) : undefined),
 	);
-	const [rotation, setRotation] = useState<Rotation>(
-		origin?.rotation ?? NO_ROTATION,
-	);
+	const [rotation, setRotation] = useState<Rotation>(() => {
+		if (origin) return origin.rotation;
+		const slot = profiles.findIndex((p) => p.id === viewerId);
+		return slot < 0
+			? NO_ROTATION
+			: facePoint(spherePoint(slot, profiles.length));
+	});
 	const [dragging, setDragging] = useState(false);
 	const [flight, setFlight] = useState<{
 		x: number;
@@ -118,6 +127,7 @@ export function UniverseGlobe({
 		const globe = globeRef.current;
 		if (
 			origin ||
+			viewerId ||
 			introStopped.current ||
 			motion.matches ||
 			globe?.contains(document.activeElement)
@@ -149,7 +159,7 @@ export function UniverseGlobe({
 			globe?.removeEventListener("focusin", stop);
 			motion.removeEventListener("change", onPreferenceChange);
 		};
-	}, [origin]);
+	}, [origin, viewerId]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
 
@@ -165,12 +175,12 @@ export function UniverseGlobe({
 
 	useLayoutEffect(() => {
 		const trigger = rotation === origin?.rotation ? origin.trigger : undefined;
-		rememberView(entryKey, { rotation, trigger });
-	}, [entryKey, origin, rotation]);
+		rememberView(viewerId, entryKey, { rotation, trigger });
+	}, [entryKey, origin, rotation, viewerId]);
 
 	function handleVisitClick(
 		event: MouseEvent<HTMLAnchorElement>,
-		profile: Profile,
+		profile: GlobeSky["profiles"][number],
 		front: boolean,
 	) {
 		if (!front || (event.detail > 0 && suppressClick.current)) {
@@ -196,24 +206,29 @@ export function UniverseGlobe({
 		if (startVisitFlight(profile, event.currentTarget, trigger)) {
 			event.preventDefault();
 		} else {
-			rememberView(entryKey, { rotation, trigger });
+			rememberView(viewerId, entryKey, { rotation, trigger });
 		}
 	}
 
 	function openExplore() {
 		if (zoomRef.current) return;
 		// 돌아오면 같은 방향과 「탐색하기」 버튼 초점을 되살린다.
-		rememberView(entryKey, { rotation, trigger: "telescope" });
+		rememberView(viewerId, entryKey, { rotation, trigger: "telescope" });
 		navigate("/explore");
 	}
 
-	function goToShip(profile: Profile, trigger: VisitTrigger) {
-		rememberView(entryKey, { rotation, trigger });
-		navigate(`/ship/${profile.id}`, { state: VISIT_STATE });
+	function goToShip(
+		profile: GlobeSky["profiles"][number],
+		trigger: VisitTrigger,
+	) {
+		rememberView(viewerId, entryKey, { rotation, trigger });
+		navigate(profile.id === viewerId ? "/me" : `/ship/${profile.id}`, {
+			state: VISIT_STATE,
+		});
 	}
 
 	function startVisitFlight(
-		profile: Profile,
+		profile: GlobeSky["profiles"][number],
 		target: Element,
 		trigger: VisitTrigger,
 	) {
@@ -334,6 +349,16 @@ export function UniverseGlobe({
 		setDragging(false);
 	}
 
+	const linked = new Set(linkedIds);
+	const stars = profiles.map((profile, index) => ({
+		profile,
+		point: projectPoint(spherePoint(index, profiles.length), rotation),
+	}));
+	const mine = stars.find((s) => s.profile.id === viewerId)?.point;
+	// One gradient per endpoint makes every strand read pink at me and blue at the other star.
+	const suffix = helpId.replace(/[^\w-]/g, "");
+	const gradientId = (id: string) => `globe-link-${id}-${suffix}`;
+
 	return (
 		<div className={styles.view}>
 			<p id={helpId} className="sr-only">
@@ -377,14 +402,84 @@ export function UniverseGlobe({
 							rotateWithKey(direction);
 						}}
 					/>
+					{mine && linked.size > 0 && (
+						<svg
+							className={styles.connections}
+							viewBox="-200 -200 400 400"
+							aria-hidden="true"
+						>
+							<defs>
+								{stars.map(
+									({ profile, point }) =>
+										linked.has(profile.id) &&
+										point.depth <= 0 && (
+											<linearGradient
+												key={profile.id}
+												id={gradientId(profile.id)}
+												gradientUnits="userSpaceOnUse"
+												x1={mine.x}
+												y1={mine.y}
+												x2={point.x}
+												y2={point.y}
+											>
+												<stop
+													offset="0"
+													stopColor="#f5a9b8"
+													stopOpacity="0.75"
+												/>
+												<stop
+													offset="0.55"
+													stopColor="#dcc9ff"
+													stopOpacity="0.55"
+												/>
+												<stop
+													offset="1"
+													stopColor="#5bcefa"
+													stopOpacity="0.4"
+												/>
+											</linearGradient>
+										),
+								)}
+							</defs>
+
+							{/* A loose trail of small stars, not a drawn line. */}
+							{stars.map(({ profile, point }) => {
+								if (!linked.has(profile.id) || point.depth > 0) return null;
+								const paint = `url(#${gradientId(profile.id)})`;
+								return (
+									<g
+										key={profile.id}
+										opacity={Math.min(1, -mine.depth * 6, -point.depth * 6)}
+									>
+										{linkDots(mine, point, seedOf(profile.id)).map((dot) =>
+											dot.sparkle ? (
+												<path
+													key={`${dot.x}-${dot.y}`}
+													d={sparklePath(dot.x, dot.y, dot.size * 2.2)}
+													fill={paint}
+													opacity={dot.alpha}
+												/>
+											) : (
+												<circle
+													key={`${dot.x}-${dot.y}`}
+													cx={dot.x}
+													cy={dot.y}
+													r={dot.size}
+													fill={paint}
+													opacity={dot.alpha}
+												/>
+											),
+										)}
+									</g>
+								);
+							})}
+						</svg>
+					)}
 					<ul className={styles.stars} aria-label="우주선 목록">
-						{profiles.map((profile, index) => {
-							const point = projectPoint(
-								spherePoint(index, profiles.length),
-								rotation,
-							);
+						{stars.map(({ profile, point }) => {
+							const self = profile.id === viewerId;
 							const front = point.depth <= 0;
-							const to = `/ship/${profile.id}`;
+							const to = self ? "/me" : `/ship/${profile.id}`;
 							return (
 								<li
 									key={profile.id}
@@ -405,17 +500,24 @@ export function UniverseGlobe({
 										state={VISIT_STATE}
 										className={styles.link}
 										data-profile-id={profile.id}
-										aria-label={`${profile.nickname} 우주선 방문`}
+										aria-label={
+											self
+												? "내 우주선 방문"
+												: `${profile.nickname} 우주선 방문${linked.has(profile.id) ? ", 서로 댓글을 나눈 이웃" : ""}`
+										}
 										title={profile.nickname}
 										draggable={false}
 										tabIndex={front ? 0 : -1}
 										onClick={(event) => handleVisitClick(event, profile, front)}
 									>
 										<span
-											className={`${styles.dot} ${sparkle.twinkle}`}
+											className={`${styles.dot} ${sparkle.twinkle} ${self ? styles.mine : ""}`}
 											aria-hidden="true"
 										/>
-										<span className={styles.name}>{profile.nickname}</span>
+										<span className={styles.name}>
+											{profile.nickname}
+											{self ? " · 나" : ""}
+										</span>
 									</Link>
 								</li>
 							);

@@ -3,6 +3,28 @@ import { describe, it } from "node:test";
 import { createSandboxRepository } from "./sandboxRepository.ts";
 
 describe("sandbox repository", () => {
+	it("keeps the globe slots on sign-in without turning one-way comments into links", async () => {
+		const repo = createSandboxRepository();
+		const before = await repo.getGlobeSky();
+		assert.equal(before.viewerId, null);
+		await repo.signUp({
+			email: "sky@example.com",
+			password: "pass123456",
+			nickname: "별",
+		});
+		const [neighbor] = await repo.listOtherProfiles();
+		const [star] = await repo.listStars(neighbor.id);
+		await repo.createComment(star.id, "반가워요");
+		const after = await repo.getGlobeSky();
+		assert.deepEqual(
+			after.profiles.map((p) => p.id),
+			before.profiles.map((p) => p.id),
+		);
+		assert.equal(after.viewerId, (await repo.getMyProfile()).id);
+		assert.deepEqual(after.linkedIds, []);
+		await repo.signOut();
+		assert.equal((await repo.getGlobeSky()).viewerId, null);
+	});
 	it("leaves the profile and subscriptions untouched when a patch is rejected", async (t) => {
 		const repo = createSandboxRepository();
 		const before = await repo.getMyProfile();

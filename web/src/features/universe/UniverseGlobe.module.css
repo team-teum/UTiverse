@@ -235,6 +235,28 @@
 	cursor: inherit;
 }
 
+/* SVG units match the projected offsets (one design pixel = one --dp). */
+.connections {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	inline-size: calc(400 * var(--dp));
+	block-size: calc(400 * var(--dp));
+	pointer-events: none;
+	overflow: visible;
+}
+
+.hub {
+	filter: blur(4px);
+}
+
+.mine {
+	outline: 1px solid #ffe8f5;
+	outline-offset: 3px;
+	border-radius: 50%;
+}
+
 .stars {
 	margin: 0;
 	padding: 0;
@@ -246,8 +268,8 @@
 	position: absolute;
 	inset-inline-start: 50%;
 	inset-block-start: 50%;
-	inline-size: 44px;
-	block-size: 44px;
+	inline-size: 56px;
+	block-size: 56px;
 }
 
 .link {

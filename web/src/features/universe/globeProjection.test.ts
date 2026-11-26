@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+	facePoint,
 	NO_ROTATION,
 	projectPoint,
 	rotateBy,
@@ -19,6 +20,16 @@ describe("globe projection", () => {
 		for (let index = 0; index < 10; index += 1) {
 			const { x, y, z } = spherePoint(index, 10);
 			assertClose(Math.hypot(x, y, z), 1);
+		}
+	});
+
+	it("centers any viewer's existing slot on the visible hemisphere", () => {
+		for (let i = 0; i < 29; i++) {
+			const slot = spherePoint(i, 29);
+			const p = projectPoint(slot, facePoint(slot));
+			assertClose(p.x, 0);
+			assertClose(p.y, 0);
+			assertClose(p.depth, -1);
 		}
 	});
 

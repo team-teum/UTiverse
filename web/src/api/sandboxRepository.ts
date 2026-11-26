@@ -450,6 +450,27 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 				: publicProfile(profile);
 		},
 
+		async getGlobeSky() {
+			const roster = [...profiles.values()]
+				.map(({ id, nickname }) => ({ id, nickname }))
+				.sort((a, b) => a.id.localeCompare(b.id));
+			if (!session) return { profiles: roster, viewerId: null, linkedIds: [] };
+			const owners = new Map(stars.map((star) => [star.id, star.profileId]));
+			const incoming = new Set<string>();
+			const outgoing = new Set<string>();
+			for (const comment of comments) {
+				const owner = owners.get(comment.starId);
+				if (!owner || owner === comment.profileId) continue;
+				if (owner === me.id) incoming.add(comment.profileId);
+				if (comment.profileId === me.id) outgoing.add(owner);
+			}
+			return {
+				profiles: roster,
+				viewerId: me.id,
+				linkedIds: [...outgoing].filter((id) => incoming.has(id)),
+			};
+		},
+
 		async listOtherProfiles() {
 			return [...profiles.values()]
 				.filter((profile) => profile.id !== me.id)

@@ -8,8 +8,8 @@ export function Universe() {
 	const { key, state } = useLocation();
 	const resumeView =
 		(state as { resumeUniverse?: boolean } | null)?.resumeUniverse === true;
-	const { data: profiles, error } = useRepositoryData("profiles:others", () =>
-		repo.listOtherProfiles(),
+	const { data: sky, error } = useRepositoryData("globe-sky", () =>
+		repo.getGlobeSky(),
 	);
 
 	return (
@@ -22,15 +22,15 @@ export function Universe() {
 					<p role="alert">
 						우주를 불러오지 못했어요. 잠시 후 새로고침해 주세요.
 					</p>
-				) : !profiles ? (
+				) : !sky ? (
 					<p role="status">우주를 불러오는 중…</p>
-				) : profiles.length === 0 ? (
+				) : sky.profiles.length === 0 ? (
 					<p>아직 둘러볼 우주선이 없어요.</p>
 				) : (
 					<UniverseGlobe
-						key={key}
-						entryKey={key}
-						profiles={profiles}
+						key={`${sky.viewerId}:${key}`}
+						entryKey={`${sky.viewerId}:${key}`}
+						{...sky}
 						resumeView={resumeView}
 					/>
 				)}

@@ -38,6 +38,16 @@ export function spherePoint(index: number, count: number) {
 	return { x: Math.cos(angle) * ring, y, z: Math.sin(angle) * ring };
 }
 
+/** Rotate a unit sphere point onto the front-facing axis without changing its slot. */
+export function facePoint({
+	x,
+	y,
+	z,
+}: ReturnType<typeof spherePoint>): Rotation {
+	if (z >= 1) return { w: 0, x: 0, y: 1, z: 0 };
+	return normalize({ w: 1 - z, x: -y, y: x, z: 0 });
+}
+
 export function projectPoint(
 	point: ReturnType<typeof spherePoint>,
 	q: Rotation,

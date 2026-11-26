@@ -231,6 +231,26 @@ export function createSupabaseRepository(): Repository {
 		notify();
 		return { ...toProfile(data), identity };
 	}
+	async function globeRoster() {
+		const client = await getPreviewClient();
+		const roster: Pick<Profile, "id" | "nickname">[] = [];
+		// Keyset pagination keeps the shared roster independent of the API row cap.
+		for (;;) {
+			const query = client
+				.from("profiles")
+				.select("id,nickname")
+				.order("id")
+				.limit(500);
+			const last = roster.at(-1);
+			const { data, error } = await (last
+				? query.gt("id", last.id)
+				: query
+			).returns<typeof roster>();
+			if (error) throw new Error("우주를 불러오지 못했어요.");
+			roster.push(...data);
+			if (data.length < 500) return roster;
+		}
+	}
 	async function listOtherProfiles() {
 		const id = await myId();
 		const client = await getPreviewClient();
@@ -293,6 +313,16 @@ export function createSupabaseRepository(): Repository {
 		getMyProfile,
 		getProfile,
 		listOtherProfiles,
+		async getGlobeSky() {
+			const client = await getPreviewClient();
+			const viewerId = await myId();
+			const [profiles, links] = await Promise.all([
+				globeRoster(),
+				viewerId ? client.rpc("my_globe_links") : { data: [], error: null },
+			]);
+			if (links.error) throw new Error("우주를 불러오지 못했어요.");
+			return { profiles, viewerId, linkedIds: (links.data ?? []) as string[] };
+		},
 		listStars,
 		getStar,
 		async updateMyProfile(patch, expectedId) {
