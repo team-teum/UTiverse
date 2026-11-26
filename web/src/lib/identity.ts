@@ -70,3 +70,20 @@ export function cleanIdentity(input: Identity): Identity {
 export function identityFlags(identity: Identity | null | undefined): string[] {
 	return (identity?.ids ?? []).map((id) => identityOption(id).flag);
 }
+
+/**
+ * 닮은 별 찾기: 내 정체성 중 상대에게도 있는 것 (항목이 정확히 같아야 한다.
+ * 트랜스 여성·트랜스 남성·트랜스젠더는 깃발이 같아도 서로 다르게 본다. 기타는 직접 쓴 말까지 같아야 한다)
+ */
+export function sharedIdentities(
+	mine: Identity,
+	theirs: Identity,
+): IdentityId[] {
+	const same = (a: string, b: string) =>
+		a.trim().toLowerCase() === b.trim().toLowerCase();
+	return mine.ids.filter(
+		(id) =>
+			theirs.ids.includes(id) &&
+			(id !== "other" || same(mine.other, theirs.other)),
+	);
+}

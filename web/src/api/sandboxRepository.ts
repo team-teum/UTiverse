@@ -1,4 +1,4 @@
-import { cleanIdentity } from "../lib/identity.ts";
+import { cleanIdentity, sharedIdentities } from "../lib/identity.ts";
 import { isValidLength } from "../lib/postText.ts";
 import { isValidRegion } from "../lib/regions.ts";
 import { DEFAULT_LOOK, withLook } from "../pixel/look.ts";
@@ -16,6 +16,7 @@ import {
 	type ReactionSummary,
 	type ReactionType,
 	type Repository,
+	type SimilarShip,
 	STAR_MAX_CHARS,
 	type Star,
 } from "./types.ts";
@@ -296,6 +297,25 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			me.identity = cleanIdentity(identity);
 			notify();
 			return copyProfile(me);
+		},
+
+		async exploreSimilar() {
+			const mine = me.identity;
+			if (!mine?.ids.length) return [];
+			const result: SimilarShip[] = [];
+			for (const profile of profiles.values()) {
+				if (profile.id === me.id) continue;
+				const view = publicProfile(profile);
+				if (!view.identity) continue;
+				const shared = sharedIdentities(mine, view.identity);
+				if (shared.length)
+					result.push({
+						profile: view,
+						shared,
+						all: shared.length === mine.ids.length,
+					});
+			}
+			return result.slice(0, 60);
 		},
 
 		async exploreRandom(count) {

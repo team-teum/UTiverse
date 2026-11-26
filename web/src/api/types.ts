@@ -1,7 +1,7 @@
 // 화면은 이 인터페이스만 사용한다. 지금은 샌드박스(메모리) 구현만 있고,
 // 실제 DB 모드는 같은 인터페이스의 Supabase 구현으로 바꿔 끼운다(SPECIFICATION 6.1).
 
-import type { Identity } from "../lib/identity";
+import type { Identity, IdentityId } from "../lib/identity";
 import type { Look } from "../pixel/look";
 
 export const STAR_MAX_CHARS = 500;
@@ -64,6 +64,15 @@ export type DistanceTier = "sigungu" | "sido" | "nation";
 export interface NearbyShip {
 	profile: Profile;
 	tier: DistanceTier;
+}
+
+/** 닮은 별 찾기: 내 정체성과 겹치는 우주선 */
+export interface SimilarShip {
+	profile: Profile;
+	/** 겹치는 내 정체성 (1개 이상) */
+	shared: IdentityId[];
+	/** 내 정체성이 모두 겹치면 true (안쪽 궤도) */
+	all: boolean;
 }
 
 export interface ExploreCard {
@@ -160,6 +169,11 @@ export interface Repository {
 	): Promise<Profile>;
 	/** 정체성을 통째로 바꾼다. 규칙(lib/identity cleanIdentity)에 맞지 않으면 거절한다. */
 	updateMyIdentity(identity: Identity): Promise<Profile>;
+	/**
+	 * 닮은 별 찾기: 보이기를 켠 다른 우주선 중 내 정체성과 하나 이상 같은 것 전부(최대 60).
+	 * 내 정체성은 숨겨 둬도 비교에 쓴다. 내 정체성이 없으면 빈 배열.
+	 */
+	exploreSimilar(): Promise<SimilarShip[]>;
 	/** 탐색: 나를 뺀 우주선 n개를 무작위로 */
 	exploreRandom(count: number): Promise<ExploreCard[]>;
 	getMyLocation(): Promise<MyLocation | null>;

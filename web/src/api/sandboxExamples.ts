@@ -226,6 +226,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000030000",
 		key: "saebyeok",
+		identity: { ids: ["nonbinary"], other: "", visible: true },
 		nickname: "새벽",
 		tagline: "밤에만 솔직해짐",
 		look: {
@@ -276,6 +277,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000040000",
 		key: "dotori",
+		identity: { ids: ["nonbinary", "agender"], other: "", visible: true },
 		nickname: "도토리",
 		tagline: "고3 탈출까지 D-??",
 		look: {
@@ -363,6 +365,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000060000",
 		key: "mu",
+		identity: { ids: ["trans-woman"], other: "", visible: true },
 		nickname: "무",
 		tagline: "남자도 여자도 아닌 그냥 무",
 		look: {
@@ -454,6 +457,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000080000",
 		key: "jun",
+		identity: { ids: ["transgender", "nonbinary"], other: "", visible: true },
 		nickname: "준",
 		tagline: "고양이 두 마리랑 삽니다",
 		look: {
@@ -551,6 +555,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000100000",
 		key: "musim",
+		identity: { ids: ["trans-woman", "nonbinary"], other: "", visible: true },
 		nickname: "무심한물고기",
 		tagline: "아직 아무한테도 말 안 함",
 		look: {

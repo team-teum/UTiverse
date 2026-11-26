@@ -22,10 +22,10 @@
 
 .option {
 	display: inline-flex;
-	gap: 8px;
+	gap: 6px;
 	align-items: center;
 	min-block-size: 44px;
-	padding: 8px calc(20 * var(--dp)) 8px calc(18 * var(--dp));
+	padding: 8px calc(14 * var(--dp)) 8px calc(12 * var(--dp));
 	border: 0;
 	border-radius: 999px;
 	background: transparent;
@@ -42,9 +42,14 @@
 	color: #0b0a1a;
 }
 
-.icon {
-	inline-size: 20px;
-	block-size: 20px;
+.icon,
+.sparkle {
+	inline-size: 18px;
+	block-size: 18px;
+}
+
+.sparkle {
+	fill: currentColor;
 }
 
 /* 아이콘 색을 선택 상태에 맞춘다 (원본: 주사위 흰색, 핀 짙은 남색) */
@@ -466,4 +471,37 @@
 		flex-wrap: wrap;
 		gap: 1rem;
 	}
+}
+
+/* ── 닮은 별: 내 깃발 칩 ── */
+.similarChips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.similarChips button {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	min-block-size: 36px;
+	padding: 0 14px;
+	border: 1px solid rgb(129 126 196 / 50%);
+	border-radius: 999px;
+	background: transparent;
+	color: #cfc8f5;
+	font: inherit;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.similarChips button[aria-pressed="true"] {
+	border-color: transparent;
+	background: rgb(190 154 250 / 25%);
+	color: #fff;
+	font-weight: 700;
 }

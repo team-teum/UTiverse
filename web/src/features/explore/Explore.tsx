@@ -28,8 +28,9 @@ import { shortSido } from "../../lib/regions";
 import { PixelCanvas } from "../../pixel/PixelCanvas";
 import styles from "./Explore.module.css";
 import { LocationDialog } from "./LocationDialog";
+import { SimilarExplore } from "./SimilarExplore";
 
-type Mode = "random" | "nearby";
+type Mode = "random" | "nearby" | "similar";
 
 interface RandomDraw {
 	cards: Promise<ExploreCard[]>;
@@ -74,7 +75,7 @@ export function Explore() {
 	const drawEntry = `${repo.readScope?.() ?? 0}:${entry}`;
 	const asked = params.get("mode");
 	const mode: Mode =
-		asked === "random" || asked === "nearby"
+		asked === "random" || asked === "nearby" || asked === "similar"
 			? asked
 			: location
 				? "nearby"
@@ -103,7 +104,7 @@ export function Explore() {
 					onClick={() => setMode("random")}
 				>
 					<AssetImage assetKey="icon.dice" alt="" className={styles.icon} />
-					랜덤 별 찾기
+					랜덤 별
 				</button>
 				<button
 					type="button"
@@ -112,13 +113,30 @@ export function Explore() {
 					onClick={() => setMode("nearby")}
 				>
 					<AssetImage assetKey="icon.pin" alt="" className={styles.icon} />
-					주변 별 찾기
+					주변 별
+				</button>
+				<button
+					type="button"
+					className={styles.option}
+					aria-pressed={mode === "similar"}
+					onClick={() => setMode("similar")}
+				>
+					<svg
+						viewBox="0 0 24 24"
+						className={styles.sparkle}
+						aria-hidden="true"
+					>
+						<path d="M12 2.5 14.2 9.8 21.5 12 14.2 14.2 12 21.5 9.8 14.2 2.5 12 9.8 9.8Z" />
+					</svg>
+					닮은 별
 				</button>
 			</fieldset>
 
 			<div key={mode} className={styles.body}>
 				{mode === "random" ? (
 					<RandomExplore key={drawEntry} entry={drawEntry} />
+				) : mode === "similar" ? (
+					<SimilarExplore />
 				) : locationError ? (
 					<p role="alert">위치를 불러오지 못했어요. 새로고침해 주세요.</p>
 				) : location === undefined ? (

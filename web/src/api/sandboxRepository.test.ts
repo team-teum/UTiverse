@@ -150,4 +150,25 @@ describe("sandbox repository", () => {
 		}
 		assert.ok(others.some((profile) => profile.identity?.ids.length));
 	});
+
+	it("finds similar ships by exact identity items only", async () => {
+		const repo = createSandboxRepository();
+		assert.deepEqual(await repo.exploreSimilar(), []);
+		await repo.updateMyIdentity({
+			ids: ["trans-woman", "nonbinary"],
+			other: "",
+			visible: false,
+		});
+		const ships = await repo.exploreSimilar();
+		assert.ok(ships.length > 0);
+		for (const ship of ships) {
+			assert.ok(ship.shared.length > 0);
+			assert.equal(ship.all, ship.shared.length === 2);
+			// 트랜스 남성·트랜스젠더는 트랜스 여성과 같은 것으로 치지 않는다
+			assert.ok(
+				!ship.shared.some((id) => id === "trans-man" || id === "transgender"),
+			);
+			assert.equal(ship.profile.identity?.visible, true);
+		}
+	});
 });

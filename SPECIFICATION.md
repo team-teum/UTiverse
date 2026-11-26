@@ -361,6 +361,8 @@ UTiverse/
 
 - `supabase/migrations/20261126060000_profile_identities.sql` (요청 016): 정체성은 `private.profile_identities`에 두고 직접 읽기·쓰기는 막는다. `my_identity()`는 본인 것 전체, `public_identities(uuid[])`는 보이기를 켠 것만, `save_my_identity()`는 본인만(정지 계정 거절) 저장한다. 최대 2개·허용 목록·기타 12자 규칙은 DB 제약과 `lib/identity.ts`가 같이 지킨다. 로컬 Docker DB에서의 마이그레이션·권한 테스트는 아직 하지 않았다.
 
+- `supabase/migrations/20261126070000_similar_profiles.sql` (요청 017): `similar_profiles()`는 로그인한 사람의 정체성(숨김 포함)과 하나 이상 겹치고 보이기를 켠 다른 프로필만 최대 60개 돌려준다. 정확한 항목 비교는 `lib/identity.ts sharedIdentities`가 한다. 로컬 DB 미검증.
+
 **공개 전환 검증 기록:**
 
 - [x] 새 로컬 DB에서 전체 마이그레이션과 API 테스트 3개 통과: 저장된 텍스트 길이·공백, 무작위 카드 수·중복·본인 제외·최신 글, 위치 행 삭제와 즉시 재등록, 정지 시 주변 비공개 및 해제 후 비공개 유지. 보안 Advisor 이슈 없음.

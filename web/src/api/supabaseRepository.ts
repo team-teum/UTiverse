@@ -1,4 +1,9 @@
-import { cleanIdentity, type Identity, isIdentityId } from "../lib/identity";
+import {
+	cleanIdentity,
+	type Identity,
+	isIdentityId,
+	sharedIdentities,
+} from "../lib/identity";
 import { AVATAR_TABS, type Look, SHIP_TABS, withLook } from "../pixel/look";
 import {
 	getPreviewClient,
@@ -15,6 +20,7 @@ import {
 	REACTION_TYPES,
 	type ReactionSummary,
 	type Repository,
+	type SimilarShip,
 	type Star,
 } from "./types";
 
@@ -285,6 +291,27 @@ export function createSupabaseRepository(): Repository {
 			if (!me || (expectedId && me.id !== expectedId))
 				throw new Error("로그인 상태를 확인해 주세요.");
 			return updateProfile(me.id, { look: { ...me.look, ...patch } });
+		},
+		async exploreSimilar() {
+			const me = await getMyProfile();
+			const mine = me?.identity;
+			if (!mine?.ids.length) return [];
+			const client = await getPreviewClient();
+			const { data, error } = await client.rpc("similar_profiles");
+			if (error) throw new Error("닮은 별을 불러오지 못했어요.");
+			const result: SimilarShip[] = [];
+			for (const row of data as (ProfileRow & IdentityRow)[]) {
+				const identity = toIdentity(row, true);
+				if (!identity) continue;
+				const shared = sharedIdentities(mine, identity);
+				if (shared.length)
+					result.push({
+						profile: { ...toProfile(row), identity },
+						shared,
+						all: shared.length === mine.ids.length,
+					});
+			}
+			return result;
 		},
 		async exploreRandom(count) {
 			const client = await getPreviewClient();

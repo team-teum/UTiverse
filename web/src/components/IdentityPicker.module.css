@@ -49,8 +49,14 @@
 	pointer-events: none;
 }
 
+/* 알약을 눌러도 목록이 열리고 닫힌다. ✕만 따로 눌린다 */
 .box > span {
 	position: relative;
+	pointer-events: none;
+}
+
+.box > span button {
+	pointer-events: auto;
 }
 
 .list {
