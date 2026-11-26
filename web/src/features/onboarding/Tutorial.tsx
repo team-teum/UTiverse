@@ -4,6 +4,7 @@ import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
 import { TopBar } from "../../components/TopBar";
 import { AuthDialog } from "../auth/AuthDialog";
+import { startTour } from "../tour/tourStore";
 import glass from "./OnboardingGlass.module.css";
 import { TitleScene } from "./TitleScene";
 import styles from "./Tutorial.module.css";
@@ -36,7 +37,8 @@ export function Tutorial() {
 		setSaveError(false);
 		try {
 			await repo.completeTutorial();
-			if (isLast) await repo.requestSwipeHint();
+			// 끝까지 본 사람만 홈에서 이어지는 화면 안내(튜토리얼 v2)를 본다. 건너뛰면 보지 않는다.
+			if (isLast) startTour();
 			navigate("/universe", { replace: true });
 		} catch {
 			setSaveError(true);

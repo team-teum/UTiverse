@@ -6,6 +6,7 @@ import ui from "../../components/Cosmic.module.css";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { preferredScrollBehavior } from "../../lib/motion";
+import { useTourScreen } from "../tour/tourStore";
 import styles from "./Calendar.module.css";
 import {
 	addMonths,
@@ -25,6 +26,7 @@ const SWIPE = 50;
 const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function Calendar() {
+	useTourScreen("calendar");
 	const today = todayKst();
 	const [selection, setSelection] = useState<CalendarSelection>({
 		month: monthOf(today),
@@ -199,6 +201,7 @@ export function Calendar() {
 			<section
 				ref={listRef}
 				className={`${ui.panel} ${styles.dayPanel}`}
+				data-tour="calendar-day"
 				aria-labelledby="day-heading"
 			>
 				<div className={styles.dayHead}>

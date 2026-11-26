@@ -9,6 +9,7 @@ export function WriteStarButton({ onClick }: { onClick: () => void }) {
 			type="button"
 			className={styles.button}
 			aria-label="별 만들기"
+			data-tour="write"
 			onClick={onClick}
 		>
 			<AssetImage

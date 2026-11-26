@@ -86,14 +86,17 @@ export function IdentityPills({
 	identity,
 	small,
 	className,
+	tour,
 }: {
 	identity: Identity | null;
 	small?: boolean;
 	className?: string;
+	/** 튜토리얼 v2가 가리킬 이름 (data-tour) */
+	tour?: string;
 }) {
 	if (!identity?.ids.length) return null;
 	return (
-		<span className={`${styles.pills} ${className ?? ""}`}>
+		<span className={`${styles.pills} ${className ?? ""}`} data-tour={tour}>
 			{identity.ids.map((id) => (
 				<IdentityPill key={id} id={id} other={identity.other} small={small} />
 			))}

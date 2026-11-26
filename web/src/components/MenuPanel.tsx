@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
+import { useTourScreen } from "../features/tour/tourStore";
 import { AssetImage } from "./AssetImage";
 import styles from "./MenuPanel.module.css";
 
@@ -36,6 +37,7 @@ const ITEMS = [
  * 바깥을 누르거나 Esc로 닫힌다.
  */
 export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
+	useTourScreen("menu");
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const panelRef = useRef<HTMLElement>(null);
 	const { pathname } = useLocation();
@@ -87,6 +89,7 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 							<Link
 								to={item.to}
 								className={styles.item}
+								data-tour={`menu-${item.to.slice(1)}`}
 								aria-current={pathname.startsWith(item.to) ? "page" : undefined}
 								onClick={() => {
 									onNavigate?.();
@@ -99,7 +102,9 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 									</svg>
 								</span>
 								<span className={styles.text}>
-									<span className={styles.label}>{item.label}</span>
+									<span className={styles.label} data-tour-part="label">
+										{item.label}
+									</span>
 									<span className={styles.hint}>{item.hint}</span>
 								</span>
 							</Link>

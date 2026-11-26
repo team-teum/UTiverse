@@ -1,0 +1,143 @@
+/* 튜토리얼 v2 말풍선 (Figma 143:6815 「튜토 1~22」): 유리 말풍선 + 티니 + 지시봉 */
+.layer {
+	position: absolute;
+	inset: 0;
+	z-index: 50;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.bubble {
+	position: absolute;
+	box-sizing: border-box;
+	display: grid;
+	gap: 0.125rem;
+	padding: 1rem 1.25rem 0.25rem;
+	border: 1px solid rgb(255 255 255 / 22%);
+	border-radius: 1.5rem;
+	background: rgb(40 34 56 / 82%);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 24%),
+		0 0.5rem 1.5rem rgb(0 0 0 / 35%);
+	color: #fff;
+	pointer-events: auto;
+	animation: pop 220ms ease-out;
+}
+
+@supports (backdrop-filter: blur(1px)) {
+	.bubble {
+		background: rgb(60 52 80 / 55%);
+		backdrop-filter: blur(0.75rem) saturate(130%);
+	}
+}
+
+.text {
+	margin: 0;
+	font-size: 0.9375rem;
+	line-height: 1.45;
+	word-break: keep-all;
+	overflow-wrap: anywhere;
+	text-wrap: pretty;
+}
+
+/* 「닫기」: 글자는 작지만 누르는 자리는 44px */
+.close {
+	justify-self: end;
+	margin-block-start: -0.5rem;
+	min-block-size: 44px;
+	min-inline-size: 44px;
+	padding: 0 0.25rem;
+	border: 0;
+	background: none;
+	color: rgb(255 255 255 / 92%);
+	font: inherit;
+	font-size: 0.75rem;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	cursor: pointer;
+}
+
+.close:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: -6px;
+	border-radius: 0.75rem;
+}
+
+.layer .tini {
+	position: absolute;
+	z-index: 2;
+	filter: drop-shadow(0 0 8px rgb(0 0 0 / 55%));
+}
+
+/* 지시봉 막대: 티니 가운데에서 장갑 손목까지 */
+.stick {
+	position: absolute;
+	z-index: 1;
+	block-size: 6px;
+	margin-block-start: -3px;
+	border-radius: 3px;
+	background: linear-gradient(90deg, #be9afa, #b28cf4 70%, #8c6bd0);
+	box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+	transform: rotate(var(--angle));
+	transform-origin: 0 50%;
+}
+
+/* 장갑(ui.pointer): 손끝(그림의 85%, 10%)이 대상 테두리에 닿게 */
+.layer .glove {
+	position: absolute;
+	z-index: 1;
+	inline-size: 37px;
+	block-size: 46px;
+	translate: -85% -10%;
+	transform: rotate(var(--angle));
+	transform-origin: 85% 10%;
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / 40%));
+}
+
+/* 눌러야 할 버튼 둘레 빛 (Figma 「튜토 11」 Ellipse 52) */
+.glow {
+	position: absolute;
+	translate: -50% -50%;
+	border-radius: 50%;
+	box-shadow:
+		0 0 0 3px rgb(255 240 170 / 85%),
+		0 0 18px 6px rgb(255 226 120 / 55%),
+		0 0 48px 14px rgb(190 154 250 / 45%);
+	animation: breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes pop {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
+
+@keyframes breathe {
+	50% {
+		opacity: 0.55;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.bubble,
+	.glow {
+		animation: none;
+	}
+}
+
+@media (forced-colors: active) {
+	.bubble {
+		border-color: CanvasText;
+		background: Canvas;
+		color: CanvasText;
+	}
+
+	.close {
+		color: LinkText;
+	}
+
+	.stick {
+		background: CanvasText;
+	}
+}

@@ -10,6 +10,7 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import type { Look } from "../../pixel/look";
 import { AuthDialog } from "../auth/AuthDialog";
+import { isTourActive } from "../tour/tourStore";
 import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
 import { ShipPage } from "./ShipPage";
@@ -84,8 +85,9 @@ function OwnedShip({ me }: { me: Profile }) {
 	}, [blocker, dirty, saving]);
 
 	useEffect(() => {
+		// 튜토리얼 v2가 진행 중이면 그 말풍선이 같은 안내를 맡는다.
 		void repo.takeSwipeHint().then((show) => {
-			if (show) setHint(true);
+			if (show && !isTourActive()) setHint(true);
 		});
 	}, []);
 

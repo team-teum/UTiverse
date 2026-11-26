@@ -26,6 +26,7 @@ import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { shortSido } from "../../lib/regions";
 import { PixelCanvas } from "../../pixel/PixelCanvas";
+import { useTourScreen } from "../tour/tourStore";
 import styles from "./Explore.module.css";
 import { LocationDialog } from "./LocationDialog";
 import { SimilarExplore } from "./SimilarExplore";
@@ -64,6 +65,7 @@ function getRandomDraw(entry: string): RandomDraw {
  * 기본: 위치가 있으면 주변, 없으면 랜덤.
  */
 export function Explore() {
+	useTourScreen("explore");
 	const [params, setParams] = useSearchParams();
 	const { key, state } = useLocation();
 	const entry =
@@ -101,6 +103,7 @@ export function Explore() {
 					type="button"
 					className={styles.option}
 					aria-pressed={mode === "random"}
+					data-tour="explore-random"
 					onClick={() => setMode("random")}
 				>
 					<AssetImage assetKey="icon.dice" alt="" className={styles.icon} />
@@ -110,6 +113,7 @@ export function Explore() {
 					type="button"
 					className={styles.option}
 					aria-pressed={mode === "nearby"}
+					data-tour="explore-nearby"
 					onClick={() => setMode("nearby")}
 				>
 					<AssetImage assetKey="icon.pin" alt="" className={styles.icon} />
@@ -119,6 +123,7 @@ export function Explore() {
 					type="button"
 					className={styles.option}
 					aria-pressed={mode === "similar"}
+					data-tour="explore-similar"
 					onClick={() => setMode("similar")}
 				>
 					<svg

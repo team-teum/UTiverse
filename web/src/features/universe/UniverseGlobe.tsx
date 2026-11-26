@@ -12,6 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { GlobeSky } from "../../api/types";
 import { REDUCED_MOTION } from "../../lib/motion";
 import sparkle from "../../styles/Twinkle.module.css";
+import { reportTourAction } from "../tour/tourStore";
 import {
 	facePoint,
 	NO_ROTATION,
@@ -86,9 +87,12 @@ export function UniverseGlobe({
 	viewerId,
 	linkedIds,
 	resumeView,
+	focusProfileId,
 }: GlobeSky & {
 	entryKey: string;
 	resumeView: boolean;
+	/** 튜토리얼 v2가 가리키는 우주선. 뒤쪽에 있으면 한 번 앞으로 돌려 둔다 */
+	focusProfileId?: string;
 }) {
 	const helpId = useId();
 	const navigate = useNavigate();
@@ -162,6 +166,19 @@ export function UniverseGlobe({
 	}, [origin, viewerId]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
+
+	// 회전 값은 일부러 의존성에 넣지 않는다: 가리키기 시작할 때 한 번만 돌리고, 그 뒤는 사용자가 돌린다.
+	const rotationRef = useRef(rotation);
+	rotationRef.current = rotation;
+	useEffect(() => {
+		if (!focusProfileId) return;
+		const slot = profiles.findIndex((p) => p.id === focusProfileId);
+		if (slot < 0) return;
+		const point = spherePoint(slot, profiles.length);
+		if (projectPoint(point, rotationRef.current).depth < -0.3) return;
+		introStopped.current = true;
+		setRotation(facePoint(point));
+	}, [focusProfileId, profiles]);
 
 	useLayoutEffect(() => {
 		if (!origin?.trigger) return;
@@ -288,6 +305,7 @@ export function UniverseGlobe({
 		if (zoomRef.current) return;
 		setRotation((current) => rotateBy(current, direction.yaw, direction.pitch));
 		setAnnouncement(`우주를 ${direction.name} 돌렸어요.`);
+		reportTourAction("globe-drag");
 	}
 
 	function startDrag(event: PointerEvent<HTMLDivElement>) {
@@ -325,6 +343,7 @@ export function UniverseGlobe({
 			setDragging(true);
 			swipedOnce = true;
 			setShowSwipeHint(false);
+			reportTourAction("globe-drag");
 			// 뒤쪽으로 이동하는 링크에 초점이 남지 않게 한다.
 			handleRef.current?.focus({ preventScroll: true });
 		}
@@ -565,6 +584,7 @@ export function UniverseGlobe({
 					type="button"
 					ref={telescopeRef}
 					className={styles.telescope}
+					data-tour="explore"
 					aria-disabled={flight !== null}
 					onClick={openExplore}
 				>

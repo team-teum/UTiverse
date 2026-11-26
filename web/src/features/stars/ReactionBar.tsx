@@ -3,6 +3,7 @@ import { repo } from "../../api/repository";
 import { REACTION_TYPES, type ReactionType } from "../../api/types";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { useParticipation } from "../auth/ParticipationGate";
+import { reportTourAction } from "../tour/tourStore";
 import styles from "./ReactionBar.module.css";
 
 // 카카오톡 반응처럼 알록달록한 이모지. 싫어요 같은 부정 반응은 두지 않는다.
@@ -37,6 +38,7 @@ export function ReactionBar({ starId }: { starId: string }) {
 		try {
 			if (!(await authorize())) return;
 			await repo.toggleReaction(starId, type);
+			reportTourAction("reaction");
 		} catch {
 			setFailed(true);
 		} finally {
@@ -46,7 +48,7 @@ export function ReactionBar({ starId }: { starId: string }) {
 
 	return (
 		<div>
-			<ul className={styles.bar} aria-label="반응">
+			<ul className={styles.bar} aria-label="반응" data-tour="reactions">
 				{REACTION_TYPES.map((type) => {
 					const pressed = data?.mine.includes(type) ?? false;
 					const count = data?.counts[type] ?? 0;

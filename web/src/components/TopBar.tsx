@@ -26,6 +26,7 @@ export function TopBar({ onNavigate, locked = false }: TopBarProps) {
 					type="button"
 					className={styles.menu}
 					aria-label="메뉴"
+					data-tour="menu"
 					aria-expanded={menuOpen}
 					onClick={() => setMenuOpen(true)}
 				>
@@ -36,6 +37,7 @@ export function TopBar({ onNavigate, locked = false }: TopBarProps) {
 				<Link
 					className={styles.my}
 					to="/me"
+					data-tour="my"
 					aria-label="MY · 내 우주선"
 					onClick={onNavigate}
 				>
@@ -44,6 +46,7 @@ export function TopBar({ onNavigate, locked = false }: TopBarProps) {
 				<Link
 					className={styles.home}
 					to="/universe"
+					data-tour="home"
 					state={{ resumeUniverse: pathname !== "/tutorial" }}
 					aria-label="우주(홈)"
 					aria-current={pathname === "/universe" ? "page" : undefined}

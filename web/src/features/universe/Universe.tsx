@@ -1,10 +1,17 @@
 import { useLocation } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { LUMI_ID } from "../tour/tourSteps";
+import { useTour, useTourScreen } from "../tour/tourStore";
 import styles from "./Universe.module.css";
 import { UniverseGlobe } from "./UniverseGlobe";
 
 export function Universe() {
+	useTourScreen("universe");
+	// 안내가 루미를 가리킬 때는 루미가 앞쪽에 오게 돌려 둔다.
+	const tour = useTour();
+	const focusProfileId =
+		tour?.visible && tour.step.id === "visitLumi" ? LUMI_ID : undefined;
 	const { key, state } = useLocation();
 	const resumeView =
 		(state as { resumeUniverse?: boolean } | null)?.resumeUniverse === true;
@@ -32,6 +39,7 @@ export function Universe() {
 						entryKey={`${sky.viewerId}:${key}`}
 						{...sky}
 						resumeView={resumeView}
+						focusProfileId={focusProfileId}
 					/>
 				)}
 			</div>

@@ -197,7 +197,11 @@ export function CommentSection({
 	}
 
 	return (
-		<section className={styles.root} aria-labelledby={headingId}>
+		<section
+			className={styles.root}
+			aria-labelledby={headingId}
+			data-tour="comments"
+		>
 			<h3 id={headingId} className={styles.heading}>
 				댓글 {comments ? comments.length : ""}
 			</h3>

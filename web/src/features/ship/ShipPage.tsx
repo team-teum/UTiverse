@@ -20,6 +20,8 @@ import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { StarDetailDialog } from "../stars/StarDetailDialog";
 import { WriteStarDialog } from "../stars/WriteStarDialog";
+import { LUMI_ID, type TourScreen } from "../tour/tourSteps";
+import { reportTourAction, useTourScreen } from "../tour/tourStore";
 import { Constellation, STARS_PER_PAGE } from "./Constellation";
 import styles from "./ShipPage.module.css";
 import { ShipView } from "./ShipView";
@@ -245,6 +247,13 @@ export function ShipPage({
 	// 남의 우주선은 누를 때마다 열리고 닫힌다
 	const [peek, setPeek] = useState(false);
 
+	// 튜토리얼 v2: MY(별자리·꾸미기)와 예시 우주선 「루미」에서만 안내한다.
+	let tourScreen: TourScreen | null = null;
+	if (customize) tourScreen = openStarId ? null : open ? "customize" : "me";
+	else if (profile.id === LUMI_ID)
+		tourScreen = openStarId ? "lumiStar" : "lumiShip";
+	useTourScreen(tourScreen);
+
 	const headingId = `ship-heading-${profile.id}`;
 	const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -289,6 +298,7 @@ export function ShipPage({
 						tabIndex={focusHeading ? -1 : undefined}
 						id={headingId}
 						className={styles.nickname}
+						data-tour={isMine ? "my-name" : undefined}
 					>
 						{isMine ? `${profile.nickname} (나)` : profile.nickname}
 					</h1>
@@ -296,13 +306,14 @@ export function ShipPage({
 						identity={profile.identity}
 						small
 						className={styles.identity}
+						tour={isMine ? "identity" : undefined}
 					/>
 					{profile.tagline && isMine && (
 						<p className={styles.tagline}>{profile.tagline}</p>
 					)}
 				</header>
 
-				<div className={styles.sky}>
+				<div className={styles.sky} data-tour="constellation">
 					{error !== undefined ? (
 						<p className={styles.notice}>별자리를 불러오지 못했어요.</p>
 					) : (
@@ -346,6 +357,7 @@ export function ShipPage({
 							type="button"
 							className={styles.shipButton}
 							ref={shipButtonRef}
+							data-tour="my-ship"
 							aria-label={
 								progress > 0.5 ? "별자리로 돌아가기" : "우주선 꾸미기 열기"
 							}
@@ -361,7 +373,11 @@ export function ShipPage({
 								className={styles.shipButton}
 								aria-label={`${profile.nickname}의 우주선 ${peek ? "닫기" : "열어 보기"}`}
 								aria-expanded={peek}
-								onClick={() => setPeek((open) => !open)}
+								data-tour="ship"
+								onClick={() => {
+									if (!peek) reportTourAction("ship-knock");
+									setPeek(!peek);
+								}}
 							>
 								<ShipView
 									profile={profile}
@@ -390,6 +406,7 @@ export function ShipPage({
 									type="button"
 									className={styles.swipeHint}
 									ref={customizeHintRef}
+									data-tour="customize-hint"
 									aria-label={open ? "별자리로 돌아가기" : undefined}
 									onClick={() => {
 										if (!open) openedFromHint.current = true;

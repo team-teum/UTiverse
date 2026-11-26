@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { TopBar } from "../components/TopBar";
 import { ParticipationGate } from "../features/auth/ParticipationGate";
+import { TourGuide } from "../features/tour/TourGuide";
 import styles from "./AppFrame.module.css";
 
 export function AppFrame() {
@@ -25,6 +26,9 @@ export function AppFrame() {
 					</ParticipationGate>
 				</main>
 				<div id="overlay-root" className={styles.overlays} />
+				{/* 튜토리얼 v2 말풍선: 우주 이름표보다 위 (열린 대화상자 안에서는 그 안에 그린다) */}
+				<div id="tour-root" className={styles.tour} />
+				<TourGuide />
 			</div>
 		</div>
 	);
