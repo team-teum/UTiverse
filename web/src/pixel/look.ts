@@ -5,6 +5,8 @@
 export interface Look {
 	// 캐릭터
 	skin: string;
+	/** 표정 "face1"~"face15" */
+	face: string;
 	hairStyle: string;
 	hairColor: string;
 	suit: string;
@@ -24,6 +26,7 @@ export interface Look {
 /** 처음 모습: 옷·머리 없는 밍숭맹숭한 기본 캐릭터와 빈 방 */
 export const DEFAULT_LOOK: Look = {
 	skin: "base",
+	face: "face1",
 	hairStyle: "none",
 	hairColor: "brown",
 	suit: "none",
@@ -67,8 +70,29 @@ const none = { id: "none", label: "비우기" };
 export const AVATAR_TABS: Tab[] = [
 	{
 		id: "body",
-		label: "헤어·피부",
+		label: "얼굴·헤어",
 		categories: [
+			{
+				key: "face",
+				label: "표정",
+				options: [
+					{ id: "face1", label: "기본" },
+					{ id: "face2", label: "반짝반짝" },
+					{ id: "face3", label: "방긋" },
+					{ id: "face4", label: "윙크" },
+					{ id: "face5", label: "심드렁" },
+					{ id: "face6", label: "깜짝" },
+					{ id: "face7", label: ">_<" },
+					{ id: "face8", label: "폭풍 눈물" },
+					{ id: "face9", label: "글썽" },
+					{ id: "face10", label: "하트" },
+					{ id: "face11", label: "졸려" },
+					{ id: "face12", label: "메롱" },
+					{ id: "face13", label: "선글라스" },
+					{ id: "face14", label: "동글 안경" },
+					{ id: "face15", label: "마스크" },
+				],
+			},
 			{
 				key: "hairStyle",
 				label: "머리 모양",

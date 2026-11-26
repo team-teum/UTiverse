@@ -85,7 +85,15 @@ const ITEM_SIZE = 40;
 function drawItem(ctx: CanvasRenderingContext2D, key: keyof Look, look: Look) {
 	const ox = Math.round((SHIP_SIZE.width - CHARACTER_SIZE.width) / 2);
 	if (key === "skin") drawCharacter(ctx, look, ox, 0, { body: true });
-	else if (key === "suit") drawCharacter(ctx, look, ox, 0, { suit: true });
+	else if (key === "face") {
+		// 머리만 (몸통 위에서 자른다)
+		ctx.save();
+		ctx.beginPath();
+		ctx.rect(ox, 0, CHARACTER_SIZE.width, 23);
+		ctx.clip();
+		drawCharacter(ctx, look, ox, 0, { body: true, face: true });
+		ctx.restore();
+	} else if (key === "suit") drawCharacter(ctx, look, ox, 0, { suit: true });
 	else if (key === "hairStyle" || key === "hairColor") {
 		const style = look.hairStyle === "none" ? "hair1" : look.hairStyle;
 		drawCharacter(ctx, { ...look, hairStyle: style }, ox, 0, { hair: true });
@@ -115,10 +123,13 @@ export function ItemPixel({
 			const ctx = canvas?.getContext("2d");
 			if (!active || !canvas || !ctx) return;
 			const work = document.createElement("canvas");
-			work.width = SHIP_SIZE.width;
-			work.height = SHIP_SIZE.height;
+			// 화면과 같은 2배 해상도로 그린다 (표정은 반 칸 단위 도트라서)
+			work.width = SHIP_SIZE.width * RES;
+			work.height = SHIP_SIZE.height * RES;
 			const wctx = work.getContext("2d");
 			if (!wctx) return;
+			wctx.setTransform(RES, 0, 0, RES, 0, 0);
+			wctx.imageSmoothingEnabled = false;
 			drawItem(wctx, category, JSON.parse(key) as Look);
 			const { data, width, height } = wctx.getImageData(
 				0,

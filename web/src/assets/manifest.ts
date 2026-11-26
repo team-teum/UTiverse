@@ -12,6 +12,7 @@ export const assets = {
 	"avatar.base": "/assets/avatar/base.png",
 	"avatar.hair": "/assets/avatar/hair.png",
 	"avatar.suits": "/assets/avatar/suits.png",
+	"avatar.faces": "/assets/avatar/faces.png",
 	"constellation.star": "/assets/constellation/star.svg",
 	"ui.write": "/assets/ui/write.png",
 	"deco.calendar": "/assets/deco/calendar.png",

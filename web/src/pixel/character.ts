@@ -36,7 +36,7 @@ export const HAIR_COLORS: Record<string, Tri> = {
 const SKIN_KEYS = ["#faf0e6", "#e6c8b4", "#c8a08c"] as const;
 const HAIR_KEYS = ["#d2d2d2", "#969696", "#5a5a5a"] as const;
 
-type Sheet = "base" | "hair" | "suits";
+type Sheet = "base" | "hair" | "suits" | "faces";
 const images: Partial<Record<Sheet, HTMLImageElement>> = {};
 let loading: Promise<void> | null = null;
 
@@ -56,6 +56,7 @@ export function loadAvatarSheet(): Promise<void> {
 		load("base", assets["avatar.base"]),
 		load("hair", assets["avatar.hair"]),
 		load("suits", assets["avatar.suits"]),
+		load("faces", assets["avatar.faces"]),
 	]).then(() => undefined);
 	return loading;
 }
@@ -111,8 +112,20 @@ function styleIndex(id: string, prefix: string): number {
 	return Number.isInteger(n) && n >= 1 && n <= 5 ? n - 1 : -1;
 }
 
+/** 표정 시트: 한 칸 64×80 (몸 칸의 정확히 2배). 캔버스가 2배 해상도라 반 칸 단위로 그린다 */
+const FACE_W = 64;
+const FACE_H = 80;
+
+/** "face1"~"face15" → 시트 칸. 모르는 값은 기본 얼굴 */
+function faceIndex(id: string): number {
+	const n = Number(id?.replace("face", ""));
+	return Number.isInteger(n) && n >= 1 && n <= FACE_COUNT ? n - 1 : 0;
+}
+export const FACE_COUNT = 15;
+
 export interface CharacterParts {
 	body?: boolean;
+	face?: boolean;
 	suit?: boolean;
 	hair?: boolean;
 }
@@ -123,23 +136,28 @@ export function drawCharacter(
 	look: Look,
 	ox = 0,
 	oy = 0,
-	parts: CharacterParts = { body: true, suit: true, hair: true },
+	parts: CharacterParts = { body: true, face: true, suit: true, hair: true },
 ) {
 	const skin = SKINS[look.skin] ?? SKINS.base;
 	const hairColor = HAIR_COLORS[look.hairColor] ?? HAIR_COLORS.brown;
 	const hair = styleIndex(look.hairStyle, "hair");
 	const suit = styleIndex(look.suit, "suit");
-	const layers: (HTMLCanvasElement | null)[] = [];
-	if (parts.hair && hair >= 0)
-		layers.push(piece("hair", hair, 0, HAIR_KEYS, hairColor));
-	if (parts.body) layers.push(piece("base", 0, 0, SKIN_KEYS, skin));
-	if (parts.suit && suit >= 0) layers.push(piece("suits", suit, 0));
-	if (parts.hair && hair >= 0)
-		layers.push(piece("hair", hair, 1, HAIR_KEYS, hairColor));
+	const face = faceIndex(look.face);
+	const x = Math.round(ox);
+	const y = Math.round(oy);
+	const draw = (layer: HTMLCanvasElement | null) => {
+		if (layer) ctx.drawImage(layer, x, y);
+	};
 	ctx.save();
 	ctx.imageSmoothingEnabled = false;
-	for (const layer of layers) {
-		if (layer) ctx.drawImage(layer, Math.round(ox), Math.round(oy));
-	}
+	if (parts.hair && hair >= 0)
+		draw(piece("hair", hair, 0, HAIR_KEYS, hairColor));
+	if (parts.body) draw(piece("base", 0, 0, SKIN_KEYS, skin));
+	const faces = images.faces;
+	if (parts.face && faces)
+		ctx.drawImage(faces, face * FACE_W, 0, FACE_W, FACE_H, x, y, W, H);
+	if (parts.suit && suit >= 0) draw(piece("suits", suit, 0));
+	if (parts.hair && hair >= 0)
+		draw(piece("hair", hair, 1, HAIR_KEYS, hairColor));
 	ctx.restore();
 }
