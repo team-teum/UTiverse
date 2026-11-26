@@ -1,7 +1,7 @@
 # 기본 아바타 = 원래 시안 아바타 'Lumi'의 외곽선을 그대로 따라 그린 몸 (머리만 둥글게, 눈은 더 귀엽게)
 # 그 위에 헤어 5종(뒤/앞)과 우주복 5종을 겹친다. 칸 32×40, 발끝 38행(외곽선 39).
 import sys
-sys.path.insert(0, '/home/claude/av7')
+sys.path.insert(0, '.')
 from PIL import Image
 import ase
 
@@ -155,7 +155,7 @@ def compose(h, s):
     if s is not None: img.alpha_composite(suits[s])
     if h is not None: img.alpha_composite(hairs[h][1])
     return img
-lumi = Image.open('/home/claude/av3/lumi.png').convert('RGBA')
+lumi = Image.open('lumi.png').convert('RGBA')
 prev = Image.new('RGBA', (W * 7, H * 2), (40, 40, 60, 255))
 prev.alpha_composite(lumi, (0, 0)); prev.alpha_composite(compose(None, None), (W, 0))
 for i in range(5): prev.alpha_composite(compose(i, None), ((i + 2) * W, 0))

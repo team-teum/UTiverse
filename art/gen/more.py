@@ -1,6 +1,6 @@
 import sys
-sys.path.insert(0, '/home/claude/av7')
-src = open('/home/claude/av7/char_noface.py').read()
+sys.path.insert(0, '.')
+src = open('char_noface.py').read()
 exec(src[:src.index("base.save('base.png')")])
 from PIL import Image
 
