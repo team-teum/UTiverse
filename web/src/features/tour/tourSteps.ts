@@ -53,7 +53,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
 		chapter: 0,
 		kind: "do",
 		until: "globe-drag",
-		text: "손가락으로 드래그해서 별들을 탐색해 봐!",
+		text: "드래그하거나 방향키로 우주를 돌려서 별들을 탐색해 봐!",
 	},
 	{
 		id: "nice",

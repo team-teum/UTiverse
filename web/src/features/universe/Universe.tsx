@@ -39,6 +39,7 @@ export function Universe() {
 						entryKey={`${sky.viewerId}:${key}`}
 						{...sky}
 						resumeView={resumeView}
+						showRotationHint={!tour}
 						focusProfileId={focusProfileId}
 					/>
 				)}

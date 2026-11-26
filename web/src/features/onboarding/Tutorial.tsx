@@ -30,7 +30,7 @@ export function Tutorial() {
 	const step = STEPS[index];
 	const isLast = index === STEPS.length - 1;
 
-	async function finish() {
+	async function finish(continueTour: boolean) {
 		if (finishing) return;
 		setAskAuth(false);
 		setFinishing(true);
@@ -38,7 +38,7 @@ export function Tutorial() {
 		try {
 			await repo.completeTutorial();
 			// 끝까지 본 사람만 홈에서 이어지는 화면 안내(튜토리얼 v2)를 본다. 건너뛰면 보지 않는다.
-			if (isLast) startTour();
+			if (continueTour) startTour();
 			navigate("/universe", { replace: true });
 		} catch {
 			setSaveError(true);
@@ -101,8 +101,8 @@ export function Tutorial() {
 							? "가입하지 않아도 둘러볼 수 있어요."
 							: "가입하지 않아도 둘러볼 수 있어요. 테스트 계정은 새로고침하면 사라져요."
 					}
-					onDone={finish}
-					onSkip={finish}
+					onDone={() => finish(true)}
+					onSkip={() => finish(true)}
 				/>
 			)}
 
@@ -112,7 +112,7 @@ export function Tutorial() {
 				<button
 					type="button"
 					className={styles.skip}
-					onClick={finish}
+					onClick={() => finish(false)}
 					disabled={finishing}
 				>
 					튜토리얼 건너뛰기&gt;

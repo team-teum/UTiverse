@@ -87,10 +87,12 @@ export function UniverseGlobe({
 	viewerId,
 	linkedIds,
 	resumeView,
+	showRotationHint,
 	focusProfileId,
 }: GlobeSky & {
 	entryKey: string;
 	resumeView: boolean;
+	showRotationHint: boolean;
 	/** 튜토리얼 v2가 가리키는 우주선. 뒤쪽에 있으면 한 번 앞으로 돌려 둔다 */
 	focusProfileId?: string;
 }) {
@@ -396,7 +398,7 @@ export function UniverseGlobe({
 					onLostPointerCapture={cancelDrag}
 				>
 					{/* 처음 한 번: 구 위에서 손가락이 좌우로 밀어 보인다. 한 번 돌리면 다시 나오지 않는다 */}
-					{showSwipeHint && !flight && (
+					{showRotationHint && showSwipeHint && !flight && (
 						<span className={styles.swipeHint} aria-hidden="true">
 							<span className={styles.swipeFinger}>
 								<svg viewBox="0 0 24 24" aria-hidden="true">
