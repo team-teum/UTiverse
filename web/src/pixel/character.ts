@@ -1,7 +1,7 @@
 // 이등신 도트 캐릭터: 기본 몸 + 우주복 + 머리(뒤·앞) 레이어를 겹쳐 그린다.
 // 기본 아바타 = 원래 시안 'Lumi'의 외곽선을 따른 몸. 원본(편집용): art/character.aseprite — 레이어 body / face-1~15 / suit-1~5 / hair-back-1~5 / hair-front-1~5
 // 그림은 칸당 64×80(배치 단위 32×40의 2배 해상도, 외곽선 1픽셀)이고, 2배 해상도 캔버스에 32×40 자리로 그린다.
-// 내보낸 PNG: web/public/assets/avatar/base.png · faces.png(15칸) · suits.png(5칸) · hair.png(5칸 × 위: 뒷머리, 아래: 앞머리)
+// 내보낸 PNG: web/public/assets/avatar/base.png · faces.png(15칸) · suits.png(칸마다 위: 몸에 입는 옷, 아래: 머리 위에 씌우는 후드·모자) · hair.png(5칸 × 위: 뒷머리, 아래: 앞머리)
 // 피부·머리는 기준색(회색 3단)으로 그려 두고 코드가 고른 색으로 바꿔 칠한다.
 
 import { assets } from "../assets/manifest";
@@ -272,5 +272,7 @@ export function drawCharacter(
 	if (parts.suit && suit >= 0) draw(piece("suits", suit, 0));
 	if (parts.hair && hair >= 0)
 		draw(piece("hair", hair, 1, HAIR_KEYS, hairColor));
+	// 옷 시트 아래 줄: 머리카락 위에 씌우는 것 (푸바오 후드 등)
+	if (parts.suit && suit >= 0) draw(piece("suits", suit, 1));
 	ctx.restore();
 }
