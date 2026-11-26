@@ -6,7 +6,13 @@
 
 import { assets } from "../assets/manifest";
 import type { Ctx } from "./grid";
-import { type HueKind, hexOf, hueOf, type Look } from "./look";
+import {
+	type HueKind,
+	hexOf,
+	hueOf,
+	LEGACY_MINT_SKIN,
+	type Look,
+} from "./look";
 
 export const CHARACTER_SIZE = { width: 32, height: 40 } as const;
 const { width: W, height: H } = CHARACTER_SIZE;
@@ -23,7 +29,7 @@ export const SKINS: Record<string, Tri> = {
 	tone3: ["#dea77e", "#c98d62", "#a46b45"],
 	tone4: ["#ac7552", "#94603f", "#74482d"],
 	tone5: ["#734b36", "#5d3b29", "#43281a"],
-	mint: ["#e2f8ee", "#c4ecd9", "#94cdb2"],
+	[LEGACY_MINT_SKIN]: ["#e2f8ee", "#c4ecd9", "#94cdb2"],
 };
 
 export const HAIR_COLORS: Record<string, Tri> = {
@@ -149,6 +155,8 @@ function hex(c: string): [number, number, number] {
 	return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+// Live color previews can generate a new palette on every pointer move.
+const CACHE_LIMIT = 256;
 const cache = new Map<string, HTMLCanvasElement>();
 
 /** 시트의 한 칸을 잘라, 기준색을 실제 색으로 바꾼 64×80 캔버스 */
@@ -163,7 +171,11 @@ function piece(
 	if (!img) return null;
 	const id = `${sheet}:${col}:${row}:${colors?.join(",") ?? ""}`;
 	const hit = cache.get(id);
-	if (hit) return hit;
+	if (hit) {
+		cache.delete(id);
+		cache.set(id, hit);
+		return hit;
+	}
 	const canvas = document.createElement("canvas");
 	canvas.width = CELL_W;
 	canvas.height = CELL_H;
@@ -195,6 +207,10 @@ function piece(
 			if (k >= 0) [data.data[i], data.data[i + 1], data.data[i + 2]] = to[k];
 		}
 		ctx.putImageData(data, 0, 0);
+	}
+	if (cache.size >= CACHE_LIMIT) {
+		const oldest = cache.keys().next();
+		if (!oldest.done) cache.delete(oldest.value);
 	}
 	cache.set(id, canvas);
 	return canvas;

@@ -69,10 +69,14 @@ export function hexOf(value: string): string | null {
 	return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : null;
 }
 
+// The old mint preset has a different palette from the new hex mint.
+export const LEGACY_MINT_SKIN = "mint";
+
 /** 꾸미기 값으로 쓸 수 있는지 (목록에 있거나, 색 칸이면 직접 고른 "#rrggbb"·옛 "h각도") */
 export function isLookValue(category: Category, value: string): boolean {
 	return (
 		category.options.some((option) => option.id === value) ||
+		(category.key === "skin" && value === LEGACY_MINT_SKIN) ||
 		(category.picker !== undefined &&
 			(hexOf(value) !== null || hueOf(value) !== null))
 	);

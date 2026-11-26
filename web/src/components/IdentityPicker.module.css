@@ -55,7 +55,7 @@
 	pointer-events: none;
 }
 
-.box > span button {
+.box > :where(span) button {
 	pointer-events: auto;
 }
 

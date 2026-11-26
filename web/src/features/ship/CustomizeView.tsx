@@ -1,6 +1,12 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ColorPicker } from "../../components/ColorPicker";
-import { AVATAR_TABS, hexOf, type Look, SHIP_TABS } from "../../pixel/look";
+import {
+	AVATAR_TABS,
+	hexOf,
+	LEGACY_MINT_SKIN,
+	type Look,
+	SHIP_TABS,
+} from "../../pixel/look";
 import { ItemPixel } from "../../pixel/PixelCanvas";
 import styles from "./CustomizeView.module.css";
 
@@ -48,6 +54,21 @@ export function CustomizeView({
 	const category =
 		tab.categories.find((item) => item.key === categoryKey) ??
 		tab.categories[0];
+	const colorTrigger = useRef<HTMLButtonElement>(null);
+	const restoreColorFocus = useRef(false);
+	const value = look[category.key];
+	const options =
+		category.key === "skin" && value === LEGACY_MINT_SKIN
+			? [{ id: LEGACY_MINT_SKIN, label: "기존 민트" }, ...category.options]
+			: category.options;
+	const customColor =
+		hexOf(value) !== null && !options.some(({ id }) => id === value);
+
+	useLayoutEffect(() => {
+		if (picking || !restoreColorFocus.current) return;
+		restoreColorFocus.current = false;
+		colorTrigger.current?.focus({ preventScroll: true });
+	}, [picking]);
 
 	return (
 		<section className={styles.view} aria-label="꾸미기">
@@ -63,6 +84,7 @@ export function CustomizeView({
 							onClick={() => {
 								onModeChange(item.id);
 								setCategoryKey(null);
+								setPicking(false);
 							}}
 						>
 							<svg viewBox="0 0 24 24" aria-hidden="true">
@@ -86,6 +108,7 @@ export function CustomizeView({
 							onClick={() => {
 								setTabId((prev) => ({ ...prev, [mode]: item.id }));
 								setCategoryKey(null);
+								setPicking(false);
 							}}
 						>
 							{item.label}
@@ -116,10 +139,13 @@ export function CustomizeView({
 				{picking && category.picker ? (
 					<ColorPicker
 						key={category.key}
-						value={hexOf(look[category.key])}
+						value={hexOf(value)}
 						label={category.label}
 						onChange={(hex) => onPick({ [category.key]: hex })}
-						onDone={() => setPicking(false)}
+						onDone={() => {
+							restoreColorFocus.current = true;
+							setPicking(false);
+						}}
 					/>
 				) : (
 					<ul className={styles.items} aria-label={`${category.label} 고르기`}>
@@ -127,9 +153,8 @@ export function CustomizeView({
 							<li>
 								<button
 									type="button"
+									ref={colorTrigger}
 									className={styles.item}
-									aria-pressed={hexOf(look[category.key]) !== null}
-									aria-expanded={picking}
 									onClick={() => setPicking(true)}
 								>
 									<span className={`${styles.thumb} ${styles.rainbow}`}>
@@ -138,7 +163,7 @@ export function CustomizeView({
 											look={look}
 											className={styles.wheelArt}
 										/>
-										{hexOf(look[category.key]) && (
+										{customColor && (
 											<span className={styles.check} aria-hidden="true">
 												✓
 											</span>
@@ -148,8 +173,8 @@ export function CustomizeView({
 								</button>
 							</li>
 						)}
-						{category.options.map((option) => {
-							const selected = look[category.key] === option.id;
+						{options.map((option) => {
+							const selected = value === option.id;
 							const preview = { ...look, [category.key]: option.id };
 							return (
 								<li key={option.id}>

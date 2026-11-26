@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import styles from "./ColorPicker.module.css";
 
 /**
@@ -20,6 +20,10 @@ export function ColorPicker({
 	const field = useRef<HTMLDivElement>(null);
 	const dragging = useRef(false);
 	const [h, s, l] = hsl;
+
+	useLayoutEffect(() => {
+		field.current?.focus({ preventScroll: true });
+	}, []);
 
 	function set(next: [number, number, number]) {
 		setHsl(next);

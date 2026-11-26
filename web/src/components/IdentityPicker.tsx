@@ -30,23 +30,20 @@ export function IdentityPicker({
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const full = value.ids.length >= IDENTITY_MAX;
 	const exploring = value.ids.includes("exploring");
-	// 먼저 「탐색 중인가요?」를 묻고, 「알고 있어요」일 때만 드롭다운을 보여 준다
-	const [stage, setStage] = useState<"exploring" | "known" | null>(
-		exploring ? "exploring" : value.ids.length ? "known" : null,
-	);
+	const [choosingKnown, setChoosingKnown] = useState(false);
+	const stage = exploring
+		? "exploring"
+		: value.ids.length > 0 || choosingKnown
+			? "known"
+			: null;
 
 	function choose(next: "exploring" | "known") {
-		if (stage === next) {
-			setStage(null);
-			setOpen(false);
-			onChange({ ...value, ids: [], other: "" });
-			return;
-		}
-		setStage(next);
+		if (next === "known" && stage === "known") return;
+		setChoosingKnown(next === "known");
 		setOpen(false);
 		onChange({
 			...value,
-			ids: next === "exploring" ? ["exploring"] : [],
+			ids: next === "exploring" && !exploring ? ["exploring"] : [],
 			other: "",
 		});
 	}
