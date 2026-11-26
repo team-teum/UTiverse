@@ -297,6 +297,14 @@ export function drawShip(ctx: Ctx, look: Look) {
 	// 창에는 얼굴이 가운데 오게 조금 올려 그린다
 	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y - 4);
 	ctx.restore();
+	// 창틀 안쪽 테두리: 얼굴과 맞닿는 곳을 짙은 선으로 또렷하게
+	paint(
+		ctx,
+		ring(ellipse(x, y, r - 3, r - 3), ellipse(x, y, r - 4, r - 4)),
+		0,
+		0,
+		OUT,
+	);
 	paint(
 		ctx,
 		[

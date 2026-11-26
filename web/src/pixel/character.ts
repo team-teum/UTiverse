@@ -1,7 +1,8 @@
 // 이등신 도트 캐릭터: 기본 몸 + 우주복 + 머리(뒤·앞) 레이어를 겹쳐 그린다.
-// 기본 아바타 = 원래 시안 'Lumi'의 외곽선을 따른 몸(머리만 둥글게, 눈은 더 귀엽게). 원본(편집용): art/character.aseprite — 레이어 body / suit-1~5 / hair-back-1~5 / hair-front-1~5 (칸 32×40)
-// 내보낸 PNG: web/public/assets/avatar/base.png · suits.png(5칸) · hair.png(5칸 × 위: 뒷머리, 아래: 앞머리)
-// 피부·머리는 기준색(회색 3단)으로 그려 두고 코드가 고른 색으로 바꿔 칠한다. 1칸 = 1픽셀이라 흐려지지 않는다.
+// 기본 아바타 = 원래 시안 'Lumi'의 외곽선을 따른 몸. 원본(편집용): art/character.aseprite — 레이어 body / face-1~15 / suit-1~5 / hair-back-1~5 / hair-front-1~5
+// 그림은 칸당 64×80(배치 단위 32×40의 2배 해상도, 외곽선 1픽셀)이고, 2배 해상도 캔버스에 32×40 자리로 그린다.
+// 내보낸 PNG: web/public/assets/avatar/base.png · faces.png(15칸) · suits.png(5칸) · hair.png(5칸 × 위: 뒷머리, 아래: 앞머리)
+// 피부·머리는 기준색(회색 3단)으로 그려 두고 코드가 고른 색으로 바꿔 칠한다.
 
 import { assets } from "../assets/manifest";
 import type { Ctx } from "./grid";
@@ -9,6 +10,9 @@ import type { Look } from "./look";
 
 export const CHARACTER_SIZE = { width: 32, height: 40 } as const;
 const { width: W, height: H } = CHARACTER_SIZE;
+/** 그림 시트의 한 칸 (배치 단위의 2배) */
+const CELL_W = W * 2;
+const CELL_H = H * 2;
 
 type Tri = readonly [string, string, string]; // 밝은면, 기본, 그림자
 
@@ -68,7 +72,7 @@ function hex(c: string): [number, number, number] {
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-/** 시트의 한 칸을 잘라, 기준색을 실제 색으로 바꾼 32×40 캔버스 */
+/** 시트의 한 칸을 잘라, 기준색을 실제 색으로 바꾼 64×80 캔버스 */
 function piece(
 	sheet: Sheet,
 	col: number,
@@ -82,13 +86,23 @@ function piece(
 	const hit = cache.get(id);
 	if (hit) return hit;
 	const canvas = document.createElement("canvas");
-	canvas.width = W;
-	canvas.height = H;
+	canvas.width = CELL_W;
+	canvas.height = CELL_H;
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return null;
-	ctx.drawImage(img, col * W, row * H, W, H, 0, 0, W, H);
+	ctx.drawImage(
+		img,
+		col * CELL_W,
+		row * CELL_H,
+		CELL_W,
+		CELL_H,
+		0,
+		0,
+		CELL_W,
+		CELL_H,
+	);
 	if (keys && colors) {
-		const data = ctx.getImageData(0, 0, W, H);
+		const data = ctx.getImageData(0, 0, CELL_W, CELL_H);
 		const from = keys.map(hex);
 		const to = colors.map(hex);
 		for (let i = 0; i < data.data.length; i += 4) {
@@ -111,10 +125,6 @@ function styleIndex(id: string, prefix: string): number {
 	const n = Number(id.replace(prefix, ""));
 	return Number.isInteger(n) && n >= 1 && n <= 5 ? n - 1 : -1;
 }
-
-/** 표정 시트: 한 칸 64×80 (몸 칸의 정확히 2배). 캔버스가 2배 해상도라 반 칸 단위로 그린다 */
-const FACE_W = 64;
-const FACE_H = 80;
 
 /** "face1"~"face15" → 시트 칸. 모르는 값은 기본 얼굴 */
 function faceIndex(id: string): number {
@@ -146,7 +156,7 @@ export function drawCharacter(
 	const x = Math.round(ox);
 	const y = Math.round(oy);
 	const draw = (layer: HTMLCanvasElement | null) => {
-		if (layer) ctx.drawImage(layer, x, y);
+		if (layer) ctx.drawImage(layer, x, y, W, H);
 	};
 	ctx.save();
 	ctx.imageSmoothingEnabled = false;
@@ -155,7 +165,7 @@ export function drawCharacter(
 	if (parts.body) draw(piece("base", 0, 0, SKIN_KEYS, skin));
 	const faces = images.faces;
 	if (parts.face && faces)
-		ctx.drawImage(faces, face * FACE_W, 0, FACE_W, FACE_H, x, y, W, H);
+		ctx.drawImage(faces, face * CELL_W, 0, CELL_W, CELL_H, x, y, W, H);
 	if (parts.suit && suit >= 0) draw(piece("suits", suit, 0));
 	if (parts.hair && hair >= 0)
 		draw(piece("hair", hair, 1, HAIR_KEYS, hairColor));
