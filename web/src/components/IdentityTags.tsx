@@ -15,6 +15,19 @@ export function FlagMark({
 	id: IdentityId;
 	className?: string;
 }) {
+	if (id === "exploring")
+		return (
+			<span
+				className={`${styles.flag} ${styles.sprout} ${className ?? ""}`}
+				aria-hidden="true"
+			>
+				<svg viewBox="0 0 16 16" aria-hidden="true">
+					<path d="M8 14V8" />
+					<path d="M8 9C8 6 6 4.5 3 4.5 3 7.5 5 9 8 9Z" />
+					<path d="M8 8C8 5.5 10 4 13 4 13 6.5 11 8 8 8Z" />
+				</svg>
+			</span>
+		);
 	const colors = FLAG_COLORS[identityOption(id).flag] ?? [];
 	return (
 		<span

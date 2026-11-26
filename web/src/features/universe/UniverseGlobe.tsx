@@ -356,7 +356,9 @@ export function UniverseGlobe({
 						<span className={styles.swipeHint} aria-hidden="true">
 							<span className={styles.swipeFinger}>
 								<svg viewBox="0 0 24 24" aria-hidden="true">
-									<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-4-2L4.6 15a1.5 1.5 0 0 1 2.2-2L9 15" />
+									{/* 검지를 편 손: 손 전체를 닫힌 한 모양으로, 손가락 사이는 선으로 */}
+									<path d="M8 2.5a1.8 1.8 0 0 1 1.8 1.8v5.2a1.6 1.6 0 0 1 3.2 0v1a1.6 1.6 0 0 1 3.2 0v1a1.6 1.6 0 0 1 3.2 0V15a7 7 0 0 1-7 7h-1.4a5.5 5.5 0 0 1-4.2-2L3.4 16a1.6 1.6 0 0 1 2.4-2.1l.4.5V4.3A1.8 1.8 0 0 1 8 2.5Z" />
+									<path d="M9.8 9.5V13M13 10.5V13.5M16.2 11.5V14" fill="none" />
 								</svg>
 							</span>
 						</span>

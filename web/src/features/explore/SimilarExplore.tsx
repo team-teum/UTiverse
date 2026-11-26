@@ -12,6 +12,8 @@ import styles from "./Explore.module.css";
 /** 안쪽(모두 같음) · 바깥(하나 같음) 궤도 반지름과 최대 대수 */
 const INNER = { r: 92, max: 2 };
 const OUTER = { r: 160, max: 4 };
+/** 내 정체성이 하나뿐이면 같은 사람들은 모두 같으니 궤도 하나에 나란히 */
+const EQUAL = { r: 130, max: 6 };
 
 function shuffle<T>(items: T[]): T[] {
 	const copy = [...items];
@@ -45,20 +47,22 @@ export function SimilarExplore() {
 	const [filter, setFilter] = useState<IdentityId | "all">("all");
 	const [round, setRound] = useState(0);
 	const mine = me?.identity;
+	const single = (mine?.ids.length ?? 0) <= 1;
 
 	const placed = useMemo(() => {
 		void round; // 「다시 찾기」마다 다시 섞는다
 		const pool = (ships ?? []).filter(
 			(ship) => filter === "all" || ship.shared.includes(filter),
 		);
-		const inner = shuffle(pool.filter((s) => s.all)).slice(0, INNER.max);
-		const outer = shuffle(pool.filter((s) => !s.all)).slice(0, OUTER.max);
 		const at = (list: SimilarShip[], r: number, offset: number) => {
 			const angles = spread(list.length, offset);
 			return list.map((ship, i) => ({ ship, r, angle: angles[i] }));
 		};
+		if (single) return at(shuffle(pool).slice(0, EQUAL.max), EQUAL.r, 0);
+		const inner = shuffle(pool.filter((s) => s.all)).slice(0, INNER.max);
+		const outer = shuffle(pool.filter((s) => !s.all)).slice(0, OUTER.max);
 		return [...at(inner, INNER.r, 20), ...at(outer, OUTER.r, 0)];
-	}, [ships, filter, round]);
+	}, [ships, filter, round, single]);
 
 	if (profileError || error)
 		return <p role="alert">닮은 별을 불러오지 못했어요.</p>;
@@ -88,7 +92,6 @@ export function SimilarExplore() {
 		);
 	}
 
-	const single = mine.ids.length === 1;
 	return (
 		<div className={styles.nearby}>
 			{!single && (
@@ -117,10 +120,14 @@ export function SimilarExplore() {
 			<div className={styles.orbits}>
 				<div
 					className={styles.ring}
-					style={{ "--r": INNER.r } as CSSProperties}
+					style={{ "--r": single ? EQUAL.r : INNER.r } as CSSProperties}
 				>
 					<span className={styles.ringLabel}>
-						{single ? "같은 깃발이에요" : "깃발이 모두 같아요"}
+						{!single
+							? "깃발이 모두 같아요"
+							: mine.ids[0] === "exploring"
+								? "함께 탐색 중이에요"
+								: "같은 깃발이에요"}
 					</span>
 				</div>
 				{!single && (

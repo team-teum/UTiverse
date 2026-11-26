@@ -1,5 +1,11 @@
 import { cleanIdentity, type Identity, isIdentityId } from "../lib/identity";
-import { AVATAR_TABS, type Look, SHIP_TABS, withLook } from "../pixel/look";
+import {
+	AVATAR_TABS,
+	isLookValue,
+	type Look,
+	SHIP_TABS,
+	withLook,
+} from "../pixel/look";
 import {
 	getPreviewClient,
 	signInPreview,
@@ -53,10 +59,10 @@ const categories = [...AVATAR_TABS, ...SHIP_TABS].flatMap(
 );
 function toProfile(row: ProfileRow): Profile {
 	const look = withLook();
-	for (const { key, options } of categories) {
-		const value = row.look[key];
-		if (value !== undefined && options.some(({ id }) => id === value))
-			look[key] = value;
+	for (const category of categories) {
+		const value = row.look[category.key];
+		if (typeof value === "string" && isLookValue(category, value))
+			look[category.key] = value;
 	}
 	return {
 		id: row.id,

@@ -405,7 +405,8 @@ export function drawCutaway(
 	]) {
 		px(ctx, x + sx, y - 4 + sy, "#fff6c9");
 	}
-	drawWallFlag(ctx, identityFlags[0] ?? look.flag, IN.top + 6);
+	// 벽 깃발은 고른 정체성으로만 걸린다 (꾸미기에서 따로 고르지 않음)
+	if (identityFlags[0]) drawWallFlag(ctx, identityFlags[0], IN.top + 6);
 	if (identityFlags[1]) drawWallFlag(ctx, identityFlags[1], FLOOR1 + 10);
 	drawWallDecor(ctx, look.wallDecor);
 	drawLight(ctx, look.light);
@@ -489,9 +490,30 @@ function drawFloor(ctx: Ctx, kind: string, x: number, y: number, w: number) {
 }
 
 function drawWallFlag(ctx: Ctx, flag: string, y = IN.top + 6) {
+	const x = IN.x0 + 1;
+	if (flag === "sprout") {
+		// 탐색 중: 크림색 깃발에 새싹
+		paint(ctx, box(x - 1, y - 1, 1, 16), 0, 0, "#8a5a3c");
+		shape(ctx, box(x, y, 9, 12), 0, 0, "#f6fbe9", OUT);
+		paint(ctx, box(x + 4, y + 5, 1, 6), 0, 0, "#3f8a2a");
+		paint(
+			ctx,
+			[...box(x + 1, y + 4, 3, 2), ...box(x + 2, y + 3, 2, 1)],
+			0,
+			0,
+			"#6cc24a",
+		);
+		paint(
+			ctx,
+			[...box(x + 5, y + 2, 3, 2), ...box(x + 5, y + 4, 2, 1)],
+			0,
+			0,
+			"#8fd46a",
+		);
+		return;
+	}
 	const colors = FLAG_COLORS[flag];
 	if (!colors) return;
-	const x = IN.x0 + 1;
 	const rows = colors.length >= 5 ? 2 : 3;
 	paint(ctx, box(x - 1, y - 1, 1, rows * colors.length + 4), 0, 0, "#8a5a3c");
 	shape(ctx, box(x, y, 9, rows * colors.length), 0, 0, colors[0], OUT);
@@ -721,9 +743,6 @@ export function drawShipItem(ctx: Ctx, key: keyof Look, look: Look) {
 			break;
 		case "wallDecor":
 			drawWallDecor(ctx, look.wallDecor);
-			break;
-		case "flag":
-			drawWallFlag(ctx, look.flag);
 			break;
 		default:
 			break;

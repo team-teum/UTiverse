@@ -20,8 +20,18 @@ export const IDENTITY_OPTIONS = [
 	{ id: "other", label: "기타", flag: "other", edge: "#be9afa" },
 ] as const;
 
-export type IdentityId = (typeof IDENTITY_OPTIONS)[number]["id"];
-export type IdentityOption = (typeof IDENTITY_OPTIONS)[number];
+/** 「아직 탐색 중이에요」: 드롭다운 대신 따로 고르고, 다른 정체성과 함께 둘 수 없다. 새싹 깃발 */
+export const IDENTITY_EXPLORING = {
+	id: "exploring",
+	label: "탐색 중",
+	flag: "sprout",
+	edge: "#8fd46a",
+} as const;
+
+export type IdentityOption =
+	| (typeof IDENTITY_OPTIONS)[number]
+	| typeof IDENTITY_EXPLORING;
+export type IdentityId = IdentityOption["id"];
 
 export const IDENTITY_MAX = 2;
 export const IDENTITY_OTHER_MAX = 12;
@@ -34,10 +44,14 @@ export interface Identity {
 	visible: boolean;
 }
 
-export const NO_IDENTITY: Identity = { ids: [], other: "", visible: false };
+/** 보이기는 켠 채로 시작한다 (끄면 나에게만 보인다) */
+export const NO_IDENTITY: Identity = { ids: [], other: "", visible: true };
 
 const byId = new Map<string, IdentityOption>(
-	IDENTITY_OPTIONS.map((option) => [option.id, option]),
+	[...IDENTITY_OPTIONS, IDENTITY_EXPLORING].map((option) => [
+		option.id,
+		option,
+	]),
 );
 
 export function identityOption(id: IdentityId): IdentityOption {
@@ -56,6 +70,8 @@ export function identityLabel(id: IdentityId, other: string): string {
 /** 저장 전 검사. 다듬은 값을 돌려주고, 규칙에 맞지 않으면 화면에 보일 문장으로 거절한다. */
 export function cleanIdentity(input: Identity): Identity {
 	const ids = [...new Set(input.ids)].filter(isIdentityId);
+	if (ids.includes("exploring") && ids.length > 1)
+		throw new Error("탐색 중일 때는 다른 정체성을 함께 고르지 않아요.");
 	if (ids.length > IDENTITY_MAX)
 		throw new Error(`정체성은 ${IDENTITY_MAX}개까지 고를 수 있어요.`);
 	const other = ids.includes("other") ? input.other.trim() : "";

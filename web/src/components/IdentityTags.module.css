@@ -7,6 +7,22 @@
 	box-shadow: 0 0 0 1px rgb(0 0 0 / 45%);
 }
 
+/* 탐색 중: 연두 바탕에 새싹 */
+.sprout {
+	display: inline-grid;
+	place-items: center;
+	background: #f1fbe6;
+}
+
+.sprout svg {
+	inline-size: 80%;
+	block-size: 80%;
+	fill: #6cc24a;
+	stroke: #3f8a2a;
+	stroke-width: 1.2;
+	stroke-linejoin: round;
+}
+
 .pills {
 	display: inline-flex;
 	flex-wrap: wrap;

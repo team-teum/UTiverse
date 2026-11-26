@@ -279,3 +279,17 @@
 		font-size: 15px;
 	}
 }
+
+/* 색상환 칸: 카드 안에 도넛, 가운데에 지금 색 미리보기 */
+.wheel {
+	padding: 4px;
+}
+
+.wheel[data-selected="true"] {
+	border-color: var(--color-accent-yellow);
+}
+
+.wheelArt {
+	inline-size: 90%;
+	block-size: 90%;
+}

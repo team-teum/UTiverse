@@ -1,0 +1,44 @@
+.donut {
+	position: relative;
+	display: grid;
+	place-items: center;
+	inline-size: 100%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	touch-action: none;
+	cursor: pointer;
+	box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+}
+
+.donut:focus-visible {
+	outline: 2px solid var(--color-lavender);
+	outline-offset: 3px;
+}
+
+/* 가운데 구멍: 고리 두께는 바깥 반지름의 약 30% */
+.hole {
+	display: grid;
+	place-items: center;
+	inline-size: 60%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: linear-gradient(160deg, #f4f0ff 0%, #ddd6f7 100%);
+	overflow: hidden;
+}
+
+/* 손잡이 */
+.knob {
+	position: absolute;
+	box-sizing: border-box;
+	inline-size: 16px;
+	block-size: 16px;
+	border: 2.5px solid #fff;
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 50%);
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+
+.idle {
+	opacity: 0.55;
+}

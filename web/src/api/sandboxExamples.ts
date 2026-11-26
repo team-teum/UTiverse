@@ -511,6 +511,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000090000",
 		key: "godeungeo",
+		identity: { ids: ["exploring"], other: "", visible: true },
 		nickname: "고등어",
 		tagline: "직장인. 조용히 사는 중",
 		look: {

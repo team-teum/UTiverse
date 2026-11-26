@@ -51,6 +51,25 @@ interface Category {
 	key: keyof Look;
 	label: string;
 	options: Option[];
+	/** 있으면 목록 앞에 색상환(도넛)이 붙고, 값으로 "h0"~"h359"(색상 각도)도 받는다 */
+	picker?: HueKind;
+}
+
+export type HueKind = "skin" | "hair";
+
+/** "h123" → 123. 색상환 값이 아니면 null */
+export function hueOf(value: string): number | null {
+	const match = /^h(\d{1,3})$/.exec(value);
+	const hue = match ? Number(match[1]) : Number.NaN;
+	return hue >= 0 && hue < 360 ? hue : null;
+}
+
+/** 꾸미기 값으로 쓸 수 있는지 (목록에 있거나, 색상환 칸이면 "h각도") */
+export function isLookValue(category: Category, value: string): boolean {
+	return (
+		category.options.some((option) => option.id === value) ||
+		(category.picker !== undefined && hueOf(value) !== null)
+	);
 }
 
 export interface Tab {
@@ -106,6 +125,7 @@ export const AVATAR_TABS: Tab[] = [
 			{
 				key: "hairColor",
 				label: "머리 색",
+				picker: "hair",
 				options: [
 					{ id: "brown", label: "갈색" },
 					{ id: "black", label: "검정" },
@@ -119,6 +139,7 @@ export const AVATAR_TABS: Tab[] = [
 			{
 				key: "skin",
 				label: "피부색",
+				picker: "skin",
 				options: [
 					{ id: "base", label: "기본" },
 					{ id: "tone1", label: "피부 1" },
@@ -151,7 +172,7 @@ export const AVATAR_TABS: Tab[] = [
 	},
 ];
 
-/** Figma 「우주선 꾸미기」(33:14371) 탭: 우주선 / 가구 / 장식품 / 플래그 */
+/** Figma 「우주선 꾸미기」(33:14371) 탭: 우주선 / 가구 / 장식품. 벽 깃발은 고른 정체성으로 자동으로 걸려서 여기엔 없다 */
 export const SHIP_TABS: Tab[] = [
 	{
 		id: "ship",
@@ -252,23 +273,6 @@ export const SHIP_TABS: Tab[] = [
 					{ id: "poster", label: "포스터" },
 					{ id: "frames", label: "액자" },
 					{ id: "clock", label: "시계" },
-				],
-			},
-		],
-	},
-	{
-		id: "flag",
-		label: "깃발",
-		categories: [
-			{
-				key: "flag",
-				label: "깃발",
-				options: [
-					none,
-					{ id: "trans", label: "트랜스젠더" },
-					{ id: "nonbinary", label: "논바이너리" },
-					{ id: "genderqueer", label: "젠더퀴어" },
-					{ id: "rainbow", label: "무지개" },
 				],
 			},
 		],

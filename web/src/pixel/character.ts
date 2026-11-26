@@ -6,7 +6,7 @@
 
 import { assets } from "../assets/manifest";
 import type { Ctx } from "./grid";
-import type { Look } from "./look";
+import { type HueKind, hueOf, type Look } from "./look";
 
 export const CHARACTER_SIZE = { width: 32, height: 40 } as const;
 const { width: W, height: H } = CHARACTER_SIZE;
@@ -35,6 +35,54 @@ export const HAIR_COLORS: Record<string, Tri> = {
 	silver: ["#f4f5f9", "#d9dde6", "#a6adc0"],
 	purple: ["#d9c2ff", "#a98ae6", "#7a5fbf"],
 };
+
+/**
+ * 색상환에서 고른 색: 채도·밝기는 고정하고 색상만 돌린다 (어느 색을 골라도 서로 어울리게).
+ * 피부는 채도를 낮추고 밝게, 머리는 조금 더 또렷하게.
+ */
+const HUE_TONES: Record<HueKind, readonly [number, number][]> = {
+	// [채도 %, 밝기 %] 밝은면 · 기본 · 그림자
+	skin: [
+		[42, 93],
+		[36, 85],
+		[30, 72],
+	],
+	hair: [
+		[70, 80],
+		[58, 64],
+		[48, 44],
+	],
+};
+
+export function hueColors(kind: HueKind, hue: number): Tri {
+	const [a, b, c] = HUE_TONES[kind].map(([sat, light], i) =>
+		// 그림자 쪽은 색상을 살짝 보라 쪽으로 틀어 깊이감을 준다
+		hsl((hue + i * 6) % 360, sat, light),
+	);
+	return [a, b, c];
+}
+
+function hsl(h: number, s: number, l: number): string {
+	const sat = s / 100;
+	const light = l / 100;
+	const k = (n: number) => (n + h / 30) % 12;
+	const a = sat * Math.min(light, 1 - light);
+	const f = (n: number) =>
+		Math.round(
+			255 * (light - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))),
+		);
+	return `#${[f(0), f(8), f(4)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function colorsOf(
+	kind: HueKind,
+	value: string,
+	presets: Record<string, Tri>,
+	fallback: Tri,
+): Tri {
+	const hue = hueOf(value);
+	return hue === null ? (presets[value] ?? fallback) : hueColors(kind, hue);
+}
 
 // 그림 파일 안의 기준색 (art/character.aseprite와 같음)
 const SKIN_KEYS = ["#faf0e6", "#e6c8b4", "#c8a08c"] as const;
@@ -148,8 +196,13 @@ export function drawCharacter(
 	oy = 0,
 	parts: CharacterParts = { body: true, face: true, suit: true, hair: true },
 ) {
-	const skin = SKINS[look.skin] ?? SKINS.base;
-	const hairColor = HAIR_COLORS[look.hairColor] ?? HAIR_COLORS.brown;
+	const skin = colorsOf("skin", look.skin, SKINS, SKINS.base);
+	const hairColor = colorsOf(
+		"hair",
+		look.hairColor,
+		HAIR_COLORS,
+		HAIR_COLORS.brown,
+	);
 	const hair = styleIndex(look.hairStyle, "hair");
 	const suit = styleIndex(look.suit, "suit");
 	const face = faceIndex(look.face);

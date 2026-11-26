@@ -138,3 +138,53 @@
 	border-color: var(--color-accent-yellow);
 	background: var(--color-accent-yellow);
 }
+
+/* 「탐색 중인가요?」 두 갈래 */
+.stage {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	min-inline-size: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.stage legend {
+	margin-block-end: 8px;
+	padding: 0;
+}
+
+.stage button {
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: center;
+	min-block-size: 46px;
+	padding: 0 10px;
+	border: 1.5px solid #4a4290;
+	border-radius: 12px;
+	background: #0b0820;
+	color: #fff;
+	font: inherit;
+	font-size: 14px;
+	cursor: pointer;
+	word-break: keep-all;
+}
+
+.stage button[aria-pressed="true"] {
+	border-color: var(--color-lavender);
+	background: #2a2160;
+	font-weight: 700;
+}
+
+.stage button:focus-visible {
+	outline: 2px solid var(--color-lavender);
+	outline-offset: 2px;
+}
+
+.note {
+	margin: 0;
+	color: var(--color-lavender-light);
+	font-size: 13px;
+}

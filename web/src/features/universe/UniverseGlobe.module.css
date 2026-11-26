@@ -486,6 +486,7 @@
 }
 
 .swipeFinger svg {
+	overflow: visible;
 	inline-size: 100%;
 	block-size: 100%;
 	fill: rgb(255 255 255 / 92%);

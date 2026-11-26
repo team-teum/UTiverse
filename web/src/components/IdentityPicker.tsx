@@ -11,7 +11,8 @@ import { FlagMark, IdentityPill } from "./IdentityTags";
 import ui from "./SpaceUi.module.css";
 
 /**
- * 정체성 고르기 (가입 2단계·설정 공용). 드롭다운에서 최대 2개, 「기타」는 직접 쓰기.
+ * 정체성 고르기 (가입 2단계·설정 공용). 먼저 「탐색 중인가요?」를 묻는다.
+ * 탐색 중이면 새싹 깃발 하나, 알고 있으면 드롭다운에서 최대 2개(「기타」는 직접 쓰기).
  * 보이기 스위치를 끄면 태그와 우주선 깃발이 나에게만 보인다.
  */
 export function IdentityPicker({
@@ -28,6 +29,27 @@ export function IdentityPicker({
 	const listRef = useRef<HTMLFieldSetElement>(null);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const full = value.ids.length >= IDENTITY_MAX;
+	const exploring = value.ids.includes("exploring");
+	// 먼저 「탐색 중인가요?」를 묻고, 「알고 있어요」일 때만 드롭다운을 보여 준다
+	const [stage, setStage] = useState<"exploring" | "known" | null>(
+		exploring ? "exploring" : value.ids.length ? "known" : null,
+	);
+
+	function choose(next: "exploring" | "known") {
+		if (stage === next) {
+			setStage(null);
+			setOpen(false);
+			onChange({ ...value, ids: [], other: "" });
+			return;
+		}
+		setStage(next);
+		setOpen(false);
+		onChange({
+			...value,
+			ids: next === "exploring" ? ["exploring"] : [],
+			other: "",
+		});
+	}
 
 	function toggle(option: IdentityId) {
 		let ids: IdentityId[];
@@ -51,118 +73,151 @@ export function IdentityPicker({
 
 	return (
 		<div className={styles.picker}>
-			<span className={ui.label} id={`${id}-label`}>
-				정체성 (선택 · 최대 {IDENTITY_MAX}개)
-			</span>
-			<div className={styles.box}>
+			<fieldset className={styles.stage} disabled={disabled}>
+				<legend className={ui.label}>
+					지금 내 정체성을 탐색하고 있나요? (선택)
+				</legend>
 				<button
-					ref={buttonRef}
 					type="button"
-					className={`${ui.field} ${styles.toggle}`}
-					aria-expanded={open}
-					aria-controls={open ? `${id}-options` : undefined}
-					aria-labelledby={`${id}-label ${id}-value`}
-					disabled={disabled}
-					onClick={() => openList(!open)}
+					aria-pressed={stage === "exploring"}
+					onClick={() => choose("exploring")}
 				>
-					<span id={`${id}-value`} className="sr-only">
-						{value.ids.length
-							? `${value.ids.length}개 골랐어요`
-							: "고르지 않았어요"}
-					</span>
+					<FlagMark id="exploring" />
+					아직 탐색 중이에요
 				</button>
-				{value.ids.length === 0 && (
-					<span className={styles.placeholder} aria-hidden="true">
-						골라 주세요
-					</span>
-				)}
-				{value.ids.map((x) => (
-					<IdentityPill
-						key={x}
-						id={x}
-						other={value.other}
-						onRemove={
-							disabled
-								? undefined
-								: () => {
-										buttonRef.current?.focus();
-										toggle(x);
-									}
-						}
-					/>
-				))}
-			</div>
-			{open && (
-				<fieldset
-					ref={listRef}
-					id={`${id}-options`}
-					className={styles.list}
-					disabled={disabled}
-					aria-describedby={`${id}-count`}
-					onKeyDown={(event) => {
-						if (event.key !== "Escape") return;
-						event.preventDefault();
-						event.stopPropagation();
-						setOpen(false);
-						buttonRef.current?.focus();
-					}}
-				>
-					<legend className="sr-only">정체성 고르기</legend>
-					<p id={`${id}-count`} className={styles.count} role="status">
-						{value.ids.length}/{IDENTITY_MAX} 골랐어요.
-						{full && " 다른 항목을 고르려면 하나를 먼저 빼 주세요."}
-					</p>
-					{IDENTITY_OPTIONS.map((option) => {
-						const selected = value.ids.includes(option.id);
-						return (
-							<button
-								key={option.id}
-								type="button"
-								aria-pressed={selected}
-								aria-disabled={(full && !selected) || undefined}
-								className={`${styles.option} ${option.id === "other" ? styles.sep : ""}`}
-								onClick={() => toggle(option.id)}
-							>
-								<FlagMark id={option.id} />
-								<span>
-									{option.id === "other" ? "기타 (직접 쓰기)" : option.label}
-								</span>
-								<span className={styles.check} aria-hidden="true">
-									{selected ? "✓" : ""}
-								</span>
-							</button>
-						);
-					})}
-				</fieldset>
-			)}
-			{value.ids.includes("other") && (
-				<input
-					className={ui.field}
-					value={value.other}
-					maxLength={IDENTITY_OTHER_MAX}
-					placeholder={`나를 부르는 말 (${IDENTITY_OTHER_MAX}자까지)`}
-					aria-label="기타 정체성 직접 쓰기"
-					disabled={disabled}
-					onChange={(e) => onChange({ ...value, other: e.target.value })}
-				/>
-			)}
-			<div className={ui.row}>
-				<span className={ui.rowText}>
-					<span className={ui.rowTitle}>다른 사람에게 보이기</span>
-					<span className={ui.rowHint}>
-						끄면 태그와 우주선 깃발이 나에게만 보여요
-					</span>
-				</span>
 				<button
 					type="button"
-					role="switch"
-					aria-checked={value.visible}
-					aria-label="정체성 태그와 깃발을 다른 사람에게 보이기"
-					className={ui.switch}
-					disabled={disabled}
-					onClick={() => onChange({ ...value, visible: !value.visible })}
-				/>
-			</div>
+					aria-pressed={stage === "known"}
+					onClick={() => choose("known")}
+				>
+					아니요, 알고 있어요
+				</button>
+			</fieldset>
+			{stage === "exploring" && (
+				<p className={styles.note}>
+					괜찮아요, 천천히 찾아가요. 우주선에 새싹 깃발이 걸려요.
+				</p>
+			)}
+			{stage === "known" && (
+				<>
+					<span className={ui.label} id={`${id}-label`}>
+						정체성 (선택 · 최대 {IDENTITY_MAX}개)
+					</span>
+					<div className={styles.box}>
+						<button
+							ref={buttonRef}
+							type="button"
+							className={`${ui.field} ${styles.toggle}`}
+							aria-expanded={open}
+							aria-controls={open ? `${id}-options` : undefined}
+							aria-labelledby={`${id}-label ${id}-value`}
+							disabled={disabled}
+							onClick={() => openList(!open)}
+						>
+							<span id={`${id}-value`} className="sr-only">
+								{value.ids.length
+									? `${value.ids.length}개 골랐어요`
+									: "고르지 않았어요"}
+							</span>
+						</button>
+						{value.ids.length === 0 && (
+							<span className={styles.placeholder} aria-hidden="true">
+								골라 주세요
+							</span>
+						)}
+						{value.ids.map((x) => (
+							<IdentityPill
+								key={x}
+								id={x}
+								other={value.other}
+								onRemove={
+									disabled
+										? undefined
+										: () => {
+												buttonRef.current?.focus();
+												toggle(x);
+											}
+								}
+							/>
+						))}
+					</div>
+					{open && (
+						<fieldset
+							ref={listRef}
+							id={`${id}-options`}
+							className={styles.list}
+							disabled={disabled}
+							aria-describedby={`${id}-count`}
+							onKeyDown={(event) => {
+								if (event.key !== "Escape") return;
+								event.preventDefault();
+								event.stopPropagation();
+								setOpen(false);
+								buttonRef.current?.focus();
+							}}
+						>
+							<legend className="sr-only">정체성 고르기</legend>
+							<p id={`${id}-count`} className={styles.count} role="status">
+								{value.ids.length}/{IDENTITY_MAX} 골랐어요.
+								{full && " 다른 항목을 고르려면 하나를 먼저 빼 주세요."}
+							</p>
+							{IDENTITY_OPTIONS.map((option) => {
+								const selected = value.ids.includes(option.id);
+								return (
+									<button
+										key={option.id}
+										type="button"
+										aria-pressed={selected}
+										aria-disabled={(full && !selected) || undefined}
+										className={`${styles.option} ${option.id === "other" ? styles.sep : ""}`}
+										onClick={() => toggle(option.id)}
+									>
+										<FlagMark id={option.id} />
+										<span>
+											{option.id === "other"
+												? "기타 (직접 쓰기)"
+												: option.label}
+										</span>
+										<span className={styles.check} aria-hidden="true">
+											{selected ? "✓" : ""}
+										</span>
+									</button>
+								);
+							})}
+						</fieldset>
+					)}
+					{value.ids.includes("other") && (
+						<input
+							className={ui.field}
+							value={value.other}
+							maxLength={IDENTITY_OTHER_MAX}
+							placeholder={`나를 부르는 말 (${IDENTITY_OTHER_MAX}자까지)`}
+							aria-label="기타 정체성 직접 쓰기"
+							disabled={disabled}
+							onChange={(e) => onChange({ ...value, other: e.target.value })}
+						/>
+					)}
+				</>
+			)}
+			{value.ids.length > 0 && (
+				<div className={ui.row}>
+					<span className={ui.rowText}>
+						<span className={ui.rowTitle}>다른 사람에게 보이기</span>
+						<span className={ui.rowHint}>
+							끄면 태그와 우주선 깃발이 나에게만 보여요
+						</span>
+					</span>
+					<button
+						type="button"
+						role="switch"
+						aria-checked={value.visible}
+						aria-label="정체성 태그와 깃발을 다른 사람에게 보이기"
+						className={ui.switch}
+						disabled={disabled}
+						onClick={() => onChange({ ...value, visible: !value.visible })}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

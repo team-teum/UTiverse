@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AVATAR_TABS, type Look, SHIP_TABS } from "../../pixel/look";
+import { HueDonut } from "../../components/HueDonut";
+import { AVATAR_TABS, hueOf, type Look, SHIP_TABS } from "../../pixel/look";
 import { ItemPixel } from "../../pixel/PixelCanvas";
 import styles from "./CustomizeView.module.css";
 
@@ -108,6 +109,30 @@ export function CustomizeView({
 				)}
 
 				<ul className={styles.items} aria-label={`${category.label} 고르기`}>
+					{category.picker && (
+						<li>
+							<div className={styles.item}>
+								<span
+									className={`${styles.thumb} ${styles.wheel}`}
+									data-selected={hueOf(look[category.key]) !== null}
+								>
+									<HueDonut
+										kind={category.picker}
+										value={hueOf(look[category.key])}
+										label={`${category.label} 색상환`}
+										onChange={(hue) => onPick({ [category.key]: `h${hue}` })}
+									>
+										<ItemPixel
+											category={category.key}
+											look={look}
+											className={styles.wheelArt}
+										/>
+									</HueDonut>
+								</span>
+								<span className={styles.label}>아무 색</span>
+							</div>
+						</li>
+					)}
 					{category.options.map((option) => {
 						const selected = look[category.key] === option.id;
 						const preview = { ...look, [category.key]: option.id };
