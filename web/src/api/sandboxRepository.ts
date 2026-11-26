@@ -1,3 +1,4 @@
+import { cleanIdentity } from "../lib/identity.ts";
 import { isValidLength } from "../lib/postText.ts";
 import { isValidRegion } from "../lib/regions.ts";
 import { DEFAULT_LOOK, withLook } from "../pixel/look.ts";
@@ -51,7 +52,21 @@ function shuffle<T>(items: T[], random: () => number): T[] {
 }
 
 function copyProfile(profile: Profile): Profile {
-	return { ...profile, look: { ...profile.look } };
+	return {
+		...profile,
+		look: { ...profile.look },
+		identity: profile.identity
+			? { ...profile.identity, ids: [...profile.identity.ids] }
+			: null,
+	};
+}
+
+/** 다른 사람에게 줄 사본: 보이기를 끈 정체성은 빼고 준다 */
+function publicProfile(profile: Profile): Profile {
+	const copy = copyProfile(profile);
+	if (!copy.identity?.visible || copy.identity.ids.length === 0)
+		copy.identity = null;
+	return copy;
 }
 
 function copyEvent(event: CommunityEvent): CommunityEvent {
@@ -77,6 +92,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 		tagline: "",
 		isExample: false,
 		look: { ...DEFAULT_LOOK },
+		identity: null,
 	};
 
 	const profiles = new Map<string, Profile>([[me.id, me]]);
@@ -124,6 +140,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 				tagline: example.tagline,
 				isExample: true,
 				look: withLook(example.look),
+				identity: example.identity ?? null,
 			};
 			profiles.set(profile.id, profile);
 			idByKey.set(example.key, profile.id);
@@ -223,7 +240,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			return session ? { ...session } : null;
 		},
 
-		async signUp({ email, password, nickname }) {
+		async signUp({ email, password, nickname, identity }) {
 			const key = email.trim().toLowerCase();
 			if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(key)) {
 				throw new Error("이메일 형식을 확인해 주세요.");
@@ -235,9 +252,11 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			}
 			if (accounts.has(key))
 				throw new Error("이미 가입한 이메일이에요. 로그인해 주세요.");
+			const cleaned = identity ? cleanIdentity(identity) : null;
 			accounts.set(key, { password, nickname: name });
 			session = { email: key };
 			me.nickname = name;
+			me.identity = cleaned;
 			profiles.set(me.id, me);
 			notify();
 		},
@@ -273,6 +292,12 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 			return copyProfile(me);
 		},
 
+		async updateMyIdentity(identity) {
+			me.identity = cleanIdentity(identity);
+			notify();
+			return copyProfile(me);
+		},
+
 		async exploreRandom(count) {
 			const others = [...profiles.values()].filter((p) => p.id !== me.id);
 			return shuffle(others, Math.random)
@@ -281,7 +306,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 					const own = stars.filter((star) => star.profileId === profile.id);
 					const latest = own[own.length - 1];
 					return {
-						profile: copyProfile(profile),
+						profile: publicProfile(profile),
 						latestStar: latest ? latest.body.split("\n")[0] : null,
 					};
 				});
@@ -319,7 +344,7 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 				if (!profile || !location.visible) continue;
 				// 다른 사람의 지역명은 돌려주지 않는다. 거리 단계만.
 				result.push({
-					profile: copyProfile(profile),
+					profile: publicProfile(profile),
 					tier: tierOf(location, mine),
 				});
 			}
@@ -384,13 +409,16 @@ export function createSandboxRepository(): Omit<Repository, "getMyProfile"> & {
 
 		async getProfile(profileId) {
 			const profile = profiles.get(profileId);
-			return profile ? copyProfile(profile) : null;
+			if (!profile) return null;
+			return profile.id === me.id
+				? copyProfile(profile)
+				: publicProfile(profile);
 		},
 
 		async listOtherProfiles() {
 			return [...profiles.values()]
 				.filter((profile) => profile.id !== me.id)
-				.map(copyProfile);
+				.map(publicProfile);
 		},
 
 		async listStars(profileId) {

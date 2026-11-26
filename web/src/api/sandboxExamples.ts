@@ -1,3 +1,4 @@
+import type { Identity } from "../lib/identity";
 import type { Look } from "../pixel/look";
 import type { MyLocation } from "./types";
 
@@ -91,6 +92,8 @@ interface ExampleProfile {
 	tagline: string;
 	/** 꾸민 모습 (없는 항목은 기본값) */
 	look: Partial<Look>;
+	/** 보이기를 켠 정체성 태그 (없으면 태그 없음) */
+	identity?: Identity;
 	stars: ExampleStar[];
 }
 
@@ -98,6 +101,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000010000",
 		key: "lumi",
+		identity: { ids: ["trans-woman", "nonbinary"], other: "", visible: true },
 		nickname: "루미",
 		tagline: "천천히 가는 중",
 		look: {
@@ -165,6 +169,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000020000",
 		key: "haru",
+		identity: { ids: ["genderfluid"], other: "", visible: true },
 		nickname: "하루",
 		tagline: "",
 		look: {
@@ -312,6 +317,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000050000",
 		key: "yuwol",
+		identity: { ids: ["trans-man"], other: "", visible: true },
 		nickname: "유월",
 		tagline: "6월에 이름을 바꿨어요",
 		look: {
@@ -405,6 +411,7 @@ export const exampleProfiles: ExampleProfile[] = [
 	{
 		id: "00000000-0000-4000-8000-000000070000",
 		key: "kei",
+		identity: { ids: ["agender"], other: "", visible: true },
 		nickname: "kei",
 		tagline: "",
 		look: {

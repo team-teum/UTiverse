@@ -20,6 +20,7 @@ import type {
 	Profile,
 } from "../../api/types";
 import { AssetImage } from "../../components/AssetImage";
+import { IdentityDots } from "../../components/IdentityTags";
 import ui from "../../components/SpaceUi.module.css";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
@@ -191,12 +192,18 @@ function RandomExplore({ entry }: { entry: string }) {
 								<span className={styles.cardStar}>
 									<span>{latestStar ?? "아직 작성한 별이 없어요"}</span>
 								</span>
-								<PixelCanvas
-									kind="ship"
-									look={profile.look}
-									label=""
-									className={styles.cardShip}
-								/>
+								<span className={styles.cardShipWrap}>
+									<PixelCanvas
+										kind="ship"
+										look={profile.look}
+										label=""
+										className={styles.cardShip}
+									/>
+									<IdentityDots
+										identity={profile.identity}
+										className={styles.cardFlags}
+									/>
+								</span>
 								<span className={styles.cardName}>{profile.nickname}</span>
 							</Link>
 						</li>

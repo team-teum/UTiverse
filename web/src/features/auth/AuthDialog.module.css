@@ -36,3 +36,10 @@
 	font-size: 12px;
 	line-height: 1.5;
 }
+
+.step {
+	margin: 0;
+	color: var(--color-accent-yellow);
+	font-family: var(--font-pixel);
+	font-size: 13px;
+}

@@ -15,6 +15,7 @@ const SWIPE = 45;
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { accountPreviewEnabled, repo } from "../../api/repository";
 import type { Profile, Star } from "../../api/types";
+import { IdentityPills } from "../../components/IdentityTags";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { unlockedAt } from "../../pixel/look";
@@ -289,6 +290,11 @@ export function ShipPage({
 					>
 						{isMine ? `${profile.nickname} (나)` : profile.nickname}
 					</h1>
+					<IdentityPills
+						identity={profile.identity}
+						small
+						className={styles.identity}
+					/>
 					{profile.tagline && isMine && (
 						<p className={styles.tagline}>{profile.tagline}</p>
 					)}

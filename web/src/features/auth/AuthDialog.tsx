@@ -1,8 +1,10 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { accountPreviewEnabled, repo } from "../../api/repository";
 import { AssetImage } from "../../components/AssetImage";
+import { IdentityPicker } from "../../components/IdentityPicker";
 import { ModalDialog } from "../../components/ModalDialog";
 import ui from "../../components/SpaceUi.module.css";
+import { cleanIdentity, type Identity, NO_IDENTITY } from "../../lib/identity";
 import styles from "./AuthDialog.module.css";
 
 type Mode = "signup" | "signin";
@@ -32,7 +34,10 @@ export function AuthDialog({
 	const preview = accountPreviewEnabled;
 	const titleId = useId();
 	const [mode, setMode] = useState<Mode>(initialMode);
+	/** 가입은 두 단계: 1) 이메일·비밀번호 2) 이름·정체성 */
+	const [step, setStep] = useState<1 | 2>(1);
 	const [nickname, setNickname] = useState("");
+	const [identity, setIdentity] = useState<Identity>(NO_IDENTITY);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -51,6 +56,7 @@ export function AuthDialog({
 
 	function changeMode(next: Mode) {
 		setMode(next);
+		setStep(1);
 		setFieldErrors({});
 		setError(null);
 	}
@@ -86,15 +92,20 @@ export function AuthDialog({
 		if (busy) return;
 		setError(null);
 		const errors: FieldErrors = {};
-		if (mode === "signup" && !nickname.trim()) {
+		const profileStep = mode === "signup" && step === 2;
+		if (profileStep && !nickname.trim()) {
 			errors.nickname = "닉네임을 써 주세요.";
 		}
-		if (!email.trim()) {
+		if (profileStep) {
+			// 1단계에서 이미 확인했다
+		} else if (!email.trim()) {
 			errors.email = "이메일을 써 주세요.";
 		} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
 			errors.email = "이메일 형식을 확인해 주세요.";
 		}
-		if (!password) {
+		if (profileStep) {
+			// 1단계에서 이미 확인했다
+		} else if (!password) {
 			errors.password = "비밀번호를 써 주세요.";
 		} else if (mode === "signup" && password.length < 8) {
 			errors.password = "비밀번호는 8자 이상이에요.";
@@ -105,9 +116,25 @@ export function AuthDialog({
 		pendingFocus.current = firstInvalid;
 		setFieldErrors(errors);
 		if (firstInvalid) return;
+		if (mode === "signup" && step === 1) {
+			setStep(2);
+			return;
+		}
+		let cleaned: Identity | undefined;
+		if (mode === "signup") {
+			try {
+				cleaned = cleanIdentity(identity);
+			} catch (cause) {
+				setError(
+					cause instanceof Error ? cause.message : "정체성을 확인해 주세요.",
+				);
+				return;
+			}
+		}
 		setBusy(true);
 		try {
-			if (mode === "signup") await repo.signUp({ email, password, nickname });
+			if (mode === "signup")
+				await repo.signUp({ email, password, nickname, identity: cleaned });
 			else await repo.signIn({ email, password });
 			onDone();
 		} catch (cause) {
@@ -159,6 +186,11 @@ export function AuthDialog({
 
 			<form ref={formRef} className={styles.form} onSubmit={submit} noValidate>
 				{mode === "signup" && (
+					<p className={styles.step} aria-live="polite">
+						{step === 1 ? "1/2 · 로그인 정보" : "2/2 · 나를 소개해요"}
+					</p>
+				)}
+				{mode === "signup" && step === 2 && (
 					<div>
 						<label className={ui.label}>
 							닉네임 (필수 · 다른 사람에게 보여요)
@@ -179,46 +211,60 @@ export function AuthDialog({
 						{fieldMessage("nickname")}
 					</div>
 				)}
-				<div>
-					<label className={ui.label}>
-						이메일 (필수 · 로그인에만 써요)
-						<input
-							className={ui.field}
-							{...fieldProps("email")}
-							type="email"
-							value={email}
-							autoComplete={preview ? "username" : "email"}
-							spellCheck={preview ? false : undefined}
-							inputMode="email"
-							placeholder="test@example.com"
-							onChange={(e) => {
-								setEmail(e.target.value);
-								clearFieldError("email");
-							}}
-						/>
-					</label>
-					{fieldMessage("email")}
-				</div>
-				<div>
-					<label className={ui.label}>
-						비밀번호 {mode === "signup" ? "(필수 · 8자 이상)" : "(필수)"}
-						<input
-							className={ui.field}
-							{...fieldProps("password")}
-							type="password"
-							minLength={mode === "signup" ? 8 : undefined}
-							value={password}
-							autoComplete={
-								mode === "signup" ? "new-password" : "current-password"
-							}
-							onChange={(e) => {
-								setPassword(e.target.value);
-								clearFieldError("password");
-							}}
-						/>
-					</label>
-					{fieldMessage("password")}
-				</div>
+				{mode === "signup" && step === 2 && (
+					<IdentityPicker
+						value={identity}
+						onChange={(next) => {
+							setIdentity(next);
+							setError(null);
+						}}
+						disabled={busy}
+					/>
+				)}
+				{!(mode === "signup" && step === 2) && (
+					<>
+						<div>
+							<label className={ui.label}>
+								이메일 (필수 · 로그인에만 써요)
+								<input
+									className={ui.field}
+									{...fieldProps("email")}
+									type="email"
+									value={email}
+									autoComplete={preview ? "username" : "email"}
+									spellCheck={preview ? false : undefined}
+									inputMode="email"
+									placeholder="test@example.com"
+									onChange={(e) => {
+										setEmail(e.target.value);
+										clearFieldError("email");
+									}}
+								/>
+							</label>
+							{fieldMessage("email")}
+						</div>
+						<div>
+							<label className={ui.label}>
+								비밀번호 {mode === "signup" ? "(필수 · 8자 이상)" : "(필수)"}
+								<input
+									className={ui.field}
+									{...fieldProps("password")}
+									type="password"
+									minLength={mode === "signup" ? 8 : undefined}
+									value={password}
+									autoComplete={
+										mode === "signup" ? "new-password" : "current-password"
+									}
+									onChange={(e) => {
+										setPassword(e.target.value);
+										clearFieldError("password");
+									}}
+								/>
+							</label>
+							{fieldMessage("password")}
+						</div>
+					</>
+				)}
 				<p className={styles.notice}>
 					{import.meta.env.HOSTED_SUPABASE
 						? "이메일은 로그인에만 쓰며 확인 메일은 보내지 않아요. 다른 곳과 다른 비밀번호를 써 주세요."
@@ -232,16 +278,30 @@ export function AuthDialog({
 					</p>
 				)}
 				<div className={ui.actions}>
-					<button
-						type="button"
-						className={ui.ghost}
-						onClick={dismiss}
-						disabled={previewPending}
-					>
-						나중에 할게요
-					</button>
+					{mode === "signup" && step === 2 ? (
+						<button
+							type="button"
+							className={ui.ghost}
+							onClick={() => {
+								setStep(1);
+								setError(null);
+							}}
+							disabled={busy}
+						>
+							이전
+						</button>
+					) : (
+						<button
+							type="button"
+							className={ui.ghost}
+							onClick={dismiss}
+							disabled={previewPending}
+						>
+							나중에 할게요
+						</button>
+					)}
 					<button type="submit" className={ui.primary} disabled={busy}>
-						{mode === "signup" ? "가입하기" : "로그인"}
+						{mode === "signin" ? "로그인" : step === 1 ? "다음" : "가입 완료"}
 					</button>
 				</div>
 			</form>

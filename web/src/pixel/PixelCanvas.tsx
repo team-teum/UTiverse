@@ -24,6 +24,8 @@ interface PixelCanvasProps {
 	label: string;
 	className?: string;
 	style?: CSSProperties;
+	/** 방(room)에만: 정체성 깃발 키. 위층·아래층 벽에 순서대로 건다 */
+	flags?: string[];
 }
 
 /** 코드로 그린 픽셀 아트 한 장. 크기는 className으로 정하고, 픽셀은 흐리지 않게 키운다. */
@@ -33,10 +35,12 @@ export function PixelCanvas({
 	label,
 	className,
 	style,
+	flags,
 }: PixelCanvasProps) {
 	const ref = useRef<HTMLCanvasElement>(null);
 	const { width, height } = SIZES[kind];
 	const key = JSON.stringify(look);
+	const flagKey = (flags ?? []).join(",");
 
 	useEffect(() => {
 		let active = true;
@@ -45,12 +49,13 @@ export function PixelCanvas({
 			const ctx = canvas?.getContext("2d");
 			if (!active || !canvas || !ctx) return;
 			const current = JSON.parse(key) as Look;
+			const wallFlags = flagKey ? flagKey.split(",") : [];
 			ctx.setTransform(RES, 0, 0, RES, 0, 0);
 			ctx.imageSmoothingEnabled = false;
 			ctx.clearRect(0, 0, width, height);
 			if (kind === "character" || kind === "face") drawCharacter(ctx, current);
 			else if (kind === "ship") drawShip(ctx, current);
-			else drawRoom(ctx, current);
+			else drawRoom(ctx, current, wallFlags);
 		};
 		draw();
 		// 아바타 시트를 처음 불러오면 다시 그린다
@@ -58,7 +63,7 @@ export function PixelCanvas({
 		return () => {
 			active = false;
 		};
-	}, [kind, key, width, height]);
+	}, [kind, key, flagKey, width, height]);
 
 	return (
 		<canvas

@@ -71,6 +71,11 @@
 	color: #fff;
 }
 
+.identity {
+	display: flex;
+	margin-block-start: 4px;
+}
+
 .tagline {
 	margin: 0.125rem 0 0;
 	font-size: 0.8125rem;

@@ -1,17 +1,20 @@
 import { useState } from "react";
 import cosmic from "../../components/Cosmic.module.css";
+import { IdentityPicker } from "../../components/IdentityPicker";
 import ui from "../../components/SpaceUi.module.css";
+import { type Identity, NO_IDENTITY } from "../../lib/identity";
 import styles from "./Settings.module.css";
 
-type Values = { nickname: string; tagline: string };
+type Values = { nickname: string; tagline: string; identity: Identity };
 
 export function ProfileEditor({
 	profile,
 	onSave,
 	onSaved,
 }: {
-	profile: Values;
-	onSave: (profile: Values) => Promise<unknown>;
+	profile: { nickname: string; tagline: string; identity: Identity | null };
+	/** 바뀐 값만 들어온다 */
+	onSave: (changes: Partial<Values>) => Promise<unknown>;
 	onSaved: () => void;
 }) {
 	const [draft, setDraft] = useState<Partial<Values>>({});
@@ -19,14 +22,24 @@ export function ProfileEditor({
 	const [saving, setSaving] = useState(false);
 	const nickname = draft.nickname ?? profile.nickname;
 	const tagline = draft.tagline ?? profile.tagline;
-	const dirty = nickname !== profile.nickname || tagline !== profile.tagline;
+	const saved = profile.identity ?? NO_IDENTITY;
+	const identity = draft.identity ?? saved;
+	const identityDirty = JSON.stringify(identity) !== JSON.stringify(saved);
+	const dirty =
+		nickname !== profile.nickname ||
+		tagline !== profile.tagline ||
+		identityDirty;
 
 	async function save() {
 		if (saving) return;
 		setSaving(true);
 		setError(null);
 		try {
-			await onSave({ nickname, tagline });
+			await onSave({
+				nickname,
+				tagline,
+				...(identityDirty && { identity }),
+			});
 			setDraft({});
 			onSaved();
 		} catch (cause) {
@@ -63,6 +76,11 @@ export function ProfileEditor({
 					onChange={(e) => setDraft({ ...draft, tagline: e.target.value })}
 				/>
 			</label>
+			<IdentityPicker
+				value={identity}
+				onChange={(next) => setDraft({ ...draft, identity: next })}
+				disabled={saving}
+			/>
 			{error && (
 				<p className={ui.error} role="alert">
 					{error}

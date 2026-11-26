@@ -86,6 +86,38 @@ export const FLAG_COLORS: Record<string, string[]> = {
 	nonbinary: ["#fcf434", "#ffffff", "#9c59d1", "#2c2c2c"],
 	genderqueer: ["#b57edc", "#ffffff", "#4a8123"],
 	rainbow: ["#e40303", "#ff8c00", "#ffed00", "#008026", "#004dff", "#750787"],
+	// 정체성 깃발 (lib/identity의 flag 키)
+	genderfluid: ["#ff76a4", "#ffffff", "#c011d7", "#000000", "#2f3cbe"],
+	agender: [
+		"#000000",
+		"#bcc4c7",
+		"#ffffff",
+		"#b7f684",
+		"#ffffff",
+		"#bcc4c7",
+		"#000000",
+	],
+	demigirl: [
+		"#7f7f7f",
+		"#c4c4c4",
+		"#fdadc8",
+		"#ffffff",
+		"#fdadc8",
+		"#c4c4c4",
+		"#7f7f7f",
+	],
+	demiboy: [
+		"#7f7f7f",
+		"#c4c4c4",
+		"#9ad9eb",
+		"#ffffff",
+		"#9ad9eb",
+		"#c4c4c4",
+		"#7f7f7f",
+	],
+	androgyne: ["#fe007f", "#9832ff", "#00b8e7"],
+	neutrois: ["#ffffff", "#2f9a28", "#000000"],
+	other: ["#be9afa", "#e9dcff", "#868aff"],
 };
 
 function bodySpans(): Span[] {
@@ -294,8 +326,15 @@ export function drawShip(ctx: Ctx, look: Look) {
 
 // ─────────────────────────── 단면 (2층 방) ───────────────────────────
 
-/** 같은 우주선을 잘라 본 단면: 위층은 캐릭터와 창, 아래층은 침실·책상 */
-export function drawCutaway(ctx: Ctx, look: Look) {
+/**
+ * 같은 우주선을 잘라 본 단면: 위층은 캐릭터와 창, 아래층은 침실·책상.
+ * identityFlags가 있으면 첫째는 위층 벽(꾸미기 깃발 대신), 둘째는 아래층 벽에 건다.
+ */
+export function drawCutaway(
+	ctx: Ctx,
+	look: Look,
+	identityFlags: string[] = [],
+) {
 	const hull = HULLS[look.hull] ?? HULLS.sky;
 	drawFrame(ctx, hull);
 
@@ -358,7 +397,8 @@ export function drawCutaway(ctx: Ctx, look: Look) {
 	]) {
 		px(ctx, x + sx, y - 4 + sy, "#fff6c9");
 	}
-	drawWallFlag(ctx, look.flag);
+	drawWallFlag(ctx, identityFlags[0] ?? look.flag, IN.top + 6);
+	if (identityFlags[1]) drawWallFlag(ctx, identityFlags[1], FLOOR1 + 10);
 	drawWallDecor(ctx, look.wallDecor);
 	drawLight(ctx, look.light);
 	drawCharacter(ctx, look, CHAR_AT.x, CHAR_AT.y);
@@ -440,11 +480,10 @@ function drawFloor(ctx: Ctx, kind: string, x: number, y: number, w: number) {
 	}
 }
 
-function drawWallFlag(ctx: Ctx, flag: string) {
+function drawWallFlag(ctx: Ctx, flag: string, y = IN.top + 6) {
 	const colors = FLAG_COLORS[flag];
 	if (!colors) return;
 	const x = IN.x0 + 1;
-	const y = IN.top + 6;
 	const rows = colors.length >= 5 ? 2 : 3;
 	paint(ctx, box(x - 1, y - 1, 1, rows * colors.length + 4), 0, 0, "#8a5a3c");
 	shape(ctx, box(x, y, 9, rows * colors.length), 0, 0, colors[0], OUT);

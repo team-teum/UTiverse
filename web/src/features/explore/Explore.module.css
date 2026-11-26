@@ -111,6 +111,19 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
+/* 깃발 동그라미는 우주선 오른쪽에 붙고, 우주선·이름 자리는 그대로 */
+.cardShipWrap {
+	position: relative;
+	display: block;
+}
+
+.cardFlags {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: calc(100% + 5px);
+	transform: translateY(-50%);
+}
+
 .cardShip {
 	inline-size: calc(46 * var(--dp));
 	block-size: calc(90 * var(--dp));

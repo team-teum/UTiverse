@@ -1,4 +1,5 @@
 import type { Profile } from "../../api/types";
+import { identityFlags } from "../../lib/identity";
 import { PixelCanvas } from "../../pixel/PixelCanvas";
 import styles from "./ShipView.module.css";
 
@@ -11,7 +12,7 @@ export function ShipView({
 	isMine,
 	cutaway,
 }: {
-	profile: Pick<Profile, "nickname" | "look">;
+	profile: Pick<Profile, "nickname" | "look" | "identity">;
 	isMine: boolean;
 	cutaway?: number;
 }) {
@@ -28,6 +29,7 @@ export function ShipView({
 				<PixelCanvas
 					kind="room"
 					look={profile.look}
+					flags={identityFlags(profile.identity)}
 					label={cutaway > 0.5 ? `${owner} 우주선 안쪽 2층 방` : ""}
 					className={`${styles.layer} ${styles.cutaway}`}
 					style={{ opacity: cutaway }}

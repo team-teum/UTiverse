@@ -1,0 +1,129 @@
+.picker {
+	display: grid;
+	gap: 10px;
+}
+
+/* 버튼은 상자 전체를 덮는 바탕이고, 알약이 그 위에 놓인다 (버튼 안에 버튼을 넣지 않으려고) */
+.box {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	box-sizing: border-box;
+	min-block-size: 48px;
+	padding: 9px 40px 9px 10px;
+}
+
+.toggle {
+	position: absolute;
+	inset: 0;
+	min-block-size: 0;
+	cursor: pointer;
+}
+
+.toggle::after {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-end: 16px;
+	inline-size: 8px;
+	block-size: 8px;
+	border-inline-end: 2px solid var(--color-lavender-light);
+	border-block-end: 2px solid var(--color-lavender-light);
+	content: "";
+	transform: translateY(-70%) rotate(45deg);
+}
+
+.toggle[aria-expanded="true"] {
+	border-color: var(--color-lavender);
+}
+
+.toggle[aria-expanded="true"]::after {
+	transform: translateY(-30%) rotate(-135deg);
+}
+
+.placeholder {
+	position: relative;
+	padding-inline-start: 6px;
+	color: #7d7aa8;
+	pointer-events: none;
+}
+
+.box > span {
+	position: relative;
+}
+
+.list {
+	display: grid;
+	min-inline-size: 0;
+	margin: 0;
+	padding: 6px;
+	border: 1.5px solid var(--color-lavender);
+	border-radius: 12px;
+	background: #100c26;
+	list-style: none;
+	max-block-size: 300px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.count {
+	margin: 0;
+	padding: 4px 10px 6px;
+	color: #a9a6d6;
+	font-family: var(--font-pixel);
+	font-size: 12px;
+}
+
+.option {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	min-block-size: 44px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: 10px;
+	background: transparent;
+	color: #fff;
+	font: inherit;
+	font-size: 15px;
+	text-align: start;
+	cursor: pointer;
+}
+
+.option:hover {
+	background: #211a4a;
+}
+
+.option:focus-visible {
+	outline: 2px solid var(--color-lavender);
+	outline-offset: -2px;
+}
+
+.option[aria-pressed="true"] {
+	background: #2a2160;
+}
+
+.sep {
+	margin-block-start: 6px;
+	border-block-start: 1px solid rgb(129 126 196 / 35%);
+	border-radius: 0 0 10px 10px;
+}
+
+.check {
+	display: grid;
+	place-items: center;
+	inline-size: 20px;
+	block-size: 20px;
+	margin-inline-start: auto;
+	border: 1.5px solid #6a62a8;
+	border-radius: 6px;
+	color: #0b0a1a;
+	font-size: 13px;
+	font-weight: 900;
+}
+
+.option[aria-pressed="true"] .check {
+	border-color: var(--color-accent-yellow);
+	background: var(--color-accent-yellow);
+}

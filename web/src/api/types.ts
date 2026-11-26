@@ -1,6 +1,7 @@
 // 화면은 이 인터페이스만 사용한다. 지금은 샌드박스(메모리) 구현만 있고,
 // 실제 DB 모드는 같은 인터페이스의 Supabase 구현으로 바꿔 끼운다(SPECIFICATION 6.1).
 
+import type { Identity } from "../lib/identity";
 import type { Look } from "../pixel/look";
 
 export const STAR_MAX_CHARS = 500;
@@ -23,6 +24,8 @@ export interface Profile {
 	isExample: boolean;
 	/** 캐릭터·우주선 꾸미기 상태 (코드로 그리는 픽셀 아트의 재료) */
 	look: Look;
+	/** 정체성 태그. 다른 사람 프로필에는 본인이 보이기를 켠 경우에만 있다 */
+	identity: Identity | null;
 }
 
 export interface Star {
@@ -141,10 +144,12 @@ export interface Repository {
 	requestSwipeHint(): Promise<void>;
 	updateMyLook(patch: Partial<Look>, expectedId?: string): Promise<Profile>;
 	getSession(): Promise<Session | null>;
+	/** identity는 가입 직후 내 정체성으로 저장한다 (없으면 고르지 않음) */
 	signUp(input: {
 		email: string;
 		password: string;
 		nickname: string;
+		identity?: Identity;
 	}): Promise<void>;
 	signIn(input: { email: string; password: string }): Promise<void>;
 	signOut(): Promise<void>;
@@ -153,6 +158,8 @@ export interface Repository {
 		patch: { nickname?: string; tagline?: string },
 		expectedId?: string,
 	): Promise<Profile>;
+	/** 정체성을 통째로 바꾼다. 규칙(lib/identity cleanIdentity)에 맞지 않으면 거절한다. */
+	updateMyIdentity(identity: Identity): Promise<Profile>;
 	/** 탐색: 나를 뺀 우주선 n개를 무작위로 */
 	exploreRandom(count: number): Promise<ExploreCard[]>;
 	getMyLocation(): Promise<MyLocation | null>;

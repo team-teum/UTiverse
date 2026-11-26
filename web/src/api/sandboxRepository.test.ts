@@ -113,4 +113,41 @@ describe("sandbox repository", () => {
 		assert.equal(await repo.isBookmarked(eventId), false);
 		assert.deepEqual(await repo.listBookmarkedEvents(), []);
 	});
+
+	it("keeps my hidden identity for me and rejects invalid identities", async () => {
+		const repo = createSandboxRepository();
+		const me = await repo.updateMyIdentity({
+			ids: ["trans-woman", "other"],
+			other: "  별빛  ",
+			visible: false,
+		});
+		assert.deepEqual(me.identity, {
+			ids: ["trans-woman", "other"],
+			other: "별빛",
+			visible: false,
+		});
+
+		await assert.rejects(
+			repo.updateMyIdentity({
+				ids: ["agender", "neutrois", "demiboy"],
+				other: "",
+				visible: true,
+			}),
+			/2개까지/,
+		);
+		await assert.rejects(
+			repo.updateMyIdentity({ ids: ["other"], other: "  ", visible: true }),
+			/나를 부르는 말/,
+		);
+		assert.deepEqual((await repo.getMyProfile()).identity, me.identity);
+	});
+
+	it("shows other people's identity only when they chose to show it", async () => {
+		const repo = createSandboxRepository();
+		const others = await repo.listOtherProfiles();
+		for (const profile of others) {
+			if (profile.identity) assert.equal(profile.identity.visible, true);
+		}
+		assert.ok(others.some((profile) => profile.identity?.ids.length));
+	});
 });

@@ -12,7 +12,7 @@ import { LocationDialog } from "../explore/LocationDialog";
 import { ProfileEditor } from "./ProfileEditor";
 import styles from "./Settings.module.css";
 
-/** S16 설정: 닉네임·한 줄 소개, 내 위치, 주변 탐색 표시, 튜토리얼 다시 보기, 로그인/로그아웃 */
+/** S16 설정: 닉네임·한 줄 소개·정체성, 내 위치, 주변 탐색 표시, 튜토리얼 다시 보기, 로그인/로그아웃 */
 export function Settings() {
 	const navigate = useNavigate();
 	const { data: profile, error: profileError } = useRepositoryData("me", () =>
@@ -74,7 +74,11 @@ export function Settings() {
 				<ProfileEditor
 					key={profile.id}
 					profile={profile}
-					onSave={(values) => repo.updateMyProfile(values, profile.id)}
+					onSave={async ({ identity, ...values }) => {
+						// 정체성을 먼저 검사·저장해서, 거절되면 이름도 그대로 둔다
+						if (identity) await repo.updateMyIdentity(identity);
+						await repo.updateMyProfile(values, profile.id);
+					}}
 					onSaved={() => setToast("프로필을 저장했어요")}
 				/>
 			) : (
