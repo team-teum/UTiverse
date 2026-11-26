@@ -5,7 +5,7 @@
 export interface Look {
 	// 캐릭터
 	skin: string;
-	/** 표정 "face1"~"face23" */
+	/** 표정 "face1"~"face15" */
 	face: string;
 	hairStyle: string;
 	hairColor: string;
@@ -128,28 +128,20 @@ export const AVATAR_TABS: Tab[] = [
 				label: "표정",
 				options: [
 					{ id: "face1", label: "기본" },
-					{ id: "face2", label: "반짝반짝" },
+					{ id: "face2", label: "무표정" },
 					{ id: "face3", label: "방긋" },
-					{ id: "face4", label: "윙크" },
+					{ id: "face4", label: "씩" },
 					{ id: "face5", label: "심드렁" },
 					{ id: "face6", label: "깜짝" },
 					{ id: "face7", label: ">_<" },
 					{ id: "face8", label: "폭풍 눈물" },
-					{ id: "face9", label: "글썽" },
-					{ id: "face10", label: "하트" },
+					{ id: "face9", label: "멍" },
+					{ id: "face10", label: "진지" },
 					{ id: "face11", label: "졸려" },
 					{ id: "face12", label: "메롱" },
 					{ id: "face13", label: "선글라스" },
 					{ id: "face14", label: "동글 안경" },
 					{ id: "face15", label: "마스크" },
-					{ id: "face16", label: "무표정" },
-					{ id: "face17", label: "씩" },
-					{ id: "face18", label: "진지" },
-					{ id: "face19", label: "멍" },
-					{ id: "face20", label: "피곤" },
-					{ id: "face21", label: "뿔남" },
-					{ id: "face22", label: "히죽" },
-					{ id: "face23", label: "생각 중" },
 				],
 			},
 			{

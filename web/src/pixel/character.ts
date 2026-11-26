@@ -222,12 +222,12 @@ function styleIndex(id: string, prefix: string): number {
 	return Number.isInteger(n) && n >= 1 && n <= count ? n - 1 : -1;
 }
 
-/** "face1"~"face23" → 시트 칸. 모르는 값은 기본 얼굴 */
+/** "face1"~"face15" → 시트 칸. 모르는 값은 기본 얼굴 */
 function faceIndex(id: string): number {
 	const n = Number(id?.replace("face", ""));
 	return Number.isInteger(n) && n >= 1 && n <= FACE_COUNT ? n - 1 : 0;
 }
-export const FACE_COUNT = 23;
+export const FACE_COUNT = 15;
 const HAIR_COUNT = 14;
 const SUIT_COUNT = 15;
 
