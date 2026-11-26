@@ -253,8 +253,9 @@ export function drawCharacter(
 		HAIR_COLORS,
 		HAIR_COLORS.brown,
 	);
-	const hair = styleIndex(look.hairStyle, "hair");
 	const suit = styleIndex(look.suit, "suit");
+	// 푸바오 후드는 머리를 통째로 덮는다. 저장된 머리 모양은 그대로 두고 그리기만 건너뛴다.
+	const hair = look.suit === "suit15" ? -1 : styleIndex(look.hairStyle, "hair");
 	const face = faceIndex(look.face);
 	const x = Math.round(ox);
 	const y = Math.round(oy);
