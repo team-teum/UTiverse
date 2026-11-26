@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { HueDonut } from "../../components/HueDonut";
-import { AVATAR_TABS, hueOf, type Look, SHIP_TABS } from "../../pixel/look";
+import { ColorPicker } from "../../components/ColorPicker";
+import { AVATAR_TABS, hexOf, type Look, SHIP_TABS } from "../../pixel/look";
 import { ItemPixel } from "../../pixel/PixelCanvas";
 import styles from "./CustomizeView.module.css";
 
@@ -43,6 +43,8 @@ export function CustomizeView({
 	});
 	const tab = tabs.find((item) => item.id === tabId[mode]) ?? tabs[0];
 	const [categoryKey, setCategoryKey] = useState<keyof Look | null>(null);
+	/** 색 칸에서 「직접 고르기」 판을 열었는지 (칸을 바꾸면 닫힌다) */
+	const [picking, setPicking] = useState(false);
 	const category =
 		tab.categories.find((item) => item.key === categoryKey) ??
 		tab.categories[0];
@@ -100,7 +102,10 @@ export function CustomizeView({
 								type="button"
 								className={styles.chip}
 								aria-pressed={item.key === category.key}
-								onClick={() => setCategoryKey(item.key)}
+								onClick={() => {
+									setCategoryKey(item.key);
+									setPicking(false);
+								}}
 							>
 								{item.label}
 							</button>
@@ -108,71 +113,82 @@ export function CustomizeView({
 					</fieldset>
 				)}
 
-				<ul className={styles.items} aria-label={`${category.label} 고르기`}>
-					{category.picker && (
-						<li>
-							<div className={styles.item}>
-								<span
-									className={`${styles.thumb} ${styles.wheel}`}
-									data-selected={hueOf(look[category.key]) !== null}
+				{picking && category.picker ? (
+					<ColorPicker
+						key={category.key}
+						value={hexOf(look[category.key])}
+						label={category.label}
+						onChange={(hex) => onPick({ [category.key]: hex })}
+						onDone={() => setPicking(false)}
+					/>
+				) : (
+					<ul className={styles.items} aria-label={`${category.label} 고르기`}>
+						{category.picker && (
+							<li>
+								<button
+									type="button"
+									className={styles.item}
+									aria-pressed={hexOf(look[category.key]) !== null}
+									aria-expanded={picking}
+									onClick={() => setPicking(true)}
 								>
-									<HueDonut
-										kind={category.picker}
-										value={hueOf(look[category.key])}
-										label={`${category.label} 색상환`}
-										onChange={(hue) => onPick({ [category.key]: `h${hue}` })}
-									>
+									<span className={`${styles.thumb} ${styles.rainbow}`}>
 										<ItemPixel
 											category={category.key}
 											look={look}
 											className={styles.wheelArt}
 										/>
-									</HueDonut>
-								</span>
-								<span className={styles.label}>아무 색</span>
-							</div>
-						</li>
-					)}
-					{category.options.map((option) => {
-						const selected = look[category.key] === option.id;
-						const preview = { ...look, [category.key]: option.id };
-						return (
-							<li key={option.id}>
-								<button
-									type="button"
-									className={styles.item}
-									aria-pressed={selected}
-									aria-label={option.label}
-									onClick={() => onPick({ [category.key]: option.id })}
-								>
-									<span className={styles.thumb}>
-										{option.id === "none" ? (
-											<span className={styles.empty} aria-hidden="true">
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<circle cx="12" cy="12" r="8" />
-													<path d="m6.5 17.5 11-11" />
-												</svg>
-											</span>
-										) : (
-											<ItemPixel
-												category={category.key}
-												look={preview}
-												className={styles.art}
-											/>
-										)}
-										{selected && (
+										{hexOf(look[category.key]) && (
 											<span className={styles.check} aria-hidden="true">
 												✓
 											</span>
 										)}
 									</span>
-									<span className={styles.label}>{option.label}</span>
+									<span className={styles.label}>직접 고르기</span>
 								</button>
 							</li>
-						);
-					})}
-				</ul>
-				{category.options.length > 4 && (
+						)}
+						{category.options.map((option) => {
+							const selected = look[category.key] === option.id;
+							const preview = { ...look, [category.key]: option.id };
+							return (
+								<li key={option.id}>
+									<button
+										type="button"
+										className={styles.item}
+										aria-pressed={selected}
+										aria-label={option.label}
+										onClick={() => onPick({ [category.key]: option.id })}
+									>
+										<span className={styles.thumb}>
+											{option.id === "none" ? (
+												<span className={styles.empty} aria-hidden="true">
+													<svg viewBox="0 0 24 24" aria-hidden="true">
+														<circle cx="12" cy="12" r="8" />
+														<path d="m6.5 17.5 11-11" />
+													</svg>
+												</span>
+											) : (
+												<ItemPixel
+													category={category.key}
+													look={preview}
+													className={styles.art}
+												/>
+											)}
+											{selected && (
+												<span className={styles.check} aria-hidden="true">
+													✓
+												</span>
+											)}
+										</span>
+										<span className={styles.label}>{option.label}</span>
+									</button>
+								</li>
+							);
+						})}
+					</ul>
+				)}
+				{!picking && category.options.length > 4 && (
 					<p className={styles.foot}>옆으로 넘겨 보기 →</p>
 				)}
 			</div>

@@ -6,7 +6,7 @@
 
 import { assets } from "../assets/manifest";
 import type { Ctx } from "./grid";
-import { type HueKind, hueOf, type Look } from "./look";
+import { type HueKind, hexOf, hueOf, type Look } from "./look";
 
 export const CHARACTER_SIZE = { width: 32, height: 40 } as const;
 const { width: W, height: H } = CHARACTER_SIZE;
@@ -74,12 +74,43 @@ function hsl(h: number, s: number, l: number): string {
 	return `#${[f(0), f(8), f(4)].map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** 직접 고른 한 색에서 밝은면·그림자를 만든다 (그림자는 살짝 보라 쪽으로) */
+function hexColors(hex: string): Tri {
+	const [h, sat, light] = toHsl(hex);
+	return [
+		hsl(h, sat, Math.min(97, light + (100 - light) * 0.4)),
+		hex,
+		hsl((h + 8) % 360, Math.min(100, sat + 6), light * 0.78),
+	];
+}
+
+function toHsl(hex: string): [number, number, number] {
+	const [r, g, b] = [1, 3, 5].map(
+		(i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255,
+	);
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	const l = (max + min) / 2;
+	const d = max - min;
+	if (d === 0) return [0, 0, l * 100];
+	const s = d / (1 - Math.abs(2 * l - 1));
+	const h =
+		max === r
+			? ((g - b) / d) % 6
+			: max === g
+				? (b - r) / d + 2
+				: (r - g) / d + 4;
+	return [(h * 60 + 360) % 360, s * 100, l * 100];
+}
+
 function colorsOf(
 	kind: HueKind,
 	value: string,
 	presets: Record<string, Tri>,
 	fallback: Tri,
 ): Tri {
+	const hex = hexOf(value);
+	if (hex) return hexColors(hex);
 	const hue = hueOf(value);
 	return hue === null ? (presets[value] ?? fallback) : hueColors(kind, hue);
 }
@@ -171,15 +202,18 @@ function piece(
 
 function styleIndex(id: string, prefix: string): number {
 	const n = Number(id.replace(prefix, ""));
-	return Number.isInteger(n) && n >= 1 && n <= 5 ? n - 1 : -1;
+	const count = prefix === "hair" ? HAIR_COUNT : SUIT_COUNT;
+	return Number.isInteger(n) && n >= 1 && n <= count ? n - 1 : -1;
 }
 
-/** "face1"~"face15" → 시트 칸. 모르는 값은 기본 얼굴 */
+/** "face1"~"face23" → 시트 칸. 모르는 값은 기본 얼굴 */
 function faceIndex(id: string): number {
 	const n = Number(id?.replace("face", ""));
 	return Number.isInteger(n) && n >= 1 && n <= FACE_COUNT ? n - 1 : 0;
 }
-export const FACE_COUNT = 15;
+export const FACE_COUNT = 23;
+const HAIR_COUNT = 14;
+const SUIT_COUNT = 15;
 
 export interface CharacterParts {
 	body?: boolean;
