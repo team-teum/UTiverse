@@ -96,6 +96,7 @@ export function ShipPage({
 	const progressRef = useRef(onProgress);
 	progressRef.current = onProgress;
 	const touch = useRef<{
+		x: number;
 		y: number;
 		panelTop: boolean;
 		inPanel: boolean;
@@ -160,6 +161,7 @@ export function ShipPage({
 		const panel = panelRef.current;
 		const inPanel = Boolean(panel?.contains(event.target as Node));
 		touch.current = {
+			x: event.touches[0].clientX,
 			y: event.touches[0].clientY,
 			inPanel,
 			panelTop: !panel || panel.scrollTop <= 0,
@@ -170,14 +172,20 @@ export function ShipPage({
 		const start = touch.current;
 		touch.current = null;
 		if (!start) return;
-		const dy = event.changedTouches[0].clientY - start.y;
+		const { clientX, clientY } = event.changedTouches[0];
+		const dy = clientY - start.y;
+		if (Math.abs(dy) <= Math.abs(clientX - start.x)) return;
 		if (!open && dy < -SWIPE) turn(true);
 		else if (open && dy > SWIPE && (!start.inPanel || start.panelTop))
 			turn(false);
 	}
 
 	function onWheel(event: WheelEvent<HTMLElement>) {
-		if (isSideBySide(event.currentTarget)) return;
+		if (
+			isSideBySide(event.currentTarget) ||
+			Math.abs(event.deltaY) <= Math.abs(event.deltaX)
+		)
+			return;
 		const now = Date.now();
 		if (now - lastWheel.current < 700) return;
 		const panel = panelRef.current;

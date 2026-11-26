@@ -13,12 +13,36 @@
 	inline-size: 100%;
 }
 
+/* Allow comment branches to extend beyond the drawing without shifting the row. */
+.track {
+	display: flex;
+	margin-block: calc(-30 * var(--dp)) calc(-34 * var(--dp));
+	padding-block: calc(30 * var(--dp)) calc(34 * var(--dp));
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+}
+
+.track > .slide {
+	flex: 0 0 100%;
+	min-inline-size: 0;
+	scroll-snap-align: start;
+	scroll-snap-stop: always;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.track {
+		scroll-behavior: smooth;
+	}
+}
+
 .sky {
 	position: relative;
 	inline-size: calc(281.5 * var(--dp));
 	block-size: calc(136 * var(--dp));
 	margin-inline: auto;
-	touch-action: pan-y;
 }
 
 /* MY는 연필 버튼까지 합친 320.5 묶음이 가운데에 온다 (Figma Group 22) */

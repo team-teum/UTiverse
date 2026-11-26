@@ -1,8 +1,11 @@
 import {
 	type MouseEvent,
-	type PointerEvent,
 	type ReactNode,
+	useEffect,
+	useEffectEvent,
+	useLayoutEffect,
 	useRef,
+	useState,
 } from "react";
 import { repo } from "../../api/repository";
 import type { Comment, Star } from "../../api/types";
@@ -150,39 +153,89 @@ export function Constellation({
 }: ConstellationProps) {
 	const pageCount = Math.max(1, Math.ceil(stars.length / STARS_PER_PAGE));
 	const current = Math.min(page, pageCount - 1);
-	const visible = stars.slice(
-		current * STARS_PER_PAGE,
-		(current + 1) * STARS_PER_PAGE,
-	);
-	const isLastPage = current === pageCount - 1;
-	const swipeStart = useRef<number | null>(null);
-	const swiped = useRef(false);
-	const skyRef = useRef<HTMLDivElement>(null);
+	const trackRef = useRef<HTMLDivElement>(null);
+	const previousRef = useRef<HTMLButtonElement>(null);
+	const nextRef = useRef<HTMLButtonElement>(null);
+	const pending = useRef<number | null>(null);
+	const restoreFocus = useRef<Element | null>(null);
+	const [announcement, setAnnouncement] = useState("");
 	const { data: allComments } = useRepositoryData(
 		`constellation:${profileId}`,
 		() => repo.listConstellationComments(profileId),
 	);
 
-	function go(next: number) {
-		onPageChange(Math.max(0, Math.min(pageCount - 1, next)));
+	useLayoutEffect(() => {
+		const track = trackRef.current;
+		if (!track) return;
+		pending.current = null;
+		if (pageCount < 2) return;
+		const left = current * track.clientWidth;
+		if (Math.abs(track.scrollLeft - left) > 1) {
+			track.scrollTo({ left, behavior: "instant" });
+		}
+		const focused = restoreFocus.current;
+		restoreFocus.current = null;
+		if (
+			focused &&
+			(document.activeElement === focused ||
+				document.activeElement === document.body)
+		) {
+			const arrow = current > 0 ? previousRef.current : nextRef.current;
+			arrow?.focus({ preventScroll: true });
+		}
+	}, [current, pageCount]);
+
+	function go(direction: -1 | 1) {
+		const track = trackRef.current;
+		if (!track) return;
+		const from = pending.current ?? current;
+		const target = Math.max(0, Math.min(pageCount - 1, from + direction));
+		if (target === from) return;
+		pending.current = target;
+		track.scrollTo({ left: target * track.clientWidth });
 	}
 
-	function onPointerDown(event: PointerEvent) {
-		swiped.current = false;
-		swipeStart.current = event.clientX;
-	}
+	const settle = useEffectEvent((track: HTMLDivElement) => {
+		pending.current = null;
+		if (!track.clientWidth) return;
+		const next = Math.max(
+			0,
+			Math.min(pageCount - 1, Math.round(track.scrollLeft / track.clientWidth)),
+		);
+		if (next === current) return;
+		const focused = document.activeElement;
+		if (
+			track.contains(focused) ||
+			(next === 0 && focused === previousRef.current) ||
+			(next === pageCount - 1 && focused === nextRef.current)
+		) {
+			restoreFocus.current = focused;
+		}
+		setAnnouncement(`별자리 ${next + 1} / ${pageCount}`);
+		onPageChange(next);
+	});
 
-	function onPointerUp(event: PointerEvent) {
-		if (swipeStart.current === null) return;
-		const delta = event.clientX - swipeStart.current;
-		swipeStart.current = null;
-		if (Math.abs(delta) < 40) return;
-		swiped.current = true;
-		go(current + (delta < 0 ? 1 : -1));
-	}
+	useEffect(() => {
+		const track = trackRef.current;
+		if (!track) return;
+		const nativeScrollEnd = "onscrollend" in track;
+		const event = nativeScrollEnd ? "scrollend" : "scroll";
+		let timeout: ReturnType<typeof setTimeout> | undefined;
+		const handleScroll = () => {
+			if (nativeScrollEnd) settle(track);
+			else {
+				clearTimeout(timeout);
+				timeout = setTimeout(() => settle(track), 150);
+			}
+		};
+		track.addEventListener(event, handleScroll);
+		return () => {
+			clearTimeout(timeout);
+			track.removeEventListener(event, handleScroll);
+		};
+	}, []);
 
-	function activateStar(event: MouseEvent<HTMLButtonElement>) {
-		if (event.detail > 0 && swiped.current) return;
+	function activateStar(event: MouseEvent<HTMLButtonElement>, visible: Star[]) {
 		const clicked = event.currentTarget;
 
 		// 겹치는 터치 영역에서는 가장 가까운 별을 고른다. 키보드는 초점을 둔 버튼을 고른다.
@@ -190,9 +243,9 @@ export function Constellation({
 		if (event.detail > 0) {
 			const { clientX: x, clientY: y } = event;
 			let nearest = Number.POSITIVE_INFINITY;
-			const buttons = skyRef.current?.querySelectorAll<HTMLButtonElement>(
-				"button[data-star-id]",
-			);
+			const buttons = clicked
+				.closest(`.${styles.sky}`)
+				?.querySelectorAll<HTMLButtonElement>("button[data-star-id]");
 			for (const button of buttons ?? []) {
 				const { left, right, top, bottom } = button.getBoundingClientRect();
 				if (x < left || x > right || y < top || y > bottom) continue;
@@ -213,58 +266,44 @@ export function Constellation({
 	}
 
 	const { points, edges } = getConstellationPattern(profileId);
-	const lines = edges
-		.filter(([from, to]) => from < visible.length && to < visible.length)
-		.map(([from, to]) => segment(points[from], points[to], STAR_GAP, STAR_GAP));
-	// 다음 글이 새 페이지를 열면 완성된 모양에 연필을 연결하지 않는다.
-	if (
-		writeButton &&
-		isLastPage &&
-		// 별이 하나뿐이면 선을 긋지 않는다
-		visible.length > 1 &&
-		visible.length < STARS_PER_PAGE
-	) {
-		lines.push(
-			segment(points[visible.length - 1], WRITE_CENTER, STAR_GAP, WRITE_GAP),
+	function renderPage(index: number) {
+		const visible = stars.slice(
+			index * STARS_PER_PAGE,
+			(index + 1) * STARS_PER_PAGE,
 		);
-	}
+		const isLastPage = index === pageCount - 1;
+		const lines = edges
+			.filter(([from, to]) => from < visible.length && to < visible.length)
+			.map(([from, to]) =>
+				segment(points[from], points[to], STAR_GAP, STAR_GAP),
+			);
+		// 다음 글이 새 페이지를 열면 완성된 모양에 연필을 연결하지 않는다.
+		if (
+			writeButton &&
+			isLastPage &&
+			// 별이 하나뿐이면 선을 긋지 않는다
+			visible.length > 1 &&
+			visible.length < STARS_PER_PAGE
+		) {
+			lines.push(
+				segment(points[visible.length - 1], WRITE_CENTER, STAR_GAP, WRITE_GAP),
+			);
+		}
 
-	const countFor = (starId: string) =>
-		(allComments ?? []).filter((c) => c.starId === starId).length;
-	const branches = visible.flatMap((star, index) =>
-		growBranches(
-			points[index],
-			(allComments ?? []).filter((c) => c.starId === star.id),
-			profileId,
-			star,
-		),
-	);
+		const countFor = (starId: string) =>
+			(allComments ?? []).filter((c) => c.starId === starId).length;
+		const branches = visible.flatMap((star, index) =>
+			growBranches(
+				points[index],
+				(allComments ?? []).filter((c) => c.starId === star.id),
+				profileId,
+				star,
+			),
+		);
 
-	return (
-		<section
-			className={`${styles.root} ${writeButton ? styles.withWrite : ""}`}
-			aria-label="별자리"
-		>
-			<div className={styles.row}>
-				<button
-					type="button"
-					className={styles.arrow}
-					aria-label="이전 별자리"
-					disabled={current === 0}
-					hidden={pageCount < 2}
-					onClick={() => go(current - 1)}
-				>
-					<Chevron direction="left" />
-				</button>
-				<div
-					className={styles.sky}
-					ref={skyRef}
-					onPointerDown={onPointerDown}
-					onPointerUp={onPointerUp}
-					onPointerCancel={() => {
-						swipeStart.current = null;
-					}}
-				>
+		return (
+			<div key={index} className={styles.slide} inert={index !== current}>
+				<div className={styles.sky}>
 					<svg
 						className={styles.lines}
 						viewBox={`0 0 ${BOX.width} ${BOX.height}`}
@@ -337,7 +376,7 @@ export function Constellation({
 										className={`${styles.star} ${star.id === highlightId ? `${styles.new} ${sparkle.twinkle}` : ""}`}
 										aria-label={`${formatMonthDay(star.createdAt)} 별: ${star.body.slice(0, 20)}${countFor(star.id) ? `, 댓글 ${countFor(star.id)}개` : ""}`}
 										data-star-id={star.id}
-										onClick={activateStar}
+										onClick={(event) => activateStar(event, visible)}
 									>
 										<svg
 											viewBox="0 0 24 24"
@@ -369,20 +408,48 @@ export function Constellation({
 									aria-label={`${branch.author}의 댓글: ${branch.body.slice(0, 20)}`}
 									data-star-id={branch.star.id}
 									data-comment-id={branch.id}
-									onClick={activateStar}
+									onClick={(event) => activateStar(event, visible)}
 								/>
 							</li>
 						))}
 					</ul>
 					{writeButton && <div className={styles.write}>{writeButton}</div>}
 				</div>
+			</div>
+		);
+	}
+
+	return (
+		<section
+			className={`${styles.root} ${writeButton ? styles.withWrite : ""}`}
+			aria-label="별자리"
+		>
+			<div className={styles.row}>
 				<button
+					ref={previousRef}
+					type="button"
+					className={styles.arrow}
+					aria-label="이전 별자리"
+					disabled={current === 0}
+					hidden={pageCount < 2}
+					onClick={() => go(-1)}
+				>
+					<Chevron direction="left" />
+				</button>
+				<div
+					ref={trackRef}
+					className={pageCount > 1 ? styles.track : undefined}
+				>
+					{Array.from({ length: pageCount }, (_, index) => renderPage(index))}
+				</div>
+				<button
+					ref={nextRef}
 					type="button"
 					className={styles.arrow}
 					aria-label="다음 별자리"
-					disabled={isLastPage}
+					disabled={current === pageCount - 1}
 					hidden={pageCount < 2}
-					onClick={() => go(current + 1)}
+					onClick={() => go(1)}
 				>
 					<Chevron direction="right" />
 				</button>
@@ -403,6 +470,9 @@ export function Constellation({
 					))}
 				</ol>
 			)}
+			<p className="sr-only" role="status">
+				{announcement}
+			</p>
 		</section>
 	);
 }
