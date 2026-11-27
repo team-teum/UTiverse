@@ -7,6 +7,7 @@ import cosmic from "../../components/Cosmic.module.css";
 import ui from "../../components/SpaceUi.module.css";
 import { Toast } from "../../components/Toast";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
+import { getReduceMotionInApp, setReduceMotionInApp } from "../../lib/motion";
 import { AuthDialog } from "../auth/AuthDialog";
 import { LocationDialog } from "../explore/LocationDialog";
 import { ProfileEditor } from "./ProfileEditor";
@@ -27,6 +28,7 @@ export function Settings() {
 	);
 	const [accountError, setAccountError] = useState<string | null>(null);
 	const [signingOut, setSigningOut] = useState(false);
+	const [reduceMotion, setReduceMotion] = useState(getReduceMotionInApp);
 	const [locationError, setLocationError] = useState<string | null>(null);
 	const [toast, setToast] = useState<string | null>(null);
 	const [dialog, setDialog] = useState<"location" | "delete" | "auth" | null>(
@@ -170,6 +172,22 @@ export function Settings() {
 				aria-labelledby="etc-heading"
 			>
 				<h2 id="etc-heading">계정 · 안내</h2>
+				<label className={ui.row}>
+					<span className={ui.rowTitle}>동작 줄이기</span>
+					<input
+						type="checkbox"
+						checked={reduceMotion}
+						aria-describedby="motion-hint"
+						onChange={(event) => {
+							const enabled = event.currentTarget.checked;
+							setReduceMotion(enabled);
+							setReduceMotionInApp(enabled);
+						}}
+					/>
+				</label>
+				<p id="motion-hint" className={styles.note}>
+					기기의 동작 줄이기 설정도 적용돼요.
+				</p>
 				{import.meta.env.HOSTED_SUPABASE && (
 					<a href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL}`}>
 						운영팀 문의 · 계정 삭제 요청

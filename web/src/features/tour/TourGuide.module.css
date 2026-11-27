@@ -119,7 +119,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.bubble,
 	.glow {
 		animation: none;

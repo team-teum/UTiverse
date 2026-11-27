@@ -78,7 +78,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.next,
 	.prev {
 		animation: none;

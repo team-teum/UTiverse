@@ -119,6 +119,12 @@
 	font-weight: 700;
 }
 
+:where(:global(html[data-reduce-motion])) {
+	.pressed .bubble {
+		animation: none;
+	}
+}
+
 .reaction:active .bubble {
 	transform: scale(0.92);
 }
@@ -126,11 +132,5 @@
 @keyframes pop {
 	40% {
 		transform: scale(1.18);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.pressed .bubble {
-		animation: none;
 	}
 }

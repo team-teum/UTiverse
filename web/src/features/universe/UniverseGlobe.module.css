@@ -84,67 +84,7 @@
 	cursor: wait;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	.flightStage {
-		position: relative;
-		overflow: clip;
-		isolation: isolate;
-	}
-
-	.flightStage .globe {
-		z-index: 0;
-	}
-
-	.flightStage .name {
-		animation: fade-out 170ms ease-out both;
-	}
-
-	.flightStage .globe::before {
-		animation: fade-out 300ms ease-out both;
-	}
-
-	.flyby {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		pointer-events: none;
-		animation: center-flyby var(--flight-duration) both;
-	}
-
-	.streak {
-		position: absolute;
-		inset: 50% auto auto 50%;
-		rotate: var(--angle);
-	}
-
-	.streak::before {
-		content: "";
-		display: block;
-		inline-size: var(--length);
-		block-size: 1.5px;
-		border-radius: 100%;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			var(--universe-blue),
-			var(--universe-white)
-		);
-		transform-origin: right;
-		animation: fly-past calc(var(--flight-duration) - var(--delay) - 60ms)
-			ease-in var(--delay) both;
-	}
-
-	.streak:nth-child(3n)::before {
-		background: linear-gradient(
-			90deg,
-			transparent,
-			var(--universe-pink),
-			var(--universe-white)
-		);
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.flyby {
 		display: none;
 	}
@@ -247,10 +187,8 @@
 	overflow: visible;
 }
 
-.trail {
-	@media (prefers-reduced-motion: no-preference) {
-		transition: opacity 140ms ease-out;
-	}
+:where(:global(html:not([data-reduce-motion]))) .trail {
+	transition: opacity 140ms ease-out;
 }
 
 .hub {
@@ -326,22 +264,42 @@
 	);
 }
 
-/* 별과 탭 영역은 그대로 두고 두 별에만 짧게 빛을 더한다. */
-@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
-	.front:nth-child(2 of .front) .dot::after,
-	.front:nth-child(4 of .front) .dot::after {
+:where(:global(html:not([data-reduce-motion]))) {
+	.pulse::after {
 		content: "";
-		inset: -12px;
-		animation-delay: 6s;
+		position: absolute;
+		inset: -8px;
+		background: radial-gradient(
+			circle,
+			rgb(255 232 250 / 85%),
+			rgb(226 162 255 / 45%) 35%,
+			transparent 70%
+		);
+		opacity: 0;
+		pointer-events: none;
+		animation: star-pulse 1.25s ease-in-out;
 	}
 
-	.front:nth-child(4 of .front) .dot::after {
-		animation-delay: 10s;
+	.back .pulse {
+		--pulse-peak: 0.37;
 	}
 
-	:is(.globe:has(:focus-visible), .dragging, .flightStage, .link:hover)
-		.dot::after {
+	:is(.dragging, .flightStage, .link:focus-visible, .link:active)
+		.pulse::after {
 		visibility: hidden;
+	}
+}
+
+@keyframes star-pulse {
+	0%,
+	100% {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	48% {
+		opacity: var(--pulse-peak, 0.72);
+		transform: scale(1.06);
 	}
 }
 
@@ -381,10 +339,73 @@
 	visibility: hidden;
 }
 
+:where(:global(html:not([data-reduce-motion]))) {
+	.flightStage {
+		position: relative;
+		overflow: clip;
+		isolation: isolate;
+	}
+
+	.flightStage .globe {
+		z-index: 0;
+	}
+
+	.flightStage .name {
+		animation: fade-out 170ms ease-out both;
+	}
+
+	.flightStage .globe::before {
+		animation: fade-out 300ms ease-out both;
+	}
+
+	.flyby {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		animation: center-flyby var(--flight-duration) both;
+	}
+
+	.streak {
+		position: absolute;
+		inset: 50% auto auto 50%;
+		rotate: var(--angle);
+	}
+
+	.streak::before {
+		content: "";
+		display: block;
+		inline-size: var(--length);
+		block-size: 1.5px;
+		border-radius: 100%;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			var(--universe-blue),
+			var(--universe-white)
+		);
+		transform-origin: right;
+		animation: fly-past calc(var(--flight-duration) - var(--delay) - 60ms)
+			ease-in var(--delay) both;
+	}
+
+	.streak:nth-child(3n)::before {
+		background: linear-gradient(
+			90deg,
+			transparent,
+			var(--universe-pink),
+			var(--universe-white)
+		);
+	}
+}
+
 .link:hover .dot,
-.link:active .dot,
 .link:focus-visible .dot {
 	filter: drop-shadow(0 0 5px var(--universe-blue));
+}
+
+.link:active .dot {
+	filter: drop-shadow(0 0 9px var(--universe-blue));
 }
 
 .link:hover .name,
@@ -457,6 +478,10 @@
 }
 
 @media (forced-colors: active) {
+	.pulse::after {
+		animation: none;
+	}
+
 	.telescope {
 		border-color: ButtonText;
 	}
@@ -550,7 +575,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.swipeFinger {
 		animation: none;
 	}

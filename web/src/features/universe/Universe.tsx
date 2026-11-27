@@ -40,6 +40,7 @@ export function Universe() {
 						{...sky}
 						resumeView={resumeView}
 						showRotationHint={!tour}
+						autoRotate={!tour?.visible}
 						focusProfileId={focusProfileId}
 					/>
 				)}

@@ -25,7 +25,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.toast {
 		animation: none;
 	}

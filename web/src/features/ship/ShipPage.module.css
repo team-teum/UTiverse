@@ -37,13 +37,13 @@
 	will-change: transform;
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.pager .stack {
 		transition-duration: 1ms;
 	}
 }
 
-@media (prefers-reduced-motion: no-preference) {
+:where(:global(html:not([data-reduce-motion]))) {
 	.arrival {
 		animation: arrive 220ms ease-out both;
 		transform-origin: 50% 24%;
@@ -120,18 +120,18 @@
 	transform: scale(1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.ship > .shipButton {
-		transition-duration: 1ms;
-	}
-}
-
 .shipButton {
 	display: block;
 	padding: 0;
 	border: 0;
 	background: transparent;
 	cursor: pointer;
+}
+
+:where(:global(html[data-reduce-motion])) {
+	.ship > .shipButton {
+		transition-duration: 1ms;
+	}
 }
 
 /* Figma 「위로 스와이프해서 우주선꾸미기」 흰 글자 + ∧ (Vector 122). 꾸미기 쪽에선 ∨ 만 */

@@ -187,7 +187,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.focused {
 		animation: none;
 		background: rgb(143 224 255 / 20%);

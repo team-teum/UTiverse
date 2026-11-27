@@ -32,7 +32,7 @@
 	scroll-snap-stop: always;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+:where(:global(html:not([data-reduce-motion]))) {
 	.track {
 		scroll-behavior: smooth;
 	}
@@ -134,14 +134,16 @@
 	position: relative;
 }
 
-@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
-	.new[data-pause-twinkle]::after {
-		animation-play-state: paused;
-	}
+@media not (forced-colors: active) {
+	:where(:global(html:not([data-reduce-motion]))) {
+		.new[data-pause-twinkle]::after {
+			animation-play-state: paused;
+		}
 
-	.new::after {
-		content: "";
-		inset: 12%;
+		.new::after {
+			content: "";
+			inset: 12%;
+		}
 	}
 }
 

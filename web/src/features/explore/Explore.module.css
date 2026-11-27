@@ -75,7 +75,7 @@
 	}
 }
 
-@media (prefers-reduced-motion: reduce) {
+:where(:global(html[data-reduce-motion])) {
 	.body {
 		animation: none;
 	}
@@ -137,6 +137,12 @@
 	animation-delay: var(--bob-delay, 0s);
 }
 
+:where(:global(html[data-reduce-motion])) {
+	.cardShip {
+		animation: none;
+	}
+}
+
 .card:active .cardShip {
 	transform: scale(0.94);
 	animation-play-state: paused;
@@ -165,12 +171,6 @@
 	}
 	72% {
 		translate: 0 0;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.cardShip {
-		animation: none;
 	}
 }
 

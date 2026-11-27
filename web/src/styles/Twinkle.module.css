@@ -1,19 +1,21 @@
 /* The host supplies ::after content and bounds only on stars that should shine. */
-@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
-	.twinkle::after {
-		position: absolute;
-		background:
-			radial-gradient(ellipse 8% 44%, #fff4ff 12%, transparent 100%),
-			radial-gradient(ellipse 44% 8%, #fff4ff 12%, transparent 100%),
-			radial-gradient(circle, rgb(219 177 255 / 90%), transparent 68%);
-		opacity: 0;
-		pointer-events: none;
-		animation: twinkle 950ms ease-in-out;
-	}
-
-	@keyframes twinkle {
-		50% {
-			opacity: 0.85;
+@media not (forced-colors: active) {
+	:where(:global(html:not([data-reduce-motion]))) {
+		.twinkle::after {
+			position: absolute;
+			background:
+				radial-gradient(ellipse 8% 44%, #fff4ff 12%, transparent 100%),
+				radial-gradient(ellipse 44% 8%, #fff4ff 12%, transparent 100%),
+				radial-gradient(circle, rgb(219 177 255 / 90%), transparent 68%);
+			opacity: 0;
+			pointer-events: none;
+			animation: twinkle 950ms ease-in-out;
 		}
+	}
+}
+
+@keyframes twinkle {
+	50% {
+		opacity: 0.85;
 	}
 }

@@ -3,6 +3,7 @@ import {
 	type MouseEvent,
 	type PointerEvent,
 	useEffect,
+	useEffectEvent,
 	useId,
 	useLayoutEffect,
 	useRef,
@@ -10,8 +11,7 @@ import {
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { GlobeSky } from "../../api/types";
-import { REDUCED_MOTION } from "../../lib/motion";
-import sparkle from "../../styles/Twinkle.module.css";
+import { useReducedMotion } from "../../lib/motion";
 import { reportTourAction } from "../tour/tourStore";
 import {
 	facePoint,
@@ -21,12 +21,12 @@ import {
 	rotateBy,
 	spherePoint,
 } from "./globeProjection";
+import { startIdleRotation } from "./idleRotation";
 import { linkDots, linkOpacity, seedOf, sparklePath } from "./linkStrand";
 import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
 const FLIGHT_MS = 680;
-const INTRO_MS = 5000;
 const VISIT_STATE = { fromUniverse: true };
 const STREAKS = Array.from({ length: 24 }, (_, index) => ({
 	angle: `${(index * 137.5) % 360}deg`,
@@ -88,11 +88,13 @@ export function UniverseGlobe({
 	linkedIds,
 	resumeView,
 	showRotationHint,
+	autoRotate,
 	focusProfileId,
 }: GlobeSky & {
 	entryKey: string;
 	resumeView: boolean;
 	showRotationHint: boolean;
+	autoRotate: boolean;
 	/** 튜토리얼 v2가 가리키는 우주선. 뒤쪽에 있으면 한 번 앞으로 돌려 둔다 */
 	focusProfileId?: string;
 }) {
@@ -116,6 +118,9 @@ export function UniverseGlobe({
 			? NO_ROTATION
 			: facePoint(spherePoint(slot, profiles.length));
 	});
+	const [pulseId, setPulseId] = useState<string | null>(null);
+	const reducedMotion = useReducedMotion();
+	const lastPulse = useRef<string | null>(null);
 	const [dragging, setDragging] = useState(false);
 	const [flight, setFlight] = useState<{
 		x: number;
@@ -125,47 +130,13 @@ export function UniverseGlobe({
 	const [announcement, setAnnouncement] = useState("");
 	// 손가락 안내(튜토리얼 격): 한 번 돌려 보면 다시 나오지 않는다 (샌드박스는 새로고침하면 처음부터)
 	const [showSwipeHint, setShowSwipeHint] = useState(!swipedOnce);
-	const introStopped = useRef(false);
-
-	// 새로 들어올 때만 잠깐 회전한다. 조작을 시작했거나 복귀한 뷰는 움직이지 않는다.
 	useEffect(() => {
-		const motion = window.matchMedia(REDUCED_MOTION);
 		const globe = globeRef.current;
-		if (
-			origin ||
-			viewerId ||
-			introStopped.current ||
-			motion.matches ||
-			globe?.contains(document.activeElement)
-		)
-			return;
-
-		let last = performance.now();
-		const end = last + INTRO_MS;
-		let frame: number;
-		const tick = (now: number) => {
-			if (introStopped.current || motion.matches || document.hidden) return;
-			const dt = Math.max(0, Math.min(now - last, end - last, 64));
-			last = now;
-			setRotation((current) => rotateBy(current, (dt / 1000) * 0.07, 0));
-			if (now < end) frame = requestAnimationFrame(tick);
-		};
-		const stop = () => {
-			introStopped.current = true;
-			cancelAnimationFrame(frame);
-		};
-		const onPreferenceChange = () => {
-			if (motion.matches) stop();
-		};
-		frame = requestAnimationFrame(tick);
-		globe?.addEventListener("focusin", stop);
-		motion.addEventListener("change", onPreferenceChange);
-		return () => {
-			cancelAnimationFrame(frame);
-			globe?.removeEventListener("focusin", stop);
-			motion.removeEventListener("change", onPreferenceChange);
-		};
-	}, [origin, viewerId]);
+		if (!globe || !autoRotate || reducedMotion || flight) return;
+		return startIdleRotation(globe, (yaw) => {
+			setRotation((current) => rotateBy(current, yaw, 0));
+		});
+	}, [autoRotate, flight, reducedMotion]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
 
@@ -178,7 +149,6 @@ export function UniverseGlobe({
 		if (slot < 0) return;
 		const point = spherePoint(slot, profiles.length);
 		if (projectPoint(point, rotationRef.current).depth < -0.3) return;
-		introStopped.current = true;
 		setRotation(facePoint(point));
 	}, [focusProfileId, profiles]);
 
@@ -252,7 +222,7 @@ export function UniverseGlobe({
 		trigger: VisitTrigger,
 	) {
 		const globe = globeRef.current;
-		if (!globe?.animate || window.matchMedia(REDUCED_MOTION).matches) {
+		if (!globe?.animate || reducedMotion) {
 			return false;
 		}
 
@@ -318,7 +288,6 @@ export function UniverseGlobe({
 			dragRef.current
 		)
 			return;
-		introStopped.current = true;
 		suppressClick.current = false;
 		setAnnouncement("");
 		dragRef.current = {
@@ -377,6 +346,47 @@ export function UniverseGlobe({
 	}));
 	const mine = stars.find((s) => s.profile.id === viewerId)?.point;
 	const neighbors = stars.filter(({ profile }) => linked.has(profile.id));
+
+	const pulseNextStar = useEffectEvent(() => {
+		const candidates = stars.filter(
+			({ profile }) => profile.id !== lastPulse.current,
+		);
+		const front = candidates.filter(({ point }) => point.depth <= 0);
+		const rear = candidates.filter(({ point }) => point.depth > 0);
+		const pool =
+			rear.length && (!front.length || Math.random() < 0.25) ? rear : front;
+		const next = pool[Math.floor(Math.random() * pool.length)];
+		if (next) lastPulse.current = next.profile.id;
+		setPulseId(next?.profile.id ?? null);
+	});
+
+	useEffect(() => {
+		if (reducedMotion || dragging || flight) {
+			setPulseId(null);
+			return;
+		}
+		const forcedColors = window.matchMedia("(forced-colors: active)");
+		let timer: number;
+		const tick = () => {
+			pulseNextStar();
+			// The glow lasts 1.25s; keep the sky still for the rest of the interval.
+			timer = window.setTimeout(tick, 3500);
+		};
+		const sync = () => {
+			window.clearTimeout(timer);
+			setPulseId(null);
+			if (!forcedColors.matches && !document.hidden)
+				timer = window.setTimeout(tick, 350);
+		};
+		sync();
+		forcedColors.addEventListener("change", sync);
+		document.addEventListener("visibilitychange", sync);
+		return () => {
+			window.clearTimeout(timer);
+			forcedColors.removeEventListener("change", sync);
+			document.removeEventListener("visibilitychange", sync);
+		};
+	}, [dragging, flight, reducedMotion]);
 	// One gradient per endpoint makes every strand read pink at me and blue at the other star.
 	const suffix = helpId.replace(/[^\w-]/g, "");
 	const gradientId = (id: string) => `globe-link-${id}-${suffix}`;
@@ -487,6 +497,7 @@ export function UniverseGlobe({
 					)}
 					<ul className={styles.stars} aria-label="우주선 목록">
 						{stars.map(({ profile, point }) => {
+							const pulsing = !dragging && !flight && profile.id === pulseId;
 							const self = profile.id === viewerId;
 							const front = point.depth <= 0;
 							const to = self ? "/me" : `/ship/${profile.id}`;
@@ -521,7 +532,7 @@ export function UniverseGlobe({
 										onClick={(event) => handleVisitClick(event, profile, front)}
 									>
 										<span
-											className={`${styles.dot} ${sparkle.twinkle} ${self ? styles.mine : ""}`}
+											className={`${styles.dot} ${pulsing ? styles.pulse : ""} ${self ? styles.mine : ""}`}
 											aria-hidden="true"
 										/>
 										<span className={styles.name}>
