@@ -1,27 +1,66 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { linkDots, linkOpacity, seedOf, sparklePath } from "./linkStrand.ts";
+import { GLOBE_RADIUS } from "./globeProjection.ts";
+import { linkDots, linkView, seedOf, sparklePath } from "./linkStrand.ts";
 
 const from = { x: 0, y: 0 };
 const to = { x: 100, y: 0 };
 
 describe("globe link strand", () => {
-	it("keeps the strand visible around the rim and fades shortly past it", () => {
-		assert.equal(linkOpacity(-1, -0.2), 1);
-		const rim = linkOpacity(-1, 0);
-		const behindRim = linkOpacity(-1, 0.1);
-		assert.ok(rim > 0.6 && rim < 1);
-		assert.ok(behindRim > 0 && behindRim < rim);
-		assert.equal(linkOpacity(0.1, -1), behindRim);
-		assert.equal(linkOpacity(-1, 0.28), 0);
-		assert.equal(linkOpacity(-1, 1), 0);
+	it("joins a visible star and eases toward the rim as it turns away", () => {
+		const mine = { ...from, depth: -1 };
+		const front = { ...to, depth: -0.2 };
+		assert.deepEqual(linkView(mine, front, 1), {
+			start: mine,
+			end: front,
+			startFade: 0,
+			endFade: 0,
+			opacity: 1,
+		});
+		const turning = linkView(mine, { ...to, depth: 0.1 }, 1);
+		assert.ok(turning.end.x > to.x && turning.end.x < GLOBE_RADIUS);
+		assert.ok(turning.endFade > 0 && turning.endFade < 1);
+		const rear = linkView(mine, { ...to, depth: 0.6 }, 1);
+		assert.deepEqual(rear, {
+			start: mine,
+			end: { x: GLOBE_RADIUS, y: 0 },
+			startFade: 0,
+			endFade: 1,
+			opacity: 0.75,
+		});
 	});
 
-	it("fades out as the last front-facing endpoint reaches the rim", () => {
-		const almostHidden = linkOpacity(-0.01, 0.1);
-		assert.ok(almostHidden > 0 && almostHidden < 0.01);
-		assert.equal(linkOpacity(0, 0.1), 0);
-		assert.equal(linkOpacity(0.05, 0.1), 0);
+	it("shows an exactly opposite connection even when both projections coincide", () => {
+		const mine = { ...from, depth: -1 };
+		const opposite = { ...from, depth: 1 };
+		const view = linkView(mine, opposite, seedOf("alice"));
+		assert.ok(
+			Math.abs(Math.hypot(view.end.x, view.end.y) - GLOBE_RADIUS) < 1e-9,
+		);
+		assert.equal(view.endFade, 1);
+		assert.ok(view.opacity > 0.5);
+		assert.deepEqual(view, linkView(mine, opposite, seedOf("alice")));
+		assert.notDeepEqual(view.end, linkView(mine, opposite, seedOf("bob")).end);
+	});
+
+	it("shows the partial trail from the neighbor when my own star is behind", () => {
+		const mine = { x: -100, y: 0, depth: 0.6 };
+		const front = { ...to, depth: -0.55 };
+		assert.deepEqual(linkView(mine, front, 1), {
+			start: { x: -GLOBE_RADIUS, y: 0 },
+			end: front,
+			startFade: 1,
+			endFade: 0,
+			opacity: 0.75,
+		});
+	});
+
+	it("fades out when both are rear-facing", () => {
+		const rear = { ...to, depth: 0.6 };
+		const almostHidden = linkView({ ...from, depth: -0.01 }, rear, 1);
+		assert.ok(almostHidden.opacity > 0 && almostHidden.opacity < 0.01);
+		assert.equal(linkView({ ...from, depth: 0 }, rear, 1).opacity, 0);
+		assert.equal(linkView({ ...from, depth: 0.6 }, rear, 1).opacity, 0);
 	});
 
 	it("is stable for one pair and scatters differently for another", () => {

@@ -1,3 +1,5 @@
+import { GLOBE_RADIUS } from "./globeProjection.ts";
+
 /** Link dots: a seeded scatter of tiny stars along a gently bowed curve. Coordinates are SVG units, y down. */
 export interface LinkDot {
 	id: number;
@@ -29,23 +31,51 @@ export function seedOf(text: string): number {
 	return h;
 }
 
-const FADE_START_DEPTH = -0.2;
-const FAR_ENDPOINT_CUTOFF = 0.28;
+const REAR_TRANSITION_DEPTH = 0.28;
 
-function depthFade(depth: number, cutoff: number): number {
-	const t = Math.min(
-		1,
-		Math.max(0, (cutoff - depth) / (cutoff - FADE_START_DEPTH)),
-	);
+type Point = { x: number; y: number };
+type Endpoint = Point & { depth: number };
+
+function smoothStep(value: number): number {
+	const t = Math.min(1, Math.max(0, value));
 	return t * t * (3 - 2 * t);
 }
 
-/** Let one endpoint peek past the rim, but fade to zero before both are behind it. */
-export function linkOpacity(fromDepth: number, toDepth: number): number {
-	return Math.min(
-		depthFade(Math.max(fromDepth, toDepth), FAR_ENDPOINT_CUTOFF),
-		depthFade(Math.min(fromDepth, toDepth), 0),
-	);
+/** A visible star can anchor the trail even when the other star is behind the globe. */
+export function linkView(from: Endpoint, to: Endpoint, seed: number) {
+	const frontOpacity = smoothStep(-Math.min(from.depth, to.depth) / 0.2);
+	const hidden = from.depth > to.depth ? from : to;
+	if (frontOpacity === 0 || hidden.depth <= 0) {
+		return {
+			start: from,
+			end: to,
+			startFade: 0,
+			endFade: 0,
+			opacity: frontOpacity,
+		};
+	}
+
+	const fade = smoothStep(hidden.depth / REAR_TRANSITION_DEPTH);
+	const radius = Math.hypot(hidden.x, hidden.y);
+	// Near the antipode the projected direction collapses. Ease toward a stable bearing instead.
+	const directionWeight = smoothStep(radius / 30);
+	const angle = hash(seed, 0) * 2 * Math.PI;
+	const rimX =
+		GLOBE_RADIUS *
+		((directionWeight * hidden.x) / (radius || 1) +
+			(1 - directionWeight) * Math.cos(angle));
+	const rimY =
+		GLOBE_RADIUS *
+		((directionWeight * hidden.y) / (radius || 1) +
+			(1 - directionWeight) * Math.sin(angle));
+	const rim = {
+		x: hidden.x + (rimX - hidden.x) * fade,
+		y: hidden.y + (rimY - hidden.y) * fade,
+	};
+	const opacity = frontOpacity * (1 - 0.25 * fade);
+	return hidden === from
+		? { start: rim, end: to, startFade: fade, endFade: 0, opacity }
+		: { start: from, end: rim, startFade: 0, endFade: fade, opacity };
 }
 
 export function linkDots(

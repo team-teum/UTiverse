@@ -9,6 +9,7 @@ export interface Rotation {
 	z: number;
 }
 
+export const GLOBE_RADIUS = 140;
 export const NO_ROTATION: Rotation = { w: 1, x: 0, y: 0, z: 0 };
 
 function multiply(a: Rotation, b: Rotation): Rotation {
@@ -66,8 +67,13 @@ export function projectPoint(
 		2 * (qx * qz - w * qy) * point.x +
 		2 * (qy * qz + w * qx) * point.y +
 		(1 - 2 * (qx * qx + qy * qy)) * point.z;
-	const scale = 600 / (600 + depth * 140);
-	return { x: x * 140 * scale, y: -y * 140 * scale, depth, scale };
+	const scale = 600 / (600 + depth * GLOBE_RADIUS);
+	return {
+		x: x * GLOBE_RADIUS * scale,
+		y: -y * GLOBE_RADIUS * scale,
+		depth,
+		scale,
+	};
 }
 
 /**
