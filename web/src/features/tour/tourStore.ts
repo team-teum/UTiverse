@@ -41,9 +41,13 @@ function set(next: TourState) {
 	for (const listener of listeners) listener();
 }
 
-/** 첫 튜토리얼을 끝까지 본 뒤 부른다. */
+/** 인트로를 끝까지 본 뒤 본문 안내를 시작한다. */
 export function startTour() {
 	set(TOUR_START);
+}
+
+export function stopTour() {
+	set(null);
 }
 
 export function isTourActive() {

@@ -40,9 +40,14 @@
 	text-wrap: pretty;
 }
 
-/* 「닫기」: 글자는 작지만 누르는 자리는 44px */
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+/* 글자는 작지만 누르는 자리는 44px */
 .close {
-	justify-self: end;
 	margin-block-start: -0.5rem;
 	min-block-size: 44px;
 	min-inline-size: 44px;

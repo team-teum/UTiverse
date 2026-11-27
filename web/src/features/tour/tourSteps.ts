@@ -1,4 +1,4 @@
-// 튜토리얼 v2: 첫 튜토리얼 뒤 홈에서 이어지는 화면 안내 (Figma 「종합」 「튜토리얼 v2」 143:6815).
+// 튜토리얼 v2: 인트로 뒤 홈에서 이어지는 본문 안내 (Figma 「종합」 「튜토리얼 v2」 143:6815).
 // 이 파일은 순서와 진행 규칙만 담는다. 화면 표시는 TourGuide, 상태 보관은 tourStore.
 
 /** 예시 우주선 「루미」. 샌드박스와 Supabase 예시 데이터가 같은 ID를 쓴다. */
@@ -11,6 +11,7 @@ export type TourScreen =
 	| "lumiStar"
 	| "explore"
 	| "me"
+	| "guestMy"
 	| "customize"
 	| "menu"
 	| "calendar";
@@ -30,8 +31,8 @@ export interface TourStep {
 	/** 가리킬 요소가 없을 때 대신 보일 문구 */
 	textWithoutTarget?: string;
 	/**
-	 * info: 「닫기」가 곧 다음.
-	 * do: 행동(until)이나 다음 화면으로 이동해야 넘어간다. 「닫기」는 말풍선만 숨긴다.
+	 * info: 「다음」으로 진행한다.
+	 * do: 행동(until)이나 다음 화면으로 이동해야 넘어간다. 「안내 숨기기」는 말풍선만 숨긴다.
 	 */
 	kind: "info" | "do";
 	until?: TourAction;
@@ -206,6 +207,14 @@ export const TOUR_STEPS: readonly TourStep[] = [
 		text: "좋아, 이제 이 메뉴 버튼을 눌러 볼까?",
 	},
 	{
+		id: "guestMy",
+		screens: ["guestMy"],
+		chapter: 4,
+		kind: "do",
+		target: ['[data-tour="menu"]'],
+		text: "내 우주선은 로그인하면 꾸밀 수 있어! 지금은 메뉴를 열어 캘린더를 구경해 볼까?",
+	},
+	{
 		id: "calendarLink",
 		screens: ["menu"],
 		chapter: 5,
@@ -232,7 +241,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
 /** null이면 안내가 꺼져 있다(끝냈거나 시작하지 않음). */
 export type TourState = {
 	index: number;
-	/** 「닫기」로 숨긴 do 말풍선. 다음 단계로 가면 다시 보인다 */
+	/** 「안내 숨기기」로 숨긴 do 말풍선. 다음 단계로 가면 다시 보인다 */
 	hidden: boolean;
 } | null;
 
@@ -269,7 +278,7 @@ export function performAction(state: TourState, action: TourAction): TourState {
 	return advance(state.index);
 }
 
-/** 「닫기」: info는 다음으로(마지막이면 끝), do는 말풍선만 숨긴다. */
+/** info는 다음으로(마지막이면 끝), do는 말풍선만 숨긴다. */
 export function closeStep(state: TourState): TourState {
 	if (!state) return state;
 	if (TOUR_STEPS[state.index].kind === "do") return { ...state, hidden: true };

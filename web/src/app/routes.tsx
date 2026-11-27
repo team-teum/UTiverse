@@ -9,7 +9,7 @@ import { Calendar } from "../features/calendar/Calendar";
 import { EventDetail } from "../features/calendar/EventDetail";
 import { Explore } from "../features/explore/Explore";
 import { Title } from "../features/onboarding/Title";
-import { Tutorial } from "../features/onboarding/Tutorial";
+import { Tutorial, TutorialOutro } from "../features/onboarding/Tutorial";
 import { Settings } from "../features/settings/Settings";
 import { MyShip } from "../features/ship/MyShip";
 import { OtherShip } from "../features/ship/OtherShip";
@@ -22,6 +22,7 @@ export const router = createBrowserRouter(
 		<Route element={<AppFrame />}>
 			<Route index element={<Title />} />
 			<Route path="tutorial" element={<Tutorial />} />
+			<Route path="tutorial/outro" element={<TutorialOutro />} />
 			<Route path="universe" element={<Universe />} />
 			<Route path="explore" element={<Explore />} />
 			<Route path="calendar" element={<Calendar />} />

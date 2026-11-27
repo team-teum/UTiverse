@@ -1,9 +1,9 @@
-/* 좌표는 402×874 프레임 기준 디자인 px (Figma 70:6801·70:6850·70:6903·70:6964) */
+/* Figma 「튜토리얼 v2」 인트로·아웃트로, 402×874 */
 .screen {
-	--dialog-y: min(calc(470 * var(--dp)), 56%);
+	--dialog-y: min(calc(470 * var(--dp)), 54%);
 	position: absolute;
 	inset: 0;
-	overflow: hidden;
+	overflow: auto;
 	background: #000;
 	color: #fff;
 }
@@ -11,6 +11,10 @@
 .tini {
 	position: absolute;
 	z-index: 1;
+	inset-inline-start: calc(50% - 79 * var(--dp));
+	inset-block-start: calc(var(--dialog-y) - 125 * var(--dp));
+	inline-size: calc(132 * var(--dp));
+	aspect-ratio: 1;
 	pointer-events: none;
 }
 
@@ -18,33 +22,10 @@
 	filter: drop-shadow(0 0 10px rgb(0 0 0 / 60%));
 }
 
-/* 티니 위치·크기: 장면마다 다름 */
-.hello .tini {
+.greeting .tini {
 	inset-inline-start: calc(50% + 12 * var(--dp));
 	inset-block-start: calc(var(--dialog-y) - 100 * var(--dp));
 	inline-size: calc(215 * var(--dp));
-	block-size: calc(215 * var(--dp));
-}
-
-.intro .tini {
-	inset-inline-start: calc(50% + -71 * var(--dp));
-	inset-block-start: calc(var(--dialog-y) - 116 * var(--dp));
-	inline-size: calc(168 * var(--dp));
-	block-size: calc(168 * var(--dp));
-}
-
-.custom .tini {
-	inset-inline-start: calc(50% + -79 * var(--dp));
-	inset-block-start: calc(var(--dialog-y) - 125 * var(--dp));
-	inline-size: calc(132 * var(--dp));
-	block-size: calc(132 * var(--dp));
-}
-
-.explore .tini {
-	inset-inline-start: calc(50% + -90 * var(--dp));
-	inset-block-start: calc(var(--dialog-y) - 149 * var(--dp));
-	inline-size: calc(198 * var(--dp));
-	block-size: calc(198 * var(--dp));
 }
 
 /* 대사와 다음 행동을 같은 상자에 둔다. */
@@ -64,15 +45,13 @@
 	border-radius: 1.25rem;
 }
 
-.speaker {
-	display: none;
-}
-
 .dialogText {
 	margin: 0;
 	font-size: 1rem;
 	line-height: 1.5;
-	text-wrap: balance;
+	white-space: pre-line;
+	word-break: keep-all;
+	overflow-wrap: anywhere;
 }
 
 .advance {
@@ -124,20 +103,38 @@
 	pointer-events: auto;
 }
 
-/* 화면 전체를 덮는 투명 「다음」 영역 (티니·대사 카드 아래, 건너뛰기 아래) */
-.tapArea {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	cursor: pointer;
-	-webkit-tap-highlight-color: transparent;
+@container app-frame (width < 64rem) {
+	.greeting .dialog {
+		inset-block-start: calc(var(--dialog-y) - 150 * var(--dp));
+		justify-items: center;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		backdrop-filter: none;
+		pointer-events: none;
+	}
+
+	.greeting .dialogText {
+		display: grid;
+		place-items: center;
+		min-inline-size: 6rem;
+		min-block-size: 5.5rem;
+		border-radius: 50%;
+		background: #fff;
+		color: #000;
+		font-size: 1.25rem;
+	}
+
+	.greeting .advance {
+		justify-self: start;
+		background: #291d41;
+		pointer-events: auto;
+	}
 }
 
 @container app-frame (width >= 64rem) {
-	.screen .tini {
+	.tini,
+	.greeting .tini {
 		inset-inline-start: 50%;
 		inset-block: auto min(28cqb, 16rem);
 		inline-size: min(48cqb, 38cqi, 29rem);
@@ -155,20 +152,6 @@
 		margin-inline: auto;
 		gap: 0.5rem;
 		padding: clamp(1.25rem, 4cqb, 2.25rem);
-	}
-
-	.speaker {
-		position: absolute;
-		inset-block-start: 0;
-		inset-inline-start: clamp(1.25rem, 4cqi, 3.5rem);
-		display: block;
-		padding: 0.375em 1.75em;
-		border: 1px solid rgb(255 232 255 / 35%);
-		border-radius: 999px;
-		background-color: #54488f;
-		font-size: clamp(1rem, 3cqb, 1.5rem);
-		font-weight: 800;
-		transform: translateY(-50%);
 	}
 
 	.dialogText {

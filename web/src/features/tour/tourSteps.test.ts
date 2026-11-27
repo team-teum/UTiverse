@@ -40,6 +40,13 @@ describe("tutorial v2 steps", () => {
 		assert.equal(idOf(enterScreen(at("menu"), "menu")), "calendarLink");
 	});
 
+	it("guides guests past the signed-in MY steps without requiring an account", () => {
+		const guest = enterScreen(at("goMy"), "guestMy");
+		assert.equal(idOf(guest), "guestMy");
+		assert.equal(idOf(enterScreen(guest, "menu")), "calendarLink");
+		assert.equal(idOf(enterScreen(at("calendarLink"), "calendar")), "calendar");
+	});
+
 	it("lets people skip ahead within a chapter", () => {
 		// 노크 없이 별을 바로 열거나, 반응 없이 별 상세를 닫아도 이어진다.
 		assert.equal(idOf(enterScreen(at("knock"), "lumiStar")), "react");

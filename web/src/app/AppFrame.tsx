@@ -7,7 +7,10 @@ import styles from "./AppFrame.module.css";
 export function AppFrame() {
 	const { pathname } = useLocation();
 	// 타이틀·튜토리얼은 화면 전체를 장면으로 쓰고 상단 바를 직접 그린다.
-	const fullScene = pathname === "/" || pathname === "/tutorial";
+	const fullScene =
+		pathname === "/" ||
+		pathname === "/tutorial" ||
+		pathname === "/tutorial/outro";
 
 	return (
 		<div className={styles.viewport}>

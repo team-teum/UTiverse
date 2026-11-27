@@ -3,7 +3,7 @@ import styles from "./TitleScene.module.css";
 
 /**
  * Figma 「Tap to Start」(39:5801)의 배경 장면.
- * 튜토리얼(70:6801~)에서는 같은 장면을 검은 바탕 위 40% 불투명도로 깐다.
+ * 튜토리얼 v2 인트로·아웃트로에서는 같은 장면을 검은 바탕 위 40% 불투명도로 깐다.
  */
 export function TitleScene({ dimmed = false }: { dimmed?: boolean }) {
 	return (

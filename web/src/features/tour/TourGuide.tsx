@@ -6,7 +6,9 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { AssetImage } from "../../components/AssetImage";
+import { useFinishTutorial } from "../onboarding/useFinishTutorial";
 import styles from "./TourGuide.module.css";
 import { layoutTour, type Rect, type TourLayout } from "./tourLayout";
 import { closeTourStep, useTour } from "./tourStore";
@@ -24,9 +26,11 @@ interface Frame {
 
 /**
  * 튜토리얼 v2 말풍선. 앱에 하나만 두며, 열린 대화상자가 있으면 그 안(맨 위 층)에 그린다.
- * 말풍선과 「닫기」만 누를 수 있고 나머지는 아래 화면으로 통과한다.
+ * 말풍선의 버튼만 누를 수 있고 나머지는 아래 화면으로 통과한다.
  */
 export function TourGuide() {
+	const navigate = useNavigate();
+	const { finish, saving, error } = useFinishTutorial();
 	const tour = useTour();
 	const step = tour?.visible ? tour.step : null;
 	const [frame, setFrame] = useState<Frame | null>(null);
@@ -112,9 +116,29 @@ export function TourGuide() {
 					<span className="sr-only">티니: </span>
 					{text}
 				</p>
-				<button type="button" className={styles.close} onClick={closeTourStep}>
-					닫기
-				</button>
+				{error && <p role="alert">{error}</p>}
+				<div className={styles.actions}>
+					<button
+						type="button"
+						className={styles.close}
+						onClick={finish}
+						disabled={saving}
+					>
+						튜토리얼 건너뛰기
+					</button>
+					<button
+						type="button"
+						className={styles.close}
+						disabled={saving}
+						onClick={() => {
+							closeTourStep();
+							if (step.id === "calendar")
+								navigate("/tutorial/outro", { replace: true });
+						}}
+					>
+						{step.kind === "info" ? "다음" : "안내 숨기기"}
+					</button>
+				</div>
 			</div>
 			{layout.pointer && (
 				<>

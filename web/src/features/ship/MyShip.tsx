@@ -10,7 +10,7 @@ import { useDiscardGuard } from "../../hooks/useDiscardGuard";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import type { Look } from "../../pixel/look";
 import { AuthDialog } from "../auth/AuthDialog";
-import { isTourActive } from "../tour/tourStore";
+import { isTourActive, useTourScreen } from "../tour/tourStore";
 import { type CustomizeMode, CustomizeView } from "./CustomizeView";
 import styles from "./MyShip.module.css";
 import { ShipPage } from "./ShipPage";
@@ -34,17 +34,7 @@ export function MyShip() {
 			) : me ? (
 				<OwnedShip key={me.id} me={me} />
 			) : (
-				<section className="scaffold-screen">
-					<h1>내 우주선</h1>
-					<p>로그인하면 내 우주선을 볼 수 있어요.</p>
-					<button
-						type="button"
-						className="button-primary"
-						onClick={() => setShowAuth(true)}
-					>
-						회원가입 · 로그인
-					</button>
-				</section>
+				<GuestShip onSignIn={() => setShowAuth(true)} />
 			)}
 			{/* 세션이 먼저 바뀌어도 가입 결과를 알릴 때까지 창을 유지한다. */}
 			{showAuth && (
@@ -54,6 +44,19 @@ export function MyShip() {
 				/>
 			)}
 		</>
+	);
+}
+
+function GuestShip({ onSignIn }: { onSignIn: () => void }) {
+	useTourScreen("guestMy");
+	return (
+		<section className="scaffold-screen">
+			<h1>내 우주선</h1>
+			<p>로그인하면 내 우주선을 볼 수 있어요.</p>
+			<button type="button" className="button-primary" onClick={onSignIn}>
+				회원가입 · 로그인
+			</button>
+		</section>
 	);
 }
 
