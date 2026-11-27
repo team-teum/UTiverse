@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { GlobeSky } from "../../api/types";
 import { useReducedMotion } from "../../lib/motion";
 import { reportTourAction } from "../tour/tourStore";
+import { GlobeTrail } from "./GlobeTrail";
 import {
 	facePoint,
 	NO_ROTATION,
@@ -22,7 +23,6 @@ import {
 	spherePoint,
 } from "./globeProjection";
 import { startIdleRotation } from "./idleRotation";
-import { linkDots, linkOpacity, seedOf, sparklePath } from "./linkStrand";
 import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
@@ -139,6 +139,11 @@ export function UniverseGlobe({
 	}, [autoRotate, flight, reducedMotion]);
 
 	useEffect(() => () => zoomRef.current?.cancel(), []);
+
+	useLayoutEffect(() => {
+		// End the current flight without playing the remaining zoom.
+		if (reducedMotion && flight) zoomRef.current?.finish();
+	}, [flight, reducedMotion]);
 
 	// 회전 값은 일부러 의존성에 넣지 않는다: 가리키기 시작할 때 한 번만 돌리고, 그 뒤는 사용자가 돌린다.
 	const rotationRef = useRef(rotation);
@@ -425,6 +430,7 @@ export function UniverseGlobe({
 						type="button"
 						className={styles.handle}
 						aria-label="우주 돌리기"
+						data-tour="globe-rotate"
 						aria-describedby={helpId}
 						onKeyDown={(event) => {
 							if (event.altKey || event.ctrlKey || event.metaKey) return;
@@ -440,59 +446,15 @@ export function UniverseGlobe({
 							viewBox="-200 -200 400 400"
 							aria-hidden="true"
 						>
-							<defs>
-								{neighbors.map(({ profile, point }) => (
-									<linearGradient
-										key={profile.id}
-										id={gradientId(profile.id)}
-										gradientUnits="userSpaceOnUse"
-										x1={mine.x}
-										y1={mine.y}
-										x2={point.x}
-										y2={point.y}
-									>
-										<stop offset="0" stopColor="#f5a9b8" stopOpacity="0.75" />
-										<stop
-											offset="0.55"
-											stopColor="#dcc9ff"
-											stopOpacity="0.55"
-										/>
-										<stop offset="1" stopColor="#5bcefa" stopOpacity="0.4" />
-									</linearGradient>
-								))}
-							</defs>
-
-							{/* Keep trails mounted at the rim so opacity can transition in both directions. */}
-							{neighbors.map(({ profile, point }) => {
-								const paint = `url(#${gradientId(profile.id)})`;
-								return (
-									<g
-										key={profile.id}
-										className={styles.trail}
-										opacity={linkOpacity(mine.depth, point.depth)}
-									>
-										{linkDots(mine, point, seedOf(profile.id)).map((dot) =>
-											dot.sparkle ? (
-												<path
-													key={dot.id}
-													d={sparklePath(dot.x, dot.y, dot.size * 2.2)}
-													fill={paint}
-													opacity={dot.alpha}
-												/>
-											) : (
-												<circle
-													key={dot.id}
-													cx={dot.x}
-													cy={dot.y}
-													r={dot.size}
-													fill={paint}
-													opacity={dot.alpha}
-												/>
-											),
-										)}
-									</g>
-								);
-							})}
+							{neighbors.map(({ profile, point }) => (
+								<GlobeTrail
+									key={profile.id}
+									id={profile.id}
+									gradientId={gradientId(profile.id)}
+									from={mine}
+									to={point}
+								/>
+							))}
 						</svg>
 					)}
 					<ul className={styles.stars} aria-label="우주선 목록">

@@ -1,8 +1,9 @@
-import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { repo } from "../../api/repository";
 import { useRepositoryData } from "../../hooks/useRepositoryData";
 import { LUMI_ID } from "../tour/tourSteps";
-import { useTour, useTourScreen } from "../tour/tourStore";
+import { skipUnavailableLumi, useTour, useTourScreen } from "../tour/tourStore";
 import styles from "./Universe.module.css";
 import { UniverseGlobe } from "./UniverseGlobe";
 
@@ -18,6 +19,16 @@ export function Universe() {
 	const { data: sky, error } = useRepositoryData("globe-sky", () =>
 		repo.getGlobeSky(),
 	);
+	const tourStep = tour?.step.id;
+	useEffect(() => {
+		if (
+			tourStep &&
+			sky &&
+			!sky.profiles.some((profile) => profile.id === LUMI_ID)
+		) {
+			skipUnavailableLumi(sky.profiles.length === 0);
+		}
+	}, [sky, tourStep]);
 
 	return (
 		<section className={styles.screen} aria-labelledby="universe-heading">
@@ -32,7 +43,16 @@ export function Universe() {
 				) : !sky ? (
 					<p role="status">우주를 불러오는 중…</p>
 				) : sky.profiles.length === 0 ? (
-					<p>아직 둘러볼 우주선이 없어요.</p>
+					<div>
+						<p>아직 둘러볼 우주선이 없어요.</p>
+						<Link
+							className="button-secondary"
+							data-tour="explore"
+							to="/explore"
+						>
+							탐색하기
+						</Link>
+					</div>
 				) : (
 					<UniverseGlobe
 						key={`${sky.viewerId}:${key}`}

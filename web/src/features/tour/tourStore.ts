@@ -3,6 +3,7 @@ import {
 	closeStep,
 	enterScreen,
 	performAction,
+	skipLumiChapter,
 	TOUR_START,
 	TOUR_STEPS,
 	type TourAction,
@@ -44,6 +45,11 @@ function set(next: TourState) {
 /** 인트로를 끝까지 본 뒤 본문 안내를 시작한다. */
 export function startTour() {
 	set(TOUR_START);
+}
+
+export function skipUnavailableLumi(emptyRoster: boolean) {
+	const next = skipLumiChapter(state, emptyRoster);
+	if (next !== state) set(next);
 }
 
 export function stopTour() {

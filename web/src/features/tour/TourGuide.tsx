@@ -11,6 +11,7 @@ import { AssetImage } from "../../components/AssetImage";
 import { useFinishTutorial } from "../onboarding/useFinishTutorial";
 import styles from "./TourGuide.module.css";
 import { layoutTour, type Rect, type TourLayout } from "./tourLayout";
+import type { TourStep } from "./tourSteps";
 import { closeTourStep, useTour } from "./tourStore";
 
 /** 장갑 그림(ui.pointer)에서 손목 → 손끝 방향. 손끝이 오른쪽 위를 가리킨다 */
@@ -118,19 +119,24 @@ export function TourGuide() {
 				</p>
 				{error && <p role="alert">{error}</p>}
 				<div className={styles.actions}>
-					<button
-						type="button"
-						className={styles.close}
-						onClick={finish}
-						disabled={saving}
-					>
-						튜토리얼 건너뛰기
-					</button>
+					{!step.screens.includes("menu") && (
+						<button
+							type="button"
+							className={styles.close}
+							onClick={finish}
+							disabled={saving}
+						>
+							튜토리얼 건너뛰기
+						</button>
+					)}
 					<button
 						type="button"
 						className={styles.close}
 						disabled={saving}
 						onClick={() => {
+							if (step.kind === "do") {
+								focusAfterHide(step, frame.container);
+							}
 							closeTourStep();
 							if (step.id === "calendar")
 								navigate("/tutorial/outro", { replace: true });
@@ -182,6 +188,31 @@ export function TourGuide() {
 		</div>,
 		frame.container,
 	);
+}
+
+function focusAfterHide(step: TourStep, container: HTMLElement) {
+	const dialog = container instanceof HTMLDialogElement ? container : null;
+	const scope = dialog ?? document;
+	const selectors =
+		step.until === "globe-drag"
+			? ['[data-tour="globe-rotate"]']
+			: (step.target ?? []);
+	const controlSelector = "button:not(:disabled), a[href]";
+	for (const selector of selectors) {
+		for (const target of scope.querySelectorAll<HTMLElement>(selector)) {
+			const control =
+				target.closest<HTMLElement>(controlSelector) ??
+				target.querySelector<HTMLElement>(controlSelector);
+			if (control && control.tabIndex >= 0 && control.getClientRects().length) {
+				control.focus({ preventScroll: true });
+				if (document.activeElement === control) return;
+			}
+		}
+	}
+	const fallback = dialog
+		? dialog.querySelector<HTMLElement>(controlSelector)
+		: document.getElementById("main-content");
+	fallback?.focus({ preventScroll: true });
 }
 
 /** 맨 위에 열린 대화상자(showModal은 나머지를 가린다), 없으면 앱 프레임의 안내 층(#tour-root) */

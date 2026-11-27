@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { useTourScreen } from "../features/tour/tourStore";
+import { useFinishTutorial } from "../features/onboarding/useFinishTutorial";
+import { useTour, useTourScreen } from "../features/tour/tourStore";
 import { AssetImage } from "./AssetImage";
 import styles from "./MenuPanel.module.css";
 
@@ -38,6 +39,8 @@ const ITEMS = [
  */
 export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 	useTourScreen("menu");
+	const tour = useTour();
+	const { finish, saving, error } = useFinishTutorial(onClose);
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const panelRef = useRef<HTMLElement>(null);
 	const { pathname } = useLocation();
@@ -111,6 +114,19 @@ export function MenuPanel({ onClose, onNavigate }: MenuPanelProps) {
 						</li>
 					))}
 				</ul>
+				{tour && (
+					<div className={styles.tourExit}>
+						<button
+							type="button"
+							className="button-secondary"
+							onClick={finish}
+							disabled={saving}
+						>
+							튜토리얼 건너뛰기
+						</button>
+						{error && <p role="alert">{error}</p>}
+					</div>
+				)}
 				<AssetImage
 					assetKey="deco.planet"
 					alt=""

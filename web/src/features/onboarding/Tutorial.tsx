@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AssetImage } from "../../components/AssetImage";
 import { TopBar } from "../../components/TopBar";
@@ -88,10 +88,20 @@ function TutorialScene({
 	error: string | null;
 }) {
 	const title = useRef<HTMLHeadingElement>(null);
+	const advanceId = useId();
 	useEffect(() => title.current?.focus(), []);
 	return (
 		<section className={`${styles.screen} ${greeting ? styles.greeting : ""}`}>
 			<TitleScene dimmed />
+			{/* 배경 탭도 같은 버튼을 작동시켜 키보드 초점은 한 곳만 둔다. */}
+			{onSkip && !saving && (
+				// biome-ignore lint/a11y/noLabelWithoutControl: The associated button already has visible text; this label only extends its pointer target.
+				<label
+					className={styles.tapArea}
+					htmlFor={advanceId}
+					aria-hidden="true"
+				/>
+			)}
 			<div className={styles.top}>
 				<TopBar locked />
 			</div>
@@ -120,6 +130,8 @@ function TutorialScene({
 				{error && <p role="alert">{error}</p>}
 				<button
 					type="button"
+					id={advanceId}
+					aria-label={action}
 					className={styles.advance}
 					onClick={onAdvance}
 					disabled={saving}

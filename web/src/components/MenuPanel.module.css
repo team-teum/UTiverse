@@ -153,6 +153,14 @@
 	line-height: 1.3;
 }
 
+.tourExit {
+	margin-block: 0.75rem;
+}
+
+.tourExit button {
+	min-block-size: 44px;
+}
+
 .foot {
 	margin: auto 0 0 calc(4 * var(--dp));
 	padding-block-start: calc(14 * var(--dp));

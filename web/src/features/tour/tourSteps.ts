@@ -272,6 +272,21 @@ export function enterScreen(
 	return state;
 }
 
+/** 예시 우주선을 배포하지 않은 경우에는 방문 장을 건너뛴다. */
+export function skipLumiChapter(
+	state: TourState,
+	emptyRoster = false,
+): TourState {
+	if (!state) return state;
+	const { id } = TOUR_STEPS[state.index];
+	if (id !== "visitLumi" && !(emptyRoster && (id === "drag" || id === "nice")))
+		return state;
+	return {
+		index: TOUR_STEPS.findIndex((step) => step.id === "explore"),
+		hidden: false,
+	};
+}
+
 /** 행동을 했을 때: 지금 단계가 기다리던 행동이면 다음으로 */
 export function performAction(state: TourState, action: TourAction): TourState {
 	if (!state || TOUR_STEPS[state.index].until !== action) return state;

@@ -5,6 +5,7 @@ import {
 	closeStep,
 	enterScreen,
 	performAction,
+	skipLumiChapter,
 	TOUR_START,
 	TOUR_STEPS,
 	type TourState,
@@ -45,6 +46,15 @@ describe("tutorial v2 steps", () => {
 		assert.equal(idOf(guest), "guestMy");
 		assert.equal(idOf(enterScreen(guest, "menu")), "calendarLink");
 		assert.equal(idOf(enterScreen(at("calendarLink"), "calendar")), "calendar");
+	});
+
+	it("skips the Lumi chapter only at the visit step if the example profile is unavailable", () => {
+		const next = skipLumiChapter(closeStep(at("visitLumi")));
+		assert.deepEqual(next, at("explore"));
+		assert.equal(idOf(enterScreen(next, "explore")), "random");
+		assert.equal(skipLumiChapter(TOUR_START), TOUR_START);
+		assert.deepEqual(skipLumiChapter(TOUR_START, true), at("explore"));
+		assert.equal(skipLumiChapter(null), null);
 	});
 
 	it("lets people skip ahead within a chapter", () => {
