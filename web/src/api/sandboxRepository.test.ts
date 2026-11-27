@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { createSandboxRepository } from "./sandboxRepository.ts";
 
 describe("sandbox repository", () => {
-	it("keeps the globe slots on sign-in without turning one-way comments into links", async () => {
+	it("keeps the globe slots and shows one private link per author I comment on", async () => {
 		const repo = createSandboxRepository();
 		const before = await repo.getGlobeSky();
 		assert.equal(before.viewerId, null);
@@ -12,18 +12,30 @@ describe("sandbox repository", () => {
 			password: "pass123456",
 			nickname: "별",
 		});
+		const ownStar = await repo.createStar("내 별");
+		await repo.createComment(ownStar.id, "내 글에 댓글");
+		assert.deepEqual((await repo.getGlobeSky()).linkedIds, []);
 		const [neighbor] = await repo.listOtherProfiles();
 		const [star] = await repo.listStars(neighbor.id);
-		await repo.createComment(star.id, "반가워요");
+		const first = await repo.createComment(star.id, "반가워요");
+		assert.deepEqual((await repo.getGlobeSky()).linkedIds, [neighbor.id]);
+		const reply = await repo.createComment(star.id, "답글", first.id);
 		const after = await repo.getGlobeSky();
 		assert.deepEqual(
 			after.profiles.map((p) => p.id),
 			before.profiles.map((p) => p.id),
 		);
 		assert.equal(after.viewerId, (await repo.getMyProfile()).id);
-		assert.deepEqual(after.linkedIds, []);
+		assert.deepEqual(after.linkedIds, [neighbor.id]);
 		await repo.signOut();
-		assert.equal((await repo.getGlobeSky()).viewerId, null);
+		const guest = await repo.getGlobeSky();
+		assert.equal(guest.viewerId, null);
+		assert.deepEqual(guest.linkedIds, []);
+		await repo.signIn({ email: "sky@example.com", password: "pass123456" });
+		await repo.deleteComment(first.id);
+		assert.deepEqual((await repo.getGlobeSky()).linkedIds, [neighbor.id]);
+		await repo.deleteComment(reply.id);
+		assert.deepEqual((await repo.getGlobeSky()).linkedIds, []);
 	});
 	it("leaves the profile and subscriptions untouched when a patch is rejected", async (t) => {
 		const repo = createSandboxRepository();

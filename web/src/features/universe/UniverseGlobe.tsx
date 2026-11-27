@@ -21,7 +21,7 @@ import {
 	rotateBy,
 	spherePoint,
 } from "./globeProjection";
-import { linkDots, seedOf, sparklePath } from "./linkStrand";
+import { linkDots, linkOpacity, seedOf, sparklePath } from "./linkStrand";
 import styles from "./UniverseGlobe.module.css";
 
 const STEP = Math.PI / 8;
@@ -376,6 +376,7 @@ export function UniverseGlobe({
 		point: projectPoint(spherePoint(index, profiles.length), rotation),
 	}));
 	const mine = stars.find((s) => s.profile.id === viewerId)?.point;
+	const neighbors = stars.filter(({ profile }) => linked.has(profile.id));
 	// One gradient per endpoint makes every strand read pink at me and blue at the other star.
 	const suffix = helpId.replace(/[^\w-]/g, "");
 	const gradientId = (id: string) => `globe-link-${id}-${suffix}`;
@@ -423,66 +424,54 @@ export function UniverseGlobe({
 							rotateWithKey(direction);
 						}}
 					/>
-					{mine && linked.size > 0 && (
+					{mine && neighbors.length > 0 && (
 						<svg
 							className={styles.connections}
 							viewBox="-200 -200 400 400"
 							aria-hidden="true"
 						>
 							<defs>
-								{stars.map(
-									({ profile, point }) =>
-										linked.has(profile.id) &&
-										point.depth <= 0 && (
-											<linearGradient
-												key={profile.id}
-												id={gradientId(profile.id)}
-												gradientUnits="userSpaceOnUse"
-												x1={mine.x}
-												y1={mine.y}
-												x2={point.x}
-												y2={point.y}
-											>
-												<stop
-													offset="0"
-													stopColor="#f5a9b8"
-													stopOpacity="0.75"
-												/>
-												<stop
-													offset="0.55"
-													stopColor="#dcc9ff"
-													stopOpacity="0.55"
-												/>
-												<stop
-													offset="1"
-													stopColor="#5bcefa"
-													stopOpacity="0.4"
-												/>
-											</linearGradient>
-										),
-								)}
+								{neighbors.map(({ profile, point }) => (
+									<linearGradient
+										key={profile.id}
+										id={gradientId(profile.id)}
+										gradientUnits="userSpaceOnUse"
+										x1={mine.x}
+										y1={mine.y}
+										x2={point.x}
+										y2={point.y}
+									>
+										<stop offset="0" stopColor="#f5a9b8" stopOpacity="0.75" />
+										<stop
+											offset="0.55"
+											stopColor="#dcc9ff"
+											stopOpacity="0.55"
+										/>
+										<stop offset="1" stopColor="#5bcefa" stopOpacity="0.4" />
+									</linearGradient>
+								))}
 							</defs>
 
-							{/* A loose trail of small stars, not a drawn line. */}
-							{stars.map(({ profile, point }) => {
-								if (!linked.has(profile.id) || point.depth > 0) return null;
+							{/* Keep trails mounted at the rim so opacity can transition in both directions. */}
+							{neighbors.map(({ profile, point }) => {
 								const paint = `url(#${gradientId(profile.id)})`;
 								return (
 									<g
 										key={profile.id}
-										opacity={Math.min(1, -mine.depth * 6, -point.depth * 6)}
+										className={styles.trail}
+										opacity={linkOpacity(mine.depth, point.depth)}
 									>
 										{linkDots(mine, point, seedOf(profile.id)).map((dot) =>
 											dot.sparkle ? (
 												<path
-													key={`${dot.x}-${dot.y}`}
+													key={dot.id}
 													d={sparklePath(dot.x, dot.y, dot.size * 2.2)}
 													fill={paint}
 													opacity={dot.alpha}
 												/>
 											) : (
 												<circle
-													key={`${dot.x}-${dot.y}`}
+													key={dot.id}
 													cx={dot.x}
 													cy={dot.y}
 													r={dot.size}
@@ -524,7 +513,7 @@ export function UniverseGlobe({
 										aria-label={
 											self
 												? "내 우주선 방문"
-												: `${profile.nickname} 우주선 방문${linked.has(profile.id) ? ", 서로 댓글을 나눈 이웃" : ""}`
+												: `${profile.nickname} 우주선 방문${linked.has(profile.id) ? ", 내가 댓글을 남긴 이웃" : ""}`
 										}
 										title={profile.nickname}
 										draggable={false}

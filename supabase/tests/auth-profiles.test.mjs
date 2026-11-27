@@ -183,7 +183,7 @@ test("local email Auth persists profiles and enforces profile grants and ownersh
 	);
 });
 
-test("globe links are reciprocal, deduplicated and caller-only", async () => {
+test("globe links are outgoing, deduplicated and caller-only", async () => {
 	const a = await signUp("별 A"),
 		b = await signUp("별 B"),
 		c = await signUp("별 C");
@@ -214,19 +214,24 @@ test("globe links are reciprocal, deduplicated and caller-only", async () => {
 		sb = await star(b);
 	await expectPermissionDenied(path, { method: "POST", body: {} });
 	await comment(a, sa);
-	await comment(a, sb);
-	await comment(a, sb);
 	assert.deepEqual(await links(a), []);
-	const reverse = await comment(b, sa);
+	const first = await comment(a, sb);
 	assert.deepEqual(await links(a), [b.profileId]);
-	assert.deepEqual(await links(b), [a.profileId]);
+	assert.deepEqual(await links(b), []);
 	assert.deepEqual(await links(c), []);
-	await expectStatus(
-		204,
-		"/rest/v1/rpc/delete_own_comment",
-		post(b, { target_id: reverse }),
-	);
+
+	const second = await comment(a, sb);
+	assert.deepEqual(await links(a), [b.profileId]);
+	await comment(b, sa);
+	assert.deepEqual(await links(b), [a.profileId]);
+
+	const remove = (id) =>
+		expectStatus(204, "/rest/v1/rpc/delete_own_comment", post(a, { target_id: id }));
+	await remove(first);
+	assert.deepEqual(await links(a), [b.profileId]);
+	await remove(second);
 	assert.deepEqual(await links(a), []);
+	assert.deepEqual(await links(b), [a.profileId]);
 });
 
 test("shared content has stable demo links and enforces ownership under two sessions", async () => {

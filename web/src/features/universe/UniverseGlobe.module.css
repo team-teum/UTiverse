@@ -247,6 +247,12 @@
 	overflow: visible;
 }
 
+.trail {
+	@media (prefers-reduced-motion: no-preference) {
+		transition: opacity 140ms ease-out;
+	}
+}
+
 .hub {
 	filter: blur(4px);
 }

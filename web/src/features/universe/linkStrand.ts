@@ -1,5 +1,6 @@
 /** Link dots: a seeded scatter of tiny stars along a gently bowed curve. Coordinates are SVG units, y down. */
 export interface LinkDot {
+	id: number;
 	x: number;
 	y: number;
 	size: number;
@@ -26,6 +27,13 @@ export function seedOf(text: string): number {
 	for (const ch of text)
 		h = Math.imul(h ^ (ch.codePointAt(0) ?? 0), 16777619) >>> 0;
 	return h;
+}
+
+/** Fade towards the rim as the shallower of the two stars approaches it. */
+export function linkOpacity(fromDepth: number, toDepth: number): number {
+	const depth = Math.max(fromDepth, toDepth);
+	const t = Math.min(1, Math.max(0, -depth / 0.4));
+	return t * t * (3 - 2 * t);
 }
 
 export function linkDots(
@@ -56,6 +64,7 @@ export function linkDots(
 		const nudge = (hash(seed, i + 100) - 0.5) * 4.6;
 		const sparkle = hash(seed, i + 400) > 0.74;
 		return {
+			id: i,
 			x: along.x + nx * nudge,
 			y: along.y + ny * nudge,
 			size: 0.75 + hash(seed, i + 200) * 1.1 + (sparkle ? 0.6 : 0),

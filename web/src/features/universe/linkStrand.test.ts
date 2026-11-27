@@ -1,11 +1,20 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { linkDots, seedOf, sparklePath } from "./linkStrand.ts";
+import { linkDots, linkOpacity, seedOf, sparklePath } from "./linkStrand.ts";
 
 const from = { x: 0, y: 0 };
 const to = { x: 100, y: 0 };
 
 describe("globe link strand", () => {
+	it("fades as either endpoint approaches the rim and stays off on the back", () => {
+		assert.equal(linkOpacity(-1, -0.4), 1);
+		assert.equal(linkOpacity(-1, -0.2), 0.5);
+		assert.equal(linkOpacity(-0.2, -1), 0.5);
+		assert.ok(linkOpacity(-1, -0.01) < 0.01);
+		assert.equal(linkOpacity(-1, 0), 0);
+		assert.equal(linkOpacity(0.1, -1), 0);
+	});
+
 	it("is stable for one pair and scatters differently for another", () => {
 		const a = linkDots(from, to, seedOf("alice"));
 		assert.deepEqual(a, linkDots(from, to, seedOf("alice")));

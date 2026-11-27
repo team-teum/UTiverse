@@ -20,6 +20,7 @@ export interface GlobeSky {
 	/** Same ID-ordered roster for every viewer. */
 	profiles: Pick<Profile, "id" | "nickname">[];
 	viewerId: string | null;
+	/** Other authors whose posts the viewer has commented on; empty for guests. */
 	linkedIds: string[];
 }
 
