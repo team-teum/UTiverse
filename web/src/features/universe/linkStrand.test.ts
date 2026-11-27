@@ -6,13 +6,22 @@ const from = { x: 0, y: 0 };
 const to = { x: 100, y: 0 };
 
 describe("globe link strand", () => {
-	it("fades as either endpoint approaches the rim and stays off on the back", () => {
-		assert.equal(linkOpacity(-1, -0.4), 1);
-		assert.equal(linkOpacity(-1, -0.2), 0.5);
-		assert.equal(linkOpacity(-0.2, -1), 0.5);
-		assert.ok(linkOpacity(-1, -0.01) < 0.01);
-		assert.equal(linkOpacity(-1, 0), 0);
-		assert.equal(linkOpacity(0.1, -1), 0);
+	it("keeps the strand visible around the rim and fades shortly past it", () => {
+		assert.equal(linkOpacity(-1, -0.2), 1);
+		const rim = linkOpacity(-1, 0);
+		const behindRim = linkOpacity(-1, 0.1);
+		assert.ok(rim > 0.6 && rim < 1);
+		assert.ok(behindRim > 0 && behindRim < rim);
+		assert.equal(linkOpacity(0.1, -1), behindRim);
+		assert.equal(linkOpacity(-1, 0.28), 0);
+		assert.equal(linkOpacity(-1, 1), 0);
+	});
+
+	it("fades out as the last front-facing endpoint reaches the rim", () => {
+		const almostHidden = linkOpacity(-0.01, 0.1);
+		assert.ok(almostHidden > 0 && almostHidden < 0.01);
+		assert.equal(linkOpacity(0, 0.1), 0);
+		assert.equal(linkOpacity(0.05, 0.1), 0);
 	});
 
 	it("is stable for one pair and scatters differently for another", () => {

@@ -29,11 +29,23 @@ export function seedOf(text: string): number {
 	return h;
 }
 
-/** Fade towards the rim as the shallower of the two stars approaches it. */
-export function linkOpacity(fromDepth: number, toDepth: number): number {
-	const depth = Math.max(fromDepth, toDepth);
-	const t = Math.min(1, Math.max(0, -depth / 0.4));
+const FADE_START_DEPTH = -0.2;
+const FAR_ENDPOINT_CUTOFF = 0.28;
+
+function depthFade(depth: number, cutoff: number): number {
+	const t = Math.min(
+		1,
+		Math.max(0, (cutoff - depth) / (cutoff - FADE_START_DEPTH)),
+	);
 	return t * t * (3 - 2 * t);
+}
+
+/** Let one endpoint peek past the rim, but fade to zero before both are behind it. */
+export function linkOpacity(fromDepth: number, toDepth: number): number {
+	return Math.min(
+		depthFade(Math.max(fromDepth, toDepth), FAR_ENDPOINT_CUTOFF),
+		depthFade(Math.min(fromDepth, toDepth), 0),
+	);
 }
 
 export function linkDots(
